@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Carreta – Restaurante Bar | Turbaco</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-logo">La Carreta</div>
+      <div class="loader-bar"><span></span></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#inicio" class="nav-logo">
+        <span class="logo-text">La Carreta</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#menu">Menú</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+      <a href="https://wa.me/573014790406?text=Hola%2C%20quisiera%20hacer%20un%20pedido%20%F0%9F%8D%BD%EF%B8%8F%0A%0A1%EF%B8%8F%E2%83%A3%20Pedido%3A%20%0A2%EF%B8%8F%E2%83%A3%20Direcci%C3%B3n%20(con%20referencia)%3A%20%0A3%EF%B8%8F%E2%83%A3%20Tel%C3%A9fono%3A%20%0A4%EF%B8%8F%E2%83%A3%20Medio%20de%20pago%3A%20" target="_blank" rel="noopener noreferrer" class="nav-cta">Reservar Mesa</a>
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="inicio" class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-pre">Turbaco, Bolívar</p>
+      <h1 class="hero-title">
+        <span>La</span>
+        <span class="big">CARRETA</span>
+      </h1>
+      <p class="hero-tagline">Una conquista de sabores</p>
+      <div class="hero-divider"><span></span><svg viewBox="0 0 60 12" width="60" height="12"><path d="M0 6 L20 1 L30 6 L40 1 L60 6" stroke="currentColor" stroke-width="1.5" fill="none"/></svg><span></span></div>
+      <p class="hero-desc">Restaurante Bar · Carnes · Mariscos · Cocteles</p>
+      <div class="hero-actions">
+        <a href="#menu" class="btn btn-primary">Explorar Menú</a>
+        <a href="https://wa.me/573014790406?text=Hola%2C%20quisiera%20hacer%20un%20pedido%20%F0%9F%8D%BD%EF%B8%8F%0A%0A1%EF%B8%8F%E2%83%A3%20Pedido%3A%20%0A2%EF%B8%8F%E2%83%A3%20Direcci%C3%B3n%20(con%20referencia)%3A%20%0A3%EF%B8%8F%E2%83%A3%20Tel%C3%A9fono%3A%20%0A4%EF%B8%8F%E2%83%A3%20Medio%20de%20pago%3A%20" target="_blank" class="btn btn-ghost">Reservar</a>
+      </div>
+    </div>
+    <div class="hero-bottom">
+      <div class="hero-info-strip">
+        <div class="strip-item">
+          <span class="strip-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <span>Mar–Dom · 5:00 PM – 12:00 AM</span>
+        </div>
+        <div class="strip-sep"></div>
+        <div class="strip-item">
+          <span class="strip-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <span>Av Troncal #32a-24, Plan Parejo, Turbaco</span>
+        </div>
+        <div class="strip-sep"></div>
+        <div class="strip-item">
+          <span class="strip-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 .01h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></span>
+          <span>WhatsApp 301 479 0406</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOSOTROS -->
+  <section id="nosotros" class="about">
+    <div class="container">
+      <div class="about-centered">
+        <span class="eyebrow">Quiénes somos</span>
+        <h2>Una experiencia<br /><em>única en Turbaco</em></h2>
+        <p>En <strong>La Carreta</strong> fusionamos la tradición caribeña con técnicas modernas de cocina para traerte una experiencia gastronómica sin igual. Desde cortes de res premium hasta mariscos frescos y cocteles artesanales, cada visita es una conquista de sabores.</p>
+        <p>Nuestro ambiente cálido y de estilo western te invita a relajarte y disfrutar en buena compañía. Los viernes son especiales: música, ambiente y los mejores platos de la casa.</p>
+        <div class="about-features-grid">
+          <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg></div><strong>Carnes Premium</strong><span>Cortes de res y cerdo seleccionados</span></div>
+          <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 12c0 0-2-5-8-5s-8 5-8 5 2 5 8 5 8-5 8-5z"/><path d="M20 12l3-4v8l-3-4z"/><circle cx="9" cy="11" r="1" fill="currentColor"/></svg></div><strong>Mariscos Frescos</strong><span>Del mar a tu mesa cada día</span></div>
+          <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 22h8M12 11v11M5 11h14l-1.5-7h-11z"/><path d="M6.5 4A2.5 2.5 0 019 1.5h6A2.5 2.5 0 0117.5 4"/></svg></div><strong>Cocteles del Autor</strong><span>Creaciones únicas de nuestro bartender</span></div>
+          <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div><strong>Viernes Especiales</strong><span>Música y ambiente inigualable</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENÚ -->
+  <section id="menu" class="menu-section">
+    <div class="menu-header">
+      <div class="container">
+        <span class="eyebrow light">Lo que ofrecemos</span>
+        <h2>Nuestro Menú</h2>
+        <p>Explora nuestra selección de platos elaborados con los mejores ingredientes</p>
+      </div>
+    </div>
+
+    <div class="menu-wrapper">
+      <!-- Sidebar categorías -->
+      <aside class="menu-sidebar" id="menuSidebar">
+        <nav class="menu-cat-nav">
+          <button type="button" class="cat-btn active" data-cat="entradas">Entradas</button>
+          <button type="button" class="cat-btn" data-cat="aves">Aves</button>
+          <button type="button" class="cat-btn" data-cat="carnes">Carnes</button>
+          <button type="button" class="cat-btn" data-cat="carnes-maduras">Carnes Maduras</button>
+          <button type="button" class="cat-btn" data-cat="del-mar">Del Mar</button>
+          <button type="button" class="cat-btn" data-cat="langostinos">Langostinos</button>
+          <button type="button" class="cat-btn" data-cat="mojarra">Mojarra & Robalo</button>
+          <button type="button" class="cat-btn" data-cat="arroces">Arroces</button>
+          <button type="button" class="cat-btn" data-cat="pastas">Pastas</button>
+          <button type="button" class="cat-btn" data-cat="postres">Postres</button>
+          <button type="button" class="cat-btn" data-cat="infantil">Menú Infantil</button>
+          <button type="button" class="cat-btn" data-cat="adicionales">Adicionales</button>
+          <button type="button" class="cat-btn" data-cat="bebidas">Bebidas</button>
+          <button type="button" class="cat-btn" data-cat="cervezas">Cervezas</button>
+          <button type="button" class="cat-btn" data-cat="cocteles-autor">Cocteles del Autor</button>
+          <button type="button" class="cat-btn" data-cat="cocteles-trad">Cocteles Tradicionales</button>
+          <button type="button" class="cat-btn" data-cat="licores">Licores & Vinos</button>
+        </nav>
+      </aside>
+
+      <!-- Contenido del menú -->
+      <div class="menu-content" id="menuContent">
+
+        <!-- ENTRADAS -->
+        <div class="menu-panel active" id="entradas">
+          <h3 class="panel-title">Entradas</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Patacón Mar y Tierra</h4><p>Preparación caribeña, canastillas de plátano rellenas de pescado bañadas en salsa al ajillo y queso fundido.</p></div><span class="dish-price">$25.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Ceviche de Chicharrón</h4><p>Chicharrón crocante servido sobre una cama de guacamole y salsa criolla.</p></div><span class="dish-price">$27.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Crocante de Chicharrón</h4><p>Panceta de cerdo crocante acompañado de patacón y suero costeño.</p></div><span class="dish-price">$25.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Alitas</h4><p>Alitas apanadas con salsa de miel mostaza, acompañadas de papa casco.</p></div><span class="dish-price">$27.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Ceviche Mixto</h4><p>Con toques de la cocina colombiana y peruana se logran fusionar los mejores sabores del pescado fresco y camarones de cultivo marinados con ají-mortero, vegetales, zumo de limón y maracuyá, acompañado de chips de plátano y maíz crocante.</p></div><span class="dish-price">$30.000</span></div>
+            <div class="dish new"><div class="dish-info"><h4>Criollas Gratinadas con Chorizo <span class="new-tag">NUEVO</span></h4><p>Papa criolla marinada con finas hierbas y cítricos, cubierta de queso fundido y chorizo artesanal de la casa.</p></div><span class="dish-price">$25.000</span></div>
+            <div class="dish new"><div class="dish-info"><h4>Croquetas de Coco <span class="new-tag">NUEVO</span></h4><p>Preparación inspirada en Cartagena, realizadas con croquetas de arroz con coco titote, rellena de pasta negra cartagenera, queso criollo y suero costeño.</p></div><span class="dish-price">$20.000</span></div>
+          </div>
+        </div>
+
+        <!-- AVES -->
+        <div class="menu-panel" id="aves">
+          <h3 class="panel-title">Aves</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Pechuga India</h4><p>Pechuga con relleno de manzana verde, cebolla caramelizada, jamón ahumado, uvas pasas. Bañada en salsa de champiñones y gratinado logrando destacar cada uno de sus sabores.</p></div><span class="dish-price">$42.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pechuga Napolitana</h4><p>Pechuga asada a la parrilla bañada con salsa napolitana y queso gratinado.</p></div><span class="dish-price">$40.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pollo Carbonara</h4><p>Medallones de pechuga salteadas con vino bañado con salsa de tocineta, huevo y queso parmesano.</p></div><span class="dish-price">$42.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Suprema a la Plancha</h4><p>Pechuga en mariposa asada a la parrilla.</p></div><span class="dish-price">$37.000</span></div>
+          </div>
+        </div>
+
+        <!-- CARNES -->
+        <div class="menu-panel" id="carnes">
+          <h3 class="panel-title">Carnes</h3>
+          <div class="dishes-list">
+            <div class="dish featured"><div class="dish-info"><h4>Tomahawk de Res 800g <span class="feat-tag">Estrella</span></h4><p>Plato inspirado en una historia real. Corte de carne con hueso en forma hacha marinado con sal gruesa y vino tinto; acompañado de vegetales baby, pure flame con albahaca.</p></div><span class="dish-price">$96.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Rib Eye 500g</h4><p>Corte de res grueso marinado con sal parrilla y vino tinto acompañado de vegetales baby y puré de flame con albahaca.</p></div><span class="dish-price">$70.000</span></div>
+            <div class="dish featured"><div class="dish-info"><h4>Lomo Carreta al Estilo Viejo Oeste <span class="feat-tag">Popular</span></h4><p>Medallones de lomo fino marinados con salsa ajo y camarones salteados al brandy con pasta de ají amarillo.</p></div><span class="dish-price">$68.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Lomo Indio</h4><p>Lomo de res marinado con finas hierbas y vino tinto acompañados de risotto cremoso de champiñones y salsa de frutos amarillos.</p></div><span class="dish-price">$63.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Lomo Pimienta</h4><p>Lomo fino marinados con sal gruesa y finas hierbas bañados en salsa pimienta y brandy.</p></div><span class="dish-price">$56.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Costillas de Cerdo BBQ</h4><p>Costillas de cerdo en cocción lenta, bañadas en salsa BBQ artesanal de corozo.</p></div><span class="dish-price">$58.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Baby Befe</h4><p>Corte de lomo fino marinado con sal parrilla.</p></div><span class="dish-price">$55.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Picaña Nacionales</h4><p>Medallones de res cubiertos de grasa marinado con sal parrilla y bañada con salsa de chimichurri.</p></div><span class="dish-price">$49.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Churrasco</h4><p>Lomo de cerdo en mariposa marinado con sal gruesa y vino tinto, asado a la parrilla.</p></div><span class="dish-price">$48.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Churrasco Gratinado</h4><p>Corte de lomo ancho en mariposa bañado en salsa de pimienta, brandy, gratinado con queso fundido.</p></div><span class="dish-price">$52.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Lomo de Cerdo Asado</h4><p>Lo ancho de cerdo asado a la parrilla con chimichurri.</p></div><span class="dish-price">$43.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Lomo de Cerdo Gratinado</h4><p>Lomo ancho de cerdo en medallones bañados en salsa de frutos amarillos y queso fundido.</p></div><span class="dish-price">$49.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Lomo Encostrado</h4><p>Medallón de lomo fino marinado con sal gruesa y vino tinto encostrado de quinoa sobre una cama de arroz cremoso con notas de cilantro, hierba buena y una mezcla de frutos del mar, bañado en una salsa de queso parmesano y vegetales con toque cítrico.</p></div><span class="dish-price">$62.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Parrillada</h4><p>Carne de res, cerdo, pechuga, chorizo y butifarra, asada a la parrilla bañadas con salsa de chimichurri, acompañada de con yuca al vapor y cebolla encurtida.</p></div><span class="dish-price">$64.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Picada a la Carreta</h4><p>Fajitas de res, pechuga, cerdo, chorizo y butifarra salteadas al wok con vegetales salsa soya y BBQ, acompañado con yuca al vapor y cebolla encurtida.</p></div><span class="dish-price">$66.000</span></div>
+            <div class="dish featured"><div class="dish-info"><h4>Picada Mixta <span class="feat-tag">Para 2</span></h4><p>Carne de res, cerdo, pechuga, costillas de cerdo BBQ, alitas apanadas, chicharrón frito, butifarra, chorizo, acompañado de maíz tierno, yucailla frita, papa casco, patacones, arepa asada con salsas de chimichurri, guacamole y suero.</p></div><span class="dish-price">$120.000</span></div>
+          </div>
+        </div>
+
+        <!-- CARNES MADURAS -->
+        <div class="menu-panel" id="carnes-maduras">
+          <h3 class="panel-title">Carnes Maduras</h3>
+          <div class="dishes-list">
+            <div class="dish featured"><div class="dish-info"><h4>Picaña Madurada <span class="feat-tag">Premium</span></h4><p>Punta de anca de res madurada, marinada con sal parrilla y vino tinto acompañada de vegetales baby, puré de flame con albahaca.</p></div><span class="dish-price">$90.000</span></div>
+            <div class="dish featured"><div class="dish-info"><h4>Ojo de Bife Madurado <span class="feat-tag">Premium</span></h4><p>Corte grueso de carne madurada marinada con sal parrilla y vino tinto acompañado de vegetales baby, puré de flame con albahaca.</p></div><span class="dish-price">$93.000</span></div>
+          </div>
+        </div>
+
+        <!-- DEL MAR -->
+        <div class="menu-panel" id="del-mar">
+          <h3 class="panel-title">Del Mar</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Salmón Viejo Oeste</h4><p>Filete de salmón con piel crocante, sobre reducción zumo de lulo, acompañado de puré de flame fino mezclado con queso mozzarella y suero costeño.</p></div><span class="dish-price">$65.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Filete a la Marinera</h4><p>Filete de robalo marinado con cítricos y vino blanco bañado en salsa de los frutos del mar y bisque atomatado.</p></div><span class="dish-price">$60.000</span></div>
+          </div>
+        </div>
+
+        <!-- LANGOSTINOS -->
+        <div class="menu-panel" id="langostinos">
+          <h3 class="panel-title">Langostinos & Mariscos</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Langostinos al Ajillo</h4><p>Langostinos salteados con mantequilla, vino blanco, pasta de ajo y perejil acompañados de arroz con coco y patacón.</p></div><span class="dish-price">$63.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Langostino Mariposa</h4><p>Langostinos en corte mariposa apanados, servidos sobre una cama de risotto cremoso y aguacate con salsa de teriyaki de tamarindo.</p></div><span class="dish-price">$60.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Cazuela de Mariscos</h4><p>Mariscos marinados con cítricos y vino blanco servido con en reducción de bisque atomatado con notas de aní en estrella y cilantro.</p></div><span class="dish-price">$60.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Cazuela de Camarón</h4><p>Camarones salteados con brandy, vino blanco y vegetales servidos en reducción de bisque atomatado con notas de aní estrella, acompañado con arroz titote patacones y aguacate.</p></div><span class="dish-price">$70.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Cazuela de Mariscos Gratinada</h4><p>Frutos del mar salteados con brandy, servido en reducción de bisque atomatado con notas de aní en estrella y cilantro, gratinados con queso mozzarella y queso parmesano, acompañado con arroz titote patacones y aguacate.</p></div><span class="dish-price">$63.000</span></div>
+          </div>
+        </div>
+
+        <!-- MOJARRA & ROBALO -->
+        <div class="menu-panel" id="mojarra">
+          <h3 class="panel-title">Mojarra & Robalo</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Mojarra Frita</h4><p>Mojarra marinada con cítricos servida con arroz titote y patacones y aguacate.</p></div><span class="dish-price">$50.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Mojarra Marinera</h4><p>Mojarra frita bañada en salsa de frutos del mar atomatado con notas de brandy y aní en estrella, acompañado con arroz titote patacones y aguacate.</p></div><span class="dish-price">$55.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Robalo Frito</h4><p>Robalo marinado con cítricos servido con arroz titota, patacones y aguacate.</p></div><span class="dish-price">$59.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Posta de Sierra Frita</h4><p>Medallones de sierra marinados con cítricos acompañado de arroz titote, patacón y aguacate.</p></div><span class="dish-price">$48.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Posta de Sierra en Zumo</h4><p>Medallones de sierra bañadas en zumo de coco con achiote y vegetales acompañado con arroz titote patacones y aguacate.</p></div><span class="dish-price">$51.000</span></div>
+            <div class="dish new"><div class="dish-info"><h4>Robalo al Bijao <span class="new-tag">NUEVO</span></h4><p>Fusionando gastronomías y creando un plato colombo peruano, el filete de robalo es preparado dentro de una envoltura en bijao y con una cocción lenta al vacío, servido en una cama de arroz cremoso a base de ají amarillo peruano con notas de hinojo y queso, adicionando salsa de achiote, leche de coco, tomates, cilantro y ajes frescos.</p></div><span class="dish-price">$54.000</span></div>
+          </div>
+        </div>
+
+        <!-- ARROCES -->
+        <div class="menu-panel" id="arroces">
+          <h3 class="panel-title">Arroces</h3>
+          <div class="dishes-list">
+            <div class="dish featured"><div class="dish-info"><h4>Paella de Marisco con Azafrán y Langostinos <span class="feat-tag">Especial</span></h4><p>Frutos del mar marinados con achiote y azafrán acompañada de dados de tilapia rebosada, aguacate, aceitunas, aceite de oliva y alioli de ajo, logrando realizar cada uno de los sabores del mar.</p></div><span class="dish-price">$115.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Arroz Caribeño con Jaiba</h4><p>Camarones salteados con brandy, leche de coco, reducción de bisque, maíz tierno vegetales y carnés de jaiba acompañado de patacón y aguacate.</p></div><span class="dish-price">$52.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Arroz Marinero con Jaiba</h4><p>Combinación de marisco salteados con brandy, jengibre, vegetales, arroz titote reducción de bisque atomatado y carne de jaiba acompañado de patacones y aguacate.</p></div><span class="dish-price">$55.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Arroz Fusión</h4><p>Fajitas de carne, pollo, cerdo, chorizo artesanal, camarones, arroz titote con notas de vermejo y cebolla crocante salteados al wok.</p></div><span class="dish-price">$56.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Arroz Chaufa de Végétales</h4><p>Arroz salteado al wok con vegetales salsa soya miel, ají amarillo y champiñones.</p></div><span class="dish-price">$30.000</span></div>
+          </div>
+        </div>
+
+        <!-- PASTAS -->
+        <div class="menu-panel" id="pastas">
+          <h3 class="panel-title">Pastas</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Pastas Vegetarianas</h4><p>Pastas bañadas en salsa pomodoro y végétales, acompañado de tostadas de pan gratinadas.</p></div><span class="dish-price">$25.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pastas Vaquera</h4><p>Pastas bañadas con salsa de queso y tocineta y pollo acompañado de tostadas de pan gratinadas.</p></div><span class="dish-price">$33.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pastas Fruto del Mar</h4><p>Pastas salteadas con mariscos, brandy y salsa de marisco atomatado, acompañado de tostadas de pan gratinadas.</p></div><span class="dish-price">$44.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pastas Frutos del Mar en Salsa Alfredo</h4><p>Pastas salteadas con mariscos, brandy, salsa blanca y queso parmesano acompañados de tostadas de pan gratinadas.</p></div><span class="dish-price">$44.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pasta Boloñesa</h4><p>Pastas salteadas con mantequillas bañadas con carne molida y salsa pomodoro, acompañado de tostadas de pan gratinadas.</p></div><span class="dish-price">$32.000</span></div>
+          </div>
+        </div>
+
+        <!-- POSTRES -->
+        <div class="menu-panel" id="postres">
+          <h3 class="panel-title">Postres</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Enyucado con Helado de Vainilla</h4><p>Postre típico de la región elaborado con yuca y coco acompañado de helado de vainilla y ganache.</p></div><span class="dish-price">$18.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Torta de Chocolate</h4><p>Bizcocho de chocolate rellena de arequipe bañado con salsa de chocolate amargo-frutos rojos.</p></div><span class="dish-price">$18.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Flan de Coco</h4><p>Postre tradicional elaborado con leche de coco acompañado de cereza marroquí, arequipe y salsa de caramelo.</p></div><span class="dish-price">$18.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Madame Rose</h4><p>Helado de vainilla con toppings de frutos rojos en reducción de vino tinto.</p></div><span class="dish-price">$18.000</span></div>
+          </div>
+        </div>
+
+        <!-- MENÚ INFANTIL -->
+        <div class="menu-panel" id="infantil">
+          <h3 class="panel-title">Menú Infantil</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Palitos de Pollo con Francesas</h4><p>Deditos de pollo panados acompañados con papitas francesas y salsa de tomate.</p></div><span class="dish-price">$22.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pechuguita Infantil sin Ensalada con Brownie</h4><p>Pechuguita asada acompañada de papas francesas y salsa de tomate.</p></div><span class="dish-price">$20.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Churrasquito Infantil sin Ensalada con Brownie</h4><p>Churrasquito asado acompañado de papas francesas y salsa tomate.</p></div><span class="dish-price">$22.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Pastas al Burro</h4><p>Pastas salteadas con mantequilla y bañadas de queso parmesano.</p></div><span class="dish-price">$17.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Salchipapa Express</h4><p>Salchicha frita con francesa salsa de la casa y fundido de queso mozzarella.</p></div><span class="dish-price">$23.000</span></div>
+          </div>
+        </div>
+
+        <!-- ADICIONALES -->
+        <div class="menu-panel" id="adicionales">
+          <h3 class="panel-title">Adicionales</h3>
+          <div class="dishes-list small">
+            <div class="dish"><div class="dish-info"><h4>Papa a la Francesa</h4></div><span class="dish-price">$6.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Papas Casco</h4></div><span class="dish-price">$6.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Patacones</h4></div><span class="dish-price">$5.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Arroz de Coco</h4></div><span class="dish-price">$5.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Arroz Blanco</h4></div><span class="dish-price">$4.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Suero</h4></div><span class="dish-price">$4.000</span></div>
+          </div>
+        </div>
+
+        <!-- BEBIDAS -->
+        <div class="menu-panel" id="bebidas">
+          <h3 class="panel-title">Bebidas</h3>
+          <div class="dishes-list small">
+            <div class="dish"><div class="dish-info"><h4>Té Hatsu</h4></div><span class="dish-price">$7.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Soda Hatsu</h4></div><span class="dish-price">$6.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Gaseosa</h4></div><span class="dish-price">$5.500</span></div>
+            <div class="dish"><div class="dish-info"><h4>Agua</h4></div><span class="dish-price">$4.500</span></div>
+            <div class="dish-group-title">Jugos</div>
+            <div class="dish"><div class="dish-info"><h4>En Leche</h4></div><span class="dish-price">$10.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>En Agua</h4></div><span class="dish-price">$8.000</span></div>
+            <div class="dish-group-title">Limonadas</div>
+            <div class="dish"><div class="dish-info"><h4>Limonada de Maracuyá</h4></div><span class="dish-price">$8.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Limonada Natural</h4></div><span class="dish-price">$6.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Limonada de Cereza</h4></div><span class="dish-price">$8.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Limonada de Coco</h4></div><span class="dish-price">$10.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Mocktail de Frutas</h4><p>Combinación de frutas tropicales, zumo de limón, soda hatsu y té hatsu.</p></div><span class="dish-price">$13.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Sodas Tropicales</h4><p>Soda bretaña, zumo de limón mermelada de maracuyá frutos rojos.</p></div><span class="dish-price">$13.000</span></div>
+          </div>
+        </div>
+
+        <!-- CERVEZAS -->
+        <div class="menu-panel" id="cervezas">
+          <h3 class="panel-title">Cervezas</h3>
+          <div class="dishes-list small">
+            <div class="dish"><div class="dish-info"><h4>Smirnoff de Manzana</h4></div><span class="dish-price">$15.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Light Michelada de Mango</h4></div><span class="dish-price">$10.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Corona</h4></div><span class="dish-price">$12.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Club Colombia</h4></div><span class="dish-price">$8.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Águila Light</h4></div><span class="dish-price">$7.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Águila</h4></div><span class="dish-price">$6.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Stella</h4></div><span class="dish-price">$10.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Artesanal Tres Cordilleras</h4></div><span class="dish-price">$9.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Heineken</h4></div><span class="dish-price">$10.000</span></div>
+          </div>
+        </div>
+
+        <!-- COCTELES DEL AUTOR -->
+        <div class="menu-panel" id="cocteles-autor">
+          <h3 class="panel-title">Cocteles del Autor</h3>
+          <div class="dishes-list">
+            <div class="dish"><div class="dish-info"><h4>Coctel Calamity</h4><p>Coctel refrescante elaborado a base de ginebra, zumo de zanahoria, sirope de jengibre, soda de sandía y albahaca.</p></div><span class="dish-price">$25.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel Laka</h4><p>Mezcla a base de vodka, infusión de buganvilia y especias, zumo de limón, ron de coco y soda hatsu de frambuesa.</p></div><span class="dish-price">$26.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel con Albahaca</h4><p>Mezcla de hojas de albahaca frescas, sirope de jengibre y soda hatsu de sandía y albahaca dando como resultado un refrescante coctel al estilo la carreta gourmet.</p></div><span class="dish-price">$24.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel Lono</h4><p>Ron, tomillo, notas de caramelo y limón.</p></div><span class="dish-price">$24.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel Kanaloa</h4><p>Combinación de jengibre, uchuvas frescas, ron y soda.</p></div><span class="dish-price">$24.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel de Wild West</h4><p>Infusión de flor de Jamaica, zumo de limón, vodka y soda.</p></div><span class="dish-price">$24.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel Origen</h4><p>Red label, zumo de limón, sirope simple, infusión de eucalipto y coca.</p></div><span class="dish-price">$25.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel Caribe</h4><p>Sirope de café, falernum, zumo de limón y ron dorado.</p></div><span class="dish-price">$25.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel Fresa Salvaje</h4><p>Ginebra, zumo de limón, sirope de fresa, falernum y soda hatsu de frambuesa.</p></div><span class="dish-price">$27.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Coctel ¡YEE-HAW!</h4><p>Zumo de piña, tequila, zumo de naranja y triple sec.</p></div><span class="dish-price">$25.000</span></div>
+          </div>
+        </div>
+
+        <!-- COCTELES TRADICIONALES -->
+        <div class="menu-panel" id="cocteles-trad">
+          <h3 class="panel-title">Cocteles Tradicionales</h3>
+          <div class="dishes-list small">
+            <div class="dish"><div class="dish-info"><h4>Mojito</h4></div><span class="dish-price">$22.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Mojito Frutal</h4></div><span class="dish-price">$23.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Crema de Whisky</h4></div><span class="dish-price">$17.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Margarita</h4></div><span class="dish-price">$22.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Margarita Frutal</h4></div><span class="dish-price">$24.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Piña Colada</h4></div><span class="dish-price">$25.000</span></div>
+            <div class="dish featured"><div class="dish-info"><h4>Coctel Carreta <span class="feat-tag">Signature</span></h4></div><span class="dish-price">$22.000</span></div>
+          </div>
+        </div>
+
+        <!-- LICORES & VINOS -->
+        <div class="menu-panel" id="licores">
+          <h3 class="panel-title">Licores & Vinos</h3>
+          <h4 class="sub-section-title">Licores</h4>
+          <div class="dishes-list small">
+            <div class="dish"><div class="dish-info"><h4>Tequila</h4></div><span class="dish-price">$200.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Tequila Don Julio</h4></div><span class="dish-price">$380.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Buchanan's 750</h4></div><span class="dish-price">$300.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Buchanan's Máster</h4></div><span class="dish-price">$320.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Old Parr 750</h4></div><span class="dish-price">$280.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Ginebra Astuto</h4></div><span class="dish-price">$300.000</span></div>
+          </div>
+          <h4 class="sub-section-title sub-section-title--vinos">Vinos</h4>
+          <div class="dishes-list small">
+            <div class="dish"><div class="dish-info"><h4>Tinto de la Casa</h4></div><span class="dish-price">$65.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Blanco</h4></div><span class="dish-price">$60.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Sangría</h4></div><span class="dish-price">$70.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Champan JP</h4></div><span class="dish-price">$160.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Trapiche Merlot</h4></div><span class="dish-price">$190.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Piccini Lambrusco Reggiano</h4></div><span class="dish-price">$140.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Portillo Malbec</h4></div><span class="dish-price">$190.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Arriendo de Marqués</h4></div><span class="dish-price">$230.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Vino Sepa 21</h4></div><span class="dish-price">$300.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Vino Malbec 2021</h4></div><span class="dish-price">$220.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Vino Malbec 2022</h4></div><span class="dish-price">$150.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Ramón Bilbao Crianza</h4></div><span class="dish-price">$140.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Ramón Bilbao Verdejo</h4></div><span class="dish-price">$140.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Syrah Terre</h4></div><span class="dish-price">$160.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Portillo Malbec 2022</h4></div><span class="dish-price">$190.000</span></div>
+            <div class="dish"><div class="dish-info"><h4>Malbec 2024</h4></div><span class="dish-price">$130.000</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- VIERNES DE LA CARRETA -->
+  <section class="viernes-banner">
+    <div class="viernes-overlay"></div>
+    <div class="container viernes-content">
+      <span class="eyebrow light">Cada semana</span>
+      <h2>Viernes de La Carreta</h2>
+      <p>La mejor noche de Turbaco. Música, sabor y mucha diversión. Reserva tu mesa con anticipación.</p>
+      <a href="https://wa.me/573014790406?text=Hola%2C%20quisiera%20hacer%20un%20pedido%20%F0%9F%8D%BD%EF%B8%8F%0A%0A1%EF%B8%8F%E2%83%A3%20Pedido%3A%20%0A2%EF%B8%8F%E2%83%A3%20Direcci%C3%B3n%20(con%20referencia)%3A%20%0A3%EF%B8%8F%E2%83%A3%20Tel%C3%A9fono%3A%20%0A4%EF%B8%8F%E2%83%A3%20Medio%20de%20pago%3A%20" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Reservar por WhatsApp</a>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto" class="contacto">
+    <div class="container">
+      <div class="contacto-top">
+        <div>
+          <span class="eyebrow">Encuéntranos</span>
+          <h2>Contacto & Reservas</h2>
+        </div>
+        <a href="https://wa.me/573014790406?text=Hola%2C%20quisiera%20hacer%20un%20pedido%20%F0%9F%8D%BD%EF%B8%8F%0A%0A1%EF%B8%8F%E2%83%A3%20Pedido%3A%20%0A2%EF%B8%8F%E2%83%A3%20Direcci%C3%B3n%20(con%20referencia)%3A%20%0A3%EF%B8%8F%E2%83%A3%20Tel%C3%A9fono%3A%20%0A4%EF%B8%8F%E2%83%A3%20Medio%20de%20pago%3A%20" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Reservar Mesa →</a>
+      </div>
+      <div class="contacto-grid">
+        <div class="cinfo-cards">
+          <div class="cinfo-card">
+            <div class="ci-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <h4>Dirección</h4>
+            <p>Av Troncal #32a-24, Plan Parejo<br />Turbaco, Bolívar</p>
+          </div>
+          <div class="cinfo-card">
+            <div class="ci-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <h4>Horario</h4>
+            <p>Martes a Domingo<br /><strong>5:00 PM – 12:00 AM</strong><br /><em>Lunes: Cerrado</em></p>
+          </div>
+          <div class="cinfo-card">
+            <div class="ci-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 .01h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
+            <h4>WhatsApp</h4>
+            <p>Domicilios y Reservas<br /><strong>301 479 0406</strong></p>
+          </div>
+        </div>
+        <div class="social-section">
+          <h4>Síguenos</h4>
+          <a href="https://www.instagram.com/lacarretaturbaco/" target="_blank" rel="noopener noreferrer" class="social-link ig">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            @lacarretaturbaco
+          </a>
+          <a href="https://wa.me/573014790406?text=Hola%2C%20quisiera%20hacer%20un%20pedido%20%F0%9F%8D%BD%EF%B8%8F%0A%0A1%EF%B8%8F%E2%83%A3%20Pedido%3A%20%0A2%EF%B8%8F%E2%83%A3%20Direcci%C3%B3n%20(con%20referencia)%3A%20%0A3%EF%B8%8F%E2%83%A3%20Tel%C3%A9fono%3A%20%0A4%EF%B8%8F%E2%83%A3%20Medio%20de%20pago%3A%20" target="_blank" rel="noopener noreferrer" class="social-link wa">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            301 479 0406
+          </a>
+        </div>
+        <div class="map-wrap">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13202.221884431128!2d-75.43350815514177!3d10.338360046134847!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef6210a0d0ac511%3A0x293e1ff3069e3f4c!2sLa%20Carreta%20Gourmet!5e0!3m2!1ses-419!2sco!4v1780972974208!5m2!1ses-419!2sco" width="100%" height="280" class="map-iframe" allowfullscreen="" loading="lazy" title="Ubicación La Carreta"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <h3>La Carreta</h3>
+        <p class="f-tagline">Una conquista de sabores</p>
+        <p>Restaurante Bar · Turbaco, Bolívar</p>
+      </div>
+      <div class="footer-nav">
+        <h5>Navegación</h5>
+        <ul>
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#nosotros">Nosotros</a></li>
+          <li><a href="#menu">Menú</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-info">
+        <h5>Información</h5>
+        <p>Av Troncal #32a-24, Plan Parejo, Turbaco</p>
+        <p>301 479 0406</p>
+        <p>Mar–Dom: 5:00 PM – 12:00 AM</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 La Carreta Restaurante Bar · Todos los derechos reservados</p>
+    </div>
+  </footer>
+
+  <!-- WhatsApp FAB -->
+  <a href="https://wa.me/573014790406?text=Hola%2C%20quisiera%20hacer%20un%20pedido%20%F0%9F%8D%BD%EF%B8%8F%0A%0A1%EF%B8%8F%E2%83%A3%20Pedido%3A%20%0A2%EF%B8%8F%E2%83%A3%20Direcci%C3%B3n%20(con%20referencia)%3A%20%0A3%EF%B8%8F%E2%83%A3%20Tel%C3%A9fono%3A%20%0A4%EF%B8%8F%E2%83%A3%20Medio%20de%20pago%3A%20" target="_blank" class="fab-wa" aria-label="WhatsApp">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+
+  <script src="script.js"></script>
+</body>
+</html>
