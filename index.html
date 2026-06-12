@@ -390,59 +390,33 @@
 
   <!-- PEDIDOS -->
   <section id="pedidos" class="pedidos-section">
-    <div class="container">
-      <div class="pedidos-inner">
-        <div class="pedidos-info">
-          <span class="eyebrow">Domicilios</span>
-          <h2>Haz tu<br /><em>Pedido</em></h2>
-          <p>Completa el formulario y te redirigiremos a WhatsApp con tu pedido listo para enviarnos. Nuestro equipo lo confirmará contigo de inmediato.</p>
-          <div class="pedidos-aviso">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <p>Una vez confirmado el pedido <strong>NO SE PUEDE CANCELAR</strong>. Si necesitas facturación personalizada, indícalo en tu pedido antes de confirmar.</p>
-          </div>
-          <div class="pedidos-horario">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span>Pedidos: Mar–Dom · 5:00 PM – 11:30 PM</span>
-          </div>
+    <div class="pedidos-glow"></div>
+    <div class="container pedidos-content">
+      <div class="ornament"><span></span><svg viewBox="0 0 40 16" width="40" height="16"><path d="M0 8 L14 2 L20 8 L26 2 L40 8 L26 14 L20 8 L14 14 Z" fill="currentColor" opacity="0.6"/></svg><span></span></div>
+      <span class="eyebrow light">Domicilios · Mar–Dom · 5 PM – 11:30 PM</span>
+      <h2 class="pedidos-title">Ordena desde<br /><em>donde estés</em></h2>
+      <p class="pedidos-desc">Escríbenos por WhatsApp y nuestro equipo te atenderá de inmediato.</p>
+      <div class="pedidos-steps">
+        <div class="ps-step">
+          <div class="ps-num">1</div>
+          <p>Escríbenos<br />por WhatsApp</p>
         </div>
-        <div class="pedidos-form-wrap">
-          <form id="orderForm" class="order-form" novalidate>
-            <div class="form-group">
-              <label for="orderItems">Tu pedido <span class="req">*</span></label>
-              <textarea id="orderItems" name="orderItems" placeholder="Ej: 1 Tomahawk de Res (término medio), 2 Cocteles Laka, 1 Cazuela de Camarón..." rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-              <label for="orderAddress">Dirección con referencia <span class="req">*</span></label>
-              <input type="text" id="orderAddress" name="orderAddress" placeholder="Calle, barrio + referencia (cerca al parque, frente a...)" required />
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="orderPhone">Teléfono <span class="req">*</span></label>
-                <input type="tel" id="orderPhone" name="orderPhone" placeholder="300 000 0000" required />
-              </div>
-              <div class="form-group">
-                <label for="orderPayment">Medio de pago <span class="req">*</span></label>
-                <select id="orderPayment" name="orderPayment" required>
-                  <option value="">Seleccionar...</option>
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Nequi">Nequi</option>
-                  <option value="Daviplata">Daviplata</option>
-                  <option value="Transferencia bancaria">Transferencia bancaria</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-check">
-              <input type="checkbox" id="orderConfirm" required />
-              <label for="orderConfirm">Entiendo que una vez confirmado el pedido <strong>no se puede cancelar</strong></label>
-            </div>
-            <div class="form-error" id="formError">Por favor completa todos los campos y acepta las condiciones.</div>
-            <button type="submit" class="btn btn-primary btn-order">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Enviar pedido por WhatsApp
-            </button>
-          </form>
+        <div class="ps-line"></div>
+        <div class="ps-step">
+          <div class="ps-num">2</div>
+          <p>Indica tu pedido<br />y dirección</p>
+        </div>
+        <div class="ps-line"></div>
+        <div class="ps-step">
+          <div class="ps-num">3</div>
+          <p>Confirmamos<br />y enviamos</p>
         </div>
       </div>
+      <a href="https://wa.me/573014790406?text=Hola%2C%20quisiera%20hacer%20un%20pedido%20%F0%9F%8D%BD%EF%B8%8F" target="_blank" rel="noopener noreferrer" class="btn-wa-pedido">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hacer mi pedido ahora
+      </a>
+      <p class="pedidos-aviso-min">⚠️ Una vez confirmado el pedido no se puede cancelar · Facturación personalizada solicitarla antes</p>
     </div>
   </section>
 
