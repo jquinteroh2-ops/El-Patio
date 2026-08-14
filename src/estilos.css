@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply font-texto antialiased;
+    margin: 0;
+    /* El fondo real lo pone cada layout: publico (crema) u operativo (noche). */
+    background: theme('colors.noche.950');
+    color: theme('colors.crema.100');
+    overscroll-behavior-y: none;
+  }
+
+  /* Nada de zoom accidental ni resaltado azul al tocar en el celular. */
+  button,
+  a,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* evita el zoom automatico de iOS al enfocar */
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.ambar.400');
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Barra de desplazamiento discreta para las areas operativas */
+  .scroll-fino::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-fino::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroll-fino::-webkit-scrollbar-thumb {
+    background: theme('colors.noche.700');
+    border-radius: 9999px;
+  }
+
+  /* Pestanas de categorias en la comandera: sin barra visible */
+  .sin-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .sin-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Respeta el area segura de celulares con notch */
+  .pb-segura {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
