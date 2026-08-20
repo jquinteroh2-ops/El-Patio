@@ -6,3 +6,5 @@ dist-ssr
 .DS_Store
 *.log
 tsconfig.tsbuildinfo
+.env
+.env.local

@@ -1,12 +1,16 @@
-import { agruparPorTurno, calcularCuenta, itemsSinEnviar, proximoTurno, totalCorriente } from './calculos'
-import { CLAVE_ALMACEN, LATENCIA_MS } from './config'
-import { claveDia, franjaHoraria, turnoDe } from './formato'
-import { guardarBD, leerBD } from './almacen'
-import { crearBaseInicial } from './datosSemilla'
-import { SinConexionError, encolar, hayConexion, leerCola, quitarDeCola } from './conexion'
+import { ErrorApi, borrarCredenciales, guardarCredenciales, pedir, pedirOpcional, tokenDeRefresco } from './cliente'
+import {
+  SinConexionError,
+  colaOrdenada,
+  encolar,
+  fijarSimulacionSinConexion,
+  hayConexion,
+  leerCola,
+  marcarIntento,
+  quitarDeCola,
+} from './conexion'
 import type {
   Ajustes,
-  BaseDatos,
   CargoAdicional,
   CategoriaCarta,
   CierreCaja,
@@ -30,135 +34,131 @@ import type {
 /**
  * Unica superficie de datos del sistema.
  *
- * Ningun componente lee ni escribe los arreglos directamente: todo pasa por
- * aqui. El dia que exista un backend, este archivo se reemplaza por llamadas
- * HTTP y ninguna pantalla cambia.
+ * Ningun componente lee ni escribe los datos directamente: todo pasa por aqui.
+ * Eso es lo que permitio cambiar localStorage por un backend real sin tocar una
+ * sola pantalla: solo cambio el interior de este archivo.
  *
- * Cada funcion es asincrona y tarda entre 150 y 300 ms a proposito, para que la
- * interfaz se disene contra la latencia que tendra en produccion.
+ * El nombre se quedo en `mockApi` a proposito. Renombrarlo obligaria a editar
+ * el import de cada componente del sistema, que es justamente lo que esta capa
+ * existe para evitar. Lo que hay debajo ya no es una simulacion.
+ *
+ * Ya no hay latencia artificial: la que se siente es la de la red y la del
+ * servidor. La interfaz se diseno contra una demora parecida, asi que no hubo
+ * que ajustar ninguna espera.
  */
 
 // ---------------------------------------------------------------------------
 // Infraestructura
 // ---------------------------------------------------------------------------
 
-const esperar = (): Promise<void> =>
-  new Promise((r) =>
-    setTimeout(r, LATENCIA_MS.min + Math.random() * (LATENCIA_MS.max - LATENCIA_MS.min)),
-  )
-
-const clonar = <T>(valor: T): T => JSON.parse(JSON.stringify(valor)) as T
-
-const nuevoId = (prefijo: string): string =>
-  `${prefijo}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
-
-/** Lee la base y la siembra la primera vez que se abre la aplicacion. */
-function base(): BaseDatos {
-  const guardada = leerBD()
-  if (guardada) return guardada
-  const inicial = crearBaseInicial()
-  guardarBD(inicial, ['todo'])
-  return leerBD() ?? inicial
+/**
+ * Nunca sale al servidor un error tecnico crudo.
+ *
+ * Lo que llega en el mensaje termina en la pantalla del mesero, asi que un
+ * fallo de red se traduce a algo que se pueda leer de pie en un salon lleno.
+ */
+function traducirError(error: unknown): Error {
+  if (error instanceof SinConexionError) return error
+  if (error instanceof ErrorApi) return new Error(error.message)
+  if (error instanceof Error) return error
+  return new Error('No se pudo completar la operación')
 }
 
-/** Aplica un cambio sobre la base y avisa a todas las pestanas. */
-function escribir<T>(cambios: string[], mutador: (bd: BaseDatos) => T): T {
-  const bd = clonar(base())
-  const resultado = mutador(bd)
-  guardarBD(bd, cambios)
-  return resultado
-}
-
-const buscarOrden = (bd: BaseDatos, ordenId: string): Orden => {
-  const orden = bd.ordenes.find((o) => o.id === ordenId)
-  if (!orden) throw new Error('La comanda ya no existe')
-  return orden
-}
-
-const buscarMesa = (bd: BaseDatos, mesaId: string): Mesa => {
-  const mesa = bd.mesas.find((m) => m.id === mesaId)
-  if (!mesa) throw new Error('La mesa no existe')
-  return mesa
-}
-
-/** Consecutivo de comandas del dia, que se reinicia cada jornada. */
-function siguienteConsecutivo(bd: BaseDatos): number {
-  const hoy = claveDia()
-  if (bd.ajustes.fechaConsecutivo !== hoy) {
-    bd.ajustes.fechaConsecutivo = hoy
-    bd.ajustes.consecutivoOrden = 1
-  } else {
-    bd.ajustes.consecutivoOrden += 1
+async function contra<T>(operacion: () => Promise<T>): Promise<T> {
+  try {
+    return await operacion()
+  } catch (error) {
+    throw traducirError(error)
   }
-  return bd.ajustes.consecutivoOrden
-}
-
-/** Recalcula el estado de la comanda a partir del estado de sus items. */
-function sincronizarEstadoOrden(orden: Orden): void {
-  if (orden.estado === 'pagada' || orden.estado === 'anulada' || orden.estado === 'cuenta_pedida') return
-  const enviados = orden.items.filter((i) => i.turnoEnvio > 0 && i.estado !== 'anulado')
-  if (enviados.length === 0) {
-    orden.estado = 'abierta'
-    return
-  }
-  if (enviados.every((i) => i.estado === 'servido')) orden.estado = 'servida'
-  else if (enviados.some((i) => i.estado === 'en_preparacion' || i.estado === 'listo'))
-    orden.estado = 'en_preparacion'
-  else orden.estado = 'enviada'
 }
 
 // ---------------------------------------------------------------------------
-// Arranque y demostracion
+// Arranque
 // ---------------------------------------------------------------------------
 
+/**
+ * Antes sembraba los datos de demostracion en el navegador. Ahora los datos ya
+ * existen en la base y aqui solo se comprueba que el servidor conteste, para
+ * que la aplicacion no arranque mostrando pantallas vacias sin explicacion.
+ *
+ * No lanza si falla: la aplicacion tiene que abrir igual y dejar que cada
+ * pantalla muestre su propio error. Un restaurante no se queda sin sistema
+ * porque el pulso tardo un segundo de mas.
+ */
 export async function inicializar(): Promise<void> {
-  base()
-  await esperar()
+  try {
+    await pedir<unknown>('/salud', { sinSesion: true })
+  } catch (error) {
+    console.error('[api] el servidor no respondió al arrancar', error)
+  }
 }
 
-/** Vuelve a sembrar el salon con datos frescos calculados contra la hora actual. */
+/**
+ * Ya no existe un salon de demostracion que reiniciar: los datos viven en
+ * PostgreSQL y son los del restaurante. Borrarlos desde un boton de la interfaz
+ * seria destruir el historico de ventas.
+ *
+ * Se conserva la funcion porque la pantalla de configuracion todavia la llama;
+ * el boton desaparece en la fase 4, junto con el resto del modo demostracion.
+ */
 export async function reiniciarDemo(): Promise<void> {
-  await esperar()
-  localStorage.removeItem(CLAVE_ALMACEN)
-  guardarBD(crearBaseInicial(), ['todo'])
+  throw new Error(
+    'El sistema ya trabaja contra la base real: no hay datos de demostración que reiniciar',
+  )
 }
 
 // ---------------------------------------------------------------------------
 // Acceso
 // ---------------------------------------------------------------------------
 
+interface RespuestaAcceso {
+  sesion: Sesion
+  acceso: string
+  refresco: string
+  expiraEnSegundos: number
+}
+
 export async function autenticar(usuario: string, clave: string): Promise<Sesion> {
-  await esperar()
-  const encontrado = base().usuarios.find(
-    (u) => u.usuario.toLowerCase() === usuario.trim().toLowerCase() && u.clave === clave && u.activo,
-  )
-  if (!encontrado) throw new Error('Usuario o contraseña incorrectos')
-  return {
-    usuarioId: encontrado.id,
-    nombre: encontrado.nombre,
-    rol: encontrado.rol,
-    usuario: encontrado.usuario,
-    iniciadaEn: new Date().toISOString(),
+  return contra(async () => {
+    const respuesta = await pedir<RespuestaAcceso>('/api/acceso/ingresar', {
+      metodo: 'POST',
+      cuerpo: { usuario: usuario.trim(), clave },
+      sinSesion: true,
+    })
+    guardarCredenciales(respuesta.acceso, respuesta.refresco)
+    return respuesta.sesion
+  })
+}
+
+/**
+ * Cierra la sesion de este dispositivo tambien en el servidor.
+ *
+ * Sin esto el token de refresco seguiria vivo hasta vencer solo, y cerrar
+ * sesion en una tablet que se perdio no serviria de nada.
+ */
+export async function cerrarSesion(): Promise<void> {
+  const refresco = tokenDeRefresco()
+  borrarCredenciales()
+  if (!refresco) return
+  try {
+    await pedir<void>('/api/acceso/salir', {
+      metodo: 'POST',
+      cuerpo: { refresco },
+      sinSesion: true,
+    })
+  } catch (error) {
+    // Que el servidor no conteste no puede impedir salir: la credencial local
+    // ya se borro, que es lo que protege a quien esta frente al aparato.
+    console.error('[api] no se pudo avisar el cierre de sesión', error)
   }
 }
 
 export async function listarUsuarios(): Promise<Usuario[]> {
-  await esperar()
-  return clonar(base().usuarios)
+  return contra(() => pedir<Usuario[]>('/api/usuarios'))
 }
 
 export async function guardarUsuario(usuario: Usuario): Promise<Usuario> {
-  await esperar()
-  return escribir(['usuarios'], (bd) => {
-    const indice = bd.usuarios.findIndex((u) => u.id === usuario.id)
-    if (indice >= 0) {
-      bd.usuarios[indice] = usuario
-      return usuario
-    }
-    const nuevo = { ...usuario, id: nuevoId('u') }
-    bd.usuarios.push(nuevo)
-    return nuevo
-  })
+  return contra(() => pedir<Usuario>('/api/usuarios', { metodo: 'PUT', cuerpo: usuario }))
 }
 
 // ---------------------------------------------------------------------------
@@ -166,23 +166,45 @@ export async function guardarUsuario(usuario: Usuario): Promise<Usuario> {
 // ---------------------------------------------------------------------------
 
 export async function obtenerAjustes(): Promise<Ajustes> {
-  await esperar()
-  return clonar(base().ajustes)
+  return contra(async () => {
+    const ajustes = await pedir<Ajustes>('/api/ajustes')
+    // La copia local del interruptor se refresca aqui porque `hayConexion()` es
+    // sincrona y no puede consultarlo cada vez que va a salir una peticion.
+    fijarSimulacionSinConexion(ajustes.simularSinConexion)
+    return ajustes
+  })
 }
 
 export async function actualizarAjustes(cambios: Partial<Ajustes>): Promise<Ajustes> {
-  await esperar()
-  return escribir(['ajustes'], (bd) => {
-    bd.ajustes = { ...bd.ajustes, ...cambios }
-    return clonar(bd.ajustes)
+  return contra(async () => {
+    const ajustes = await pedir<Ajustes>('/api/ajustes', {
+      metodo: 'PUT',
+      cuerpo: {
+        porcentajeInc: cambios.porcentajeInc,
+        simularSinConexion: cambios.simularSinConexion,
+      },
+    })
+    fijarSimulacionSinConexion(ajustes.simularSinConexion)
+    return ajustes
   })
 }
 
-/** Interruptor de demostracion de la caida de WiFi. Sin latencia: debe ser instantaneo. */
+/**
+ * Interruptor de demostracion de la caida de WiFi. Sigue siendo sincrono porque
+ * la pantalla lo usa como un interruptor y tiene que responder al instante.
+ *
+ * El estado local se cambia de una vez y el aviso al servidor sale detras. Al
+ * activarlo el envio ni siquiera saldra, que es exactamente lo que se quiere
+ * demostrar; al desactivarlo, la peticion viaja y deja el ajuste igual en todos
+ * los dispositivos.
+ */
 export function alternarSinConexion(activo: boolean): void {
-  escribir(['ajustes', 'conexion'], (bd) => {
-    bd.ajustes.simularSinConexion = activo
-  })
+  fijarSimulacionSinConexion(activo)
+  if (activo) return
+  void pedir<Ajustes>('/api/ajustes', {
+    metodo: 'PUT',
+    cuerpo: { simularSinConexion: false },
+  }).catch((error) => console.error('[api] no se pudo guardar el interruptor', error))
 }
 
 // ---------------------------------------------------------------------------
@@ -201,41 +223,15 @@ export interface MesaEnMapa extends Mesa {
 }
 
 export async function listarMesas(): Promise<MesaEnMapa[]> {
-  await esperar()
-  const bd = base()
-  return bd.mesas.map((mesa) => {
-    const orden = mesa.ordenActivaId ? bd.ordenes.find((o) => o.id === mesa.ordenActivaId) : undefined
-    const vigentes = orden?.items.filter((i) => i.estado !== 'anulado') ?? []
-    return {
-      ...mesa,
-      ordenNumero: orden?.numero,
-      abiertaEn: orden?.abiertaEn,
-      comensales: orden?.comensales ?? 0,
-      total: orden ? totalCorriente(orden, bd.ajustes.porcentajeInc) : 0,
-      itemsPendientes: vigentes.filter((i) => i.estado === 'pendiente' || i.estado === 'en_preparacion').length,
-      itemsListos: vigentes.filter((i) => i.estado === 'listo').length,
-      meseroNombre: bd.usuarios.find((u) => u.id === mesa.meseroId)?.nombre,
-    }
-  })
+  return contra(() => pedir<MesaEnMapa[]>('/api/comandera/mesas'))
 }
 
 export async function guardarMesa(mesa: Mesa): Promise<Mesa> {
-  await esperar()
-  return escribir(['mesas'], (bd) => {
-    const indice = bd.mesas.findIndex((m) => m.id === mesa.id)
-    if (indice >= 0) bd.mesas[indice] = mesa
-    else bd.mesas.push({ ...mesa, id: nuevoId('m') })
-    return mesa
-  })
+  return contra(() => pedir<Mesa>('/api/salon/mesas', { metodo: 'PUT', cuerpo: mesa }))
 }
 
 export async function eliminarMesa(mesaId: string): Promise<void> {
-  await esperar()
-  escribir(['mesas'], (bd) => {
-    const mesa = buscarMesa(bd, mesaId)
-    if (mesa.ordenActivaId) throw new Error('No se puede eliminar una mesa con cuenta abierta')
-    bd.mesas = bd.mesas.filter((m) => m.id !== mesaId)
-  })
+  return contra(() => pedir<void>(`/api/salon/mesas/${mesaId}`, { metodo: 'DELETE' }))
 }
 
 // ---------------------------------------------------------------------------
@@ -243,13 +239,11 @@ export async function eliminarMesa(mesaId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export async function listarCategorias(): Promise<CategoriaCarta[]> {
-  await esperar()
-  return clonar(base().categorias).sort((a, b) => a.orden - b.orden)
+  return contra(() => pedir<CategoriaCarta[]>('/api/carta/categorias', { sinSesion: true }))
 }
 
 export async function listarCarta(): Promise<ItemCarta[]> {
-  await esperar()
-  return clonar(base().carta)
+  return contra(() => pedir<ItemCarta[]>('/api/carta', { sinSesion: true }))
 }
 
 /** Carta agrupada por categoria, tal como la lee el cliente y el mesero. */
@@ -258,61 +252,34 @@ export interface CategoriaConItems extends CategoriaCarta {
 }
 
 export async function cartaAgrupada(soloDisponibles = false): Promise<CategoriaConItems[]> {
-  await esperar()
-  const bd = base()
-  return clonar(bd.categorias)
-    .sort((a, b) => a.orden - b.orden)
-    .map((categoria) => ({
-      ...categoria,
-      items: bd.carta.filter(
-        (i) => i.categoriaId === categoria.id && (!soloDisponibles || i.disponible),
-      ),
-    }))
-    .filter((c) => c.items.length > 0)
+  // El sitio publico la consulta sin sesion: es el menu que cualquiera puede
+  // leer desde la calle.
+  return contra(() =>
+    pedir<CategoriaConItems[]>('/api/carta/agrupada', {
+      consulta: { soloDisponibles },
+      sinSesion: true,
+    }),
+  )
 }
 
 export async function cambiarDisponibilidad(itemId: string, disponible: boolean): Promise<void> {
-  await esperar()
-  escribir(['carta'], (bd) => {
-    const item = bd.carta.find((i) => i.id === itemId)
-    if (!item) throw new Error('El producto no existe')
-    item.disponible = disponible
-  })
+  return contra(() =>
+    pedir<void>(`/api/carta/${itemId}/disponibilidad`, { metodo: 'PATCH', cuerpo: { disponible } }),
+  )
 }
 
 export async function guardarItemCarta(item: ItemCarta): Promise<ItemCarta> {
-  await esperar()
-  return escribir(['carta'], (bd) => {
-    const indice = bd.carta.findIndex((i) => i.id === item.id)
-    if (indice >= 0) {
-      bd.carta[indice] = item
-      return item
-    }
-    const nuevo = { ...item, id: nuevoId('p') }
-    bd.carta.push(nuevo)
-    return nuevo
-  })
+  return contra(() => pedir<ItemCarta>('/api/carta', { metodo: 'PUT', cuerpo: item }))
 }
 
 export async function eliminarItemCarta(itemId: string): Promise<void> {
-  await esperar()
-  escribir(['carta'], (bd) => {
-    bd.carta = bd.carta.filter((i) => i.id !== itemId)
-  })
+  return contra(() => pedir<void>(`/api/carta/${itemId}`, { metodo: 'DELETE' }))
 }
 
 export async function guardarCategoria(categoria: CategoriaCarta): Promise<CategoriaCarta> {
-  await esperar()
-  return escribir(['carta'], (bd) => {
-    const indice = bd.categorias.findIndex((c) => c.id === categoria.id)
-    if (indice >= 0) {
-      bd.categorias[indice] = categoria
-      return categoria
-    }
-    const nueva = { ...categoria, id: nuevoId('c') }
-    bd.categorias.push(nueva)
-    return nueva
-  })
+  return contra(() =>
+    pedir<CategoriaCarta>('/api/carta/categorias', { metodo: 'PUT', cuerpo: categoria }),
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -327,50 +294,27 @@ export interface OrdenDetallada {
 }
 
 export async function obtenerOrdenDeMesa(mesaId: string): Promise<OrdenDetallada | null> {
-  await esperar()
-  const bd = base()
-  const mesa = buscarMesa(bd, mesaId)
-  if (!mesa.ordenActivaId) return null
-  const orden = bd.ordenes.find((o) => o.id === mesa.ordenActivaId)
-  if (!orden) return null
-  return {
-    orden: clonar(orden),
-    mesa: clonar(mesa),
-    meseroNombre: bd.usuarios.find((u) => u.id === orden.meseroId)?.nombre ?? 'Sin asignar',
-    porcentajeInc: bd.ajustes.porcentajeInc,
-  }
+  // El backend responde 204 cuando la mesa esta libre, que es el `null` que la
+  // comandera espera para pintar el boton de abrir cuenta.
+  return contra(() => pedirOpcional<OrdenDetallada>(`/api/comandera/mesas/${mesaId}/orden`))
 }
 
 export async function abrirMesa(mesaId: string, meseroId: string, comensales: number): Promise<Orden> {
-  await esperar()
-  return escribir(['mesas', 'ordenes'], (bd) => {
-    const mesa = buscarMesa(bd, mesaId)
-    if (mesa.ordenActivaId) throw new Error('La mesa ya tiene una cuenta abierta')
-
-    const orden: Orden = {
-      id: nuevoId('ord'),
-      mesaId,
-      meseroId,
-      numero: siguienteConsecutivo(bd),
-      estado: 'abierta',
-      items: [],
-      cargosAdicionales: [],
-      comensales,
-      abiertaEn: new Date().toISOString(),
-    }
-    bd.ordenes.push(orden)
-    mesa.estado = 'ocupada'
-    mesa.meseroId = meseroId
-    mesa.ordenActivaId = orden.id
-    return clonar(orden)
-  })
+  return contra(() =>
+    pedir<Orden>(`/api/comandera/mesas/${mesaId}/abrir`, {
+      metodo: 'POST',
+      cuerpo: { meseroId, comensales },
+    }),
+  )
 }
 
 export async function cambiarComensales(ordenId: string, comensales: number): Promise<void> {
-  await esperar()
-  escribir(['ordenes'], (bd) => {
-    buscarOrden(bd, ordenId).comensales = Math.max(1, comensales)
-  })
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/comensales`, {
+      metodo: 'PATCH',
+      cuerpo: { comensales },
+    }),
+  )
 }
 
 export interface NuevoItem {
@@ -381,74 +325,37 @@ export interface NuevoItem {
 }
 
 export async function agregarItems(ordenId: string, nuevos: NuevoItem[]): Promise<Orden> {
-  await esperar()
-  return escribir(['ordenes', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    for (const nuevo of nuevos) {
-      const carta = bd.carta.find((i) => i.id === nuevo.itemCartaId)
-      if (!carta) throw new Error('El producto no existe en la carta')
-      if (!carta.disponible) throw new Error(`${carta.nombre} está agotado`)
-
-      const modificadores = nuevo.modificadoresSeleccionados ?? []
-      // Un mismo producto sin modificadores ni nota se acumula en una sola linea.
-      const existente = orden.items.find(
-        (i) =>
-          i.itemCartaId === carta.id &&
-          i.turnoEnvio === 0 &&
-          i.estado !== 'anulado' &&
-          (i.notaCocina ?? '') === (nuevo.notaCocina ?? '') &&
-          JSON.stringify(i.modificadoresSeleccionados) === JSON.stringify(modificadores),
-      )
-
-      if (existente) {
-        existente.cantidad += nuevo.cantidad
-        continue
-      }
-
-      orden.items.push({
-        id: nuevoId('io'),
-        itemCartaId: carta.id,
-        nombre: carta.nombre,
-        precioUnitario: carta.precio,
-        cantidad: nuevo.cantidad,
-        modificadoresSeleccionados: modificadores,
-        notaCocina: nuevo.notaCocina,
-        estado: 'pendiente',
-        destino: carta.destino,
-        turnoEnvio: 0,
-      })
-    }
-    return clonar(orden)
-  })
+  return contra(() =>
+    pedir<Orden>(`/api/comandera/ordenes/${ordenId}/items`, {
+      metodo: 'POST',
+      cuerpo: { items: nuevos },
+    }),
+  )
 }
 
 export async function cambiarCantidad(ordenId: string, itemId: string, cantidad: number): Promise<void> {
-  await esperar()
-  escribir(['ordenes'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    const item = orden.items.find((i) => i.id === itemId)
-    if (!item) throw new Error('El producto ya no está en la comanda')
-    if (item.turnoEnvio > 0) throw new Error('Ese producto ya se envió: pídele anulación al administrador')
-    if (cantidad <= 0) orden.items = orden.items.filter((i) => i.id !== itemId)
-    else item.cantidad = cantidad
-  })
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/items/${itemId}/cantidad`, {
+      metodo: 'PATCH',
+      cuerpo: { cantidad },
+    }),
+  )
 }
 
 export async function quitarItem(ordenId: string, itemId: string): Promise<void> {
-  await cambiarCantidad(ordenId, itemId, 0)
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/items/${itemId}`, { metodo: 'DELETE' }),
+  )
 }
 
 /** Anula un producto ya enviado. Queda registrado, nunca desaparece de la comanda. */
 export async function anularItem(ordenId: string, itemId: string, motivo: string): Promise<void> {
-  await esperar()
-  escribir(['ordenes', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    const item = orden.items.find((i) => i.id === itemId)
-    if (!item) throw new Error('El producto ya no está en la comanda')
-    item.estado = 'anulado'
-    item.notaCocina = [item.notaCocina, `Anulado: ${motivo}`].filter(Boolean).join(' · ')
-    sincronizarEstadoOrden(orden)
-  })
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/items/${itemId}/anular`, {
+      metodo: 'POST',
+      cuerpo: { motivo },
+    }),
+  )
 }
 
 export interface ResultadoEnvio {
@@ -463,18 +370,24 @@ export interface ResultadoEnvio {
  *
  * Sin conexion no se pierde nada: la comanda entra a la cola local y sale sola
  * apenas vuelve la senal. El mesero puede seguir tomando pedidos mientras tanto.
+ *
+ * La diferencia con el prototipo es que ahora la cola tiene sentido: antes todo
+ * era local y nada podia fallar, asi que encolar era una puesta en escena.
  */
 export async function enviarACocina(ordenId: string): Promise<ResultadoEnvio> {
-  await esperar()
-  const bd = base()
-  const orden = buscarOrden(bd, ordenId)
-
   // Lo que ya espera en la cola no se vuelve a encolar: sin esto, un mesero sin
   // senal que toca "Enviar" dos veces deja la misma comanda repetida.
   const yaEnCola = new Set(itemsEnCola(ordenId))
-  const pendientes = itemsSinEnviar(orden).filter((i) => !yaEnCola.has(i.id))
 
-  if (pendientes.length === 0) {
+  // Sin senal no se puede consultar que falta por mandar, asi que se encola lo
+  // que la pantalla ya tenia cargado. Es el mismo camino que seguia el
+  // prototipo, con la diferencia de que ahora la cola de verdad hace falta.
+  const orden = hayConexion() ? await obtenerOrden(ordenId) : null
+  const pendientes = (orden?.items ?? []).filter(
+    (i) => i.turnoEnvio === 0 && i.estado !== 'anulado' && !yaEnCola.has(i.id),
+  )
+
+  if (orden && pendientes.length === 0) {
     throw new Error(
       yaEnCola.size > 0
         ? 'Esos productos ya están en cola y salen solos al volver la señal'
@@ -486,21 +399,39 @@ export async function enviarACocina(ordenId: string): Promise<ResultadoEnvio> {
   // entradas no terminen saliendo despues de los fuertes al reconectar.
   const turnosEnCola = leerCola()
     .filter((e) => e.ordenId === ordenId)
-    .map((e) => e.turnoEnvio)
-  const turno = Math.max(proximoTurno(orden), ...turnosEnCola.map((t) => t + 1))
+    .map((e) => e.turnoEnvio + 1)
+  const turnoBase = Math.max(0, ...(orden?.items ?? []).map((i) => i.turnoEnvio)) + 1
+  const turno = Math.max(turnoBase, ...turnosEnCola)
 
-  if (!hayConexion()) {
+  const aLaCola = (): ResultadoEnvio => {
     encolar({
       ordenId,
-      mesaId: orden.mesaId,
+      mesaId: orden?.mesaId ?? '',
       turnoEnvio: turno,
       itemIds: pendientes.map((i) => i.id),
     })
     return { encolado: true, turno, cantidadItems: pendientes.length }
   }
 
-  aplicarEnvio(ordenId, pendientes.map((i) => i.id), turno)
-  return { encolado: false, turno, cantidadItems: pendientes.length }
+  if (!hayConexion()) return aLaCola()
+
+  try {
+    return await pedir<ResultadoEnvio>(`/api/comandera/ordenes/${ordenId}/enviar`, {
+      metodo: 'POST',
+      cuerpo: { itemIds: pendientes.map((i) => i.id), turno },
+    })
+  } catch (error) {
+    // Si la senal se cayo justo al enviar, la comanda no se pierde: entra a la
+    // cola igual que si nunca hubiera habido conexion. Cualquier otro error es
+    // del negocio y tiene que llegarle al mesero tal cual.
+    if (!(error instanceof SinConexionError)) throw traducirError(error)
+    return aLaCola()
+  }
+}
+
+/** Comanda por su identificador, para lo que no parte de la mesa. */
+export async function obtenerOrden(ordenId: string): Promise<Orden> {
+  return contra(() => pedir<Orden>(`/api/comandera/ordenes/${ordenId}`))
 }
 
 /** Productos de una comanda que esperan en la cola local por falta de senal. */
@@ -510,39 +441,41 @@ export function itemsEnCola(ordenId: string): string[] {
     .flatMap((e) => e.itemIds)
 }
 
-function aplicarEnvio(ordenId: string, itemIds: string[], turno: number): number {
-  return escribir(['ordenes', 'mesas', 'cocina'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    const ahora = new Date().toISOString()
-    let enviados = 0
-    for (const item of orden.items) {
-      if (!itemIds.includes(item.id) || item.turnoEnvio > 0 || item.estado === 'anulado') continue
-      item.turnoEnvio = turno
-      item.enviadoEn = ahora
-      item.estado = 'pendiente'
-      enviados++
-    }
-    sincronizarEstadoOrden(orden)
-    return enviados
-  })
-}
-
-/** Vacia la cola local cuando vuelve la conexion. */
+/**
+ * Vacia la cola local cuando vuelve la conexion.
+ *
+ * Se reenvia en el orden en que se dicto, uno a uno y esperando cada respuesta:
+ * mandarlos en paralelo haria que los turnos llegaran a cocina desordenados.
+ *
+ * Los conflictos los resuelve el servidor, que es el unico que sabe que paso
+ * mientras el aparato estuvo incomunicado. Si un producto ya habia salido, el
+ * backend lo ignora; si la comanda se cobro o se anulo entre tanto, responde
+ * que no y el envio se descarta en vez de quedarse trabando la cola para
+ * siempre. Lo que no se descarta es un fallo de red: eso se reintenta.
+ */
 export async function procesarCola(): Promise<number> {
   if (!hayConexion()) return 0
-  const cola = leerCola()
   let enviadas = 0
-  for (const envio of cola) {
+
+  for (const envio of colaOrdenada()) {
     try {
-      aplicarEnvio(envio.ordenId, envio.itemIds, envio.turnoEnvio)
+      await pedir<ResultadoEnvio>(`/api/comandera/ordenes/${envio.ordenId}/enviar`, {
+        metodo: 'POST',
+        cuerpo: { itemIds: envio.itemIds, turno: envio.turnoEnvio },
+      })
       quitarDeCola(envio.id)
       enviadas++
     } catch (error) {
-      // La comanda ya no existe o cambio: se descarta para no bloquear la cola.
-      console.error('[mockApi] no se pudo enviar una comanda encolada', error)
+      if (error instanceof SinConexionError) {
+        // Se volvio a caer: se deja la cola como esta y se reintenta luego.
+        marcarIntento(envio.id)
+        break
+      }
+      console.error('[api] no se pudo enviar una comanda encolada', error)
       quitarDeCola(envio.id)
     }
   }
+
   return enviadas
 }
 
@@ -552,64 +485,44 @@ export async function agregarCargo(
   valor: number,
   agregadoPor: string,
 ): Promise<CargoAdicional> {
-  await esperar()
   if (!nombre.trim()) throw new Error('El cargo necesita un nombre visible para el cliente')
-  return escribir(['ordenes', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    const cargo: CargoAdicional = {
-      id: nuevoId('cg'),
-      nombre: nombre.trim(),
-      valor: Math.round(valor),
-      agregadoPor,
-      agregadoEn: new Date().toISOString(),
-    }
-    orden.cargosAdicionales.push(cargo)
-    return cargo
-  })
+  // `agregadoPor` ya no viaja: el backend lo toma del token, para que nadie
+  // pueda firmar un descorche a nombre de otro. El parametro se conserva
+  // porque la pantalla lo pasa y quitarlo obligaria a editarla.
+  void agregadoPor
+  return contra(() =>
+    pedir<CargoAdicional>(`/api/comandera/ordenes/${ordenId}/cargos`, {
+      metodo: 'POST',
+      cuerpo: { nombre: nombre.trim(), valor: Math.round(valor) },
+    }),
+  )
 }
 
 export async function quitarCargo(ordenId: string, cargoId: string): Promise<void> {
-  await esperar()
-  escribir(['ordenes', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    orden.cargosAdicionales = orden.cargosAdicionales.filter((c) => c.id !== cargoId)
-  })
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/cargos/${cargoId}`, { metodo: 'DELETE' }),
+  )
 }
 
 export async function pedirCuenta(ordenId: string): Promise<void> {
-  await esperar()
-  escribir(['ordenes', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    orden.estado = 'cuenta_pedida'
-    buscarMesa(bd, orden.mesaId).estado = 'cuenta_pedida'
-  })
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/pedir-cuenta`, { metodo: 'POST' }),
+  )
 }
 
 export async function trasladarMesa(ordenId: string, mesaDestinoId: string): Promise<void> {
-  await esperar()
-  escribir(['ordenes', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    const destino = buscarMesa(bd, mesaDestinoId)
-    if (destino.ordenActivaId) throw new Error('La mesa de destino ya está ocupada')
-
-    const origen = buscarMesa(bd, orden.mesaId)
-    destino.estado = origen.estado
-    destino.meseroId = origen.meseroId
-    destino.ordenActivaId = orden.id
-
-    origen.estado = 'libre'
-    origen.meseroId = undefined
-    origen.ordenActivaId = undefined
-
-    orden.mesaId = mesaDestinoId
-  })
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/trasladar`, {
+      metodo: 'POST',
+      cuerpo: { mesaDestinoId },
+    }),
+  )
 }
 
 export async function agregarNota(ordenId: string, notas: string): Promise<void> {
-  await esperar()
-  escribir(['ordenes'], (bd) => {
-    buscarOrden(bd, ordenId).notas = notas
-  })
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/nota`, { metodo: 'PUT', cuerpo: { notas } }),
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -635,47 +548,7 @@ export interface TurnoEnCocina {
  * entradas y los fuertes de una misma mesa no se mezclen.
  */
 export async function comandasActivas(destino: Destino): Promise<TurnoEnCocina[]> {
-  await esperar()
-  const bd = base()
-  const bloques: TurnoEnCocina[] = []
-
-  for (const orden of bd.ordenes) {
-    if (orden.estado === 'pagada' || orden.estado === 'anulada') continue
-    const mesa = bd.mesas.find((m) => m.id === orden.mesaId)
-    if (!mesa) continue
-
-    const propios = orden.items.filter(
-      (i) => i.destino === destino && i.turnoEnvio > 0 && i.estado !== 'anulado',
-    )
-
-    for (const grupo of agruparPorTurno(propios)) {
-      // Un turno servido por completo ya no ocupa espacio en la pantalla.
-      if (grupo.items.every((i) => i.estado === 'servido')) continue
-
-      const estado: TurnoEnCocina['estado'] = grupo.items.some((i) => i.estado === 'pendiente')
-        ? 'pendiente'
-        : grupo.items.some((i) => i.estado === 'en_preparacion')
-          ? 'en_preparacion'
-          : 'listo'
-
-      bloques.push({
-        ordenId: orden.id,
-        numeroOrden: orden.numero,
-        mesaId: mesa.id,
-        mesaEtiqueta: mesa.nombre ?? `Mesa ${mesa.numero}`,
-        zona: mesa.zona,
-        meseroNombre: bd.usuarios.find((u) => u.id === orden.meseroId)?.nombre ?? '',
-        turno: grupo.turno,
-        enviadoEn: grupo.items[0].enviadoEn ?? orden.abiertaEn,
-        estado,
-        items: clonar(grupo.items),
-        notas: orden.notas,
-      })
-    }
-  }
-
-  // El mas antiguo primero: lo que lleva mas tiempo esperando manda.
-  return bloques.sort((a, b) => new Date(a.enviadoEn).getTime() - new Date(b.enviadoEn).getTime())
+  return contra(() => pedir<TurnoEnCocina[]>('/api/cocina/comandas', { consulta: { destino } }))
 }
 
 export async function cambiarEstadoItem(
@@ -683,15 +556,12 @@ export async function cambiarEstadoItem(
   itemId: string,
   estado: EstadoItem,
 ): Promise<void> {
-  await esperar()
-  escribir(['ordenes', 'cocina', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    const item = orden.items.find((i) => i.id === itemId)
-    if (!item) throw new Error('El producto ya no está en la comanda')
-    item.estado = estado
-    if (estado === 'listo') item.listoEn = new Date().toISOString()
-    sincronizarEstadoOrden(orden)
-  })
+  return contra(() =>
+    pedir<void>(`/api/cocina/ordenes/${ordenId}/items/${itemId}/estado`, {
+      metodo: 'PATCH',
+      cuerpo: { estado },
+    }),
+  )
 }
 
 export async function cambiarEstadoTurno(
@@ -700,17 +570,13 @@ export async function cambiarEstadoTurno(
   destino: Destino,
   estado: EstadoItem,
 ): Promise<void> {
-  await esperar()
-  escribir(['ordenes', 'cocina', 'mesas'], (bd) => {
-    const orden = buscarOrden(bd, ordenId)
-    const ahora = new Date().toISOString()
-    for (const item of orden.items) {
-      if (item.turnoEnvio !== turno || item.destino !== destino || item.estado === 'anulado') continue
-      item.estado = estado
-      if (estado === 'listo') item.listoEn = ahora
-    }
-    sincronizarEstadoOrden(orden)
-  })
+  return contra(() =>
+    pedir<void>(`/api/cocina/ordenes/${ordenId}/turnos/${turno}/estado`, {
+      metodo: 'PATCH',
+      consulta: { destino },
+      cuerpo: { estado },
+    }),
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -727,48 +593,9 @@ export interface DatosPago {
 }
 
 export async function registrarPago(datos: DatosPago): Promise<Pago> {
-  await esperar()
-  return escribir(['ordenes', 'mesas', 'pagos'], (bd) => {
-    const orden = buscarOrden(bd, datos.ordenId)
-    if (orden.estado === 'pagada') throw new Error('Esta cuenta ya fue cobrada')
-
-    const cuenta = calcularCuenta(orden, bd.ajustes.porcentajeInc, datos.porcentajePropina, datos.propina)
-
-    // Un pago mixto sin desglose dejaria el cierre de caja descuadrado.
-    if (datos.metodo === 'mixto') {
-      const partes = datos.divisiones ?? []
-      const suma = partes.reduce((s, d) => s + d.valor, 0)
-      if (partes.length === 0) throw new Error('Un pago mixto necesita el desglose por medio de pago')
-      if (suma !== cuenta.total)
-        throw new Error('Las partes del pago no suman el total de la cuenta')
-    }
-
-    const pago: Pago = {
-      id: nuevoId('pg'),
-      ordenId: orden.id,
-      subtotal: cuenta.subtotal,
-      inc: cuenta.inc,
-      propina: cuenta.propina,
-      cargosAdicionales: cuenta.cargosAdicionales,
-      total: cuenta.total,
-      metodo: datos.metodo,
-      divisiones: datos.divisiones,
-      recibidoPor: datos.recibidoPor,
-      fechaHora: new Date().toISOString(),
-    }
-
-    bd.pagos.push(pago)
-    orden.estado = 'pagada'
-    orden.cerradaEn = pago.fechaHora
-    for (const item of orden.items) if (item.estado !== 'anulado') item.estado = 'servido'
-
-    const mesa = buscarMesa(bd, orden.mesaId)
-    mesa.estado = 'libre'
-    mesa.meseroId = undefined
-    mesa.ordenActivaId = undefined
-
-    return clonar(pago)
-  })
+  // `recibidoPor` lo reescribe el backend con el nombre del token: es el dato
+  // con el que despues se le reclama a alguien un faltante de caja.
+  return contra(() => pedir<Pago>('/api/cobro/pagos', { metodo: 'POST', cuerpo: datos }))
 }
 
 export interface ComprobanteDetallado {
@@ -780,20 +607,7 @@ export interface ComprobanteDetallado {
 
 /** Todo lo que hace falta para reimprimir un comprobante desde el histórico. */
 export async function obtenerComprobante(pagoId: string): Promise<ComprobanteDetallado | null> {
-  await esperar()
-  const bd = base()
-  const pago = bd.pagos.find((p) => p.id === pagoId)
-  if (!pago) return null
-  const orden = bd.ordenes.find((o) => o.id === pago.ordenId)
-  if (!orden) return null
-  const mesa = bd.mesas.find((m) => m.id === orden.mesaId)
-
-  return {
-    pago: clonar(pago),
-    orden: clonar(orden),
-    mesaEtiqueta: mesa ? (mesa.nombre ?? `Mesa ${mesa.numero}`) : 'Mesa retirada',
-    meseroNombre: bd.usuarios.find((u) => u.id === orden.meseroId)?.nombre ?? '',
-  }
+  return contra(() => pedirOpcional<ComprobanteDetallado>(`/api/cobro/comprobantes/${pagoId}`))
 }
 
 // ---------------------------------------------------------------------------
@@ -801,21 +615,16 @@ export async function obtenerComprobante(pagoId: string): Promise<ComprobanteDet
 // ---------------------------------------------------------------------------
 
 export async function listarReservas(): Promise<Reserva[]> {
-  await esperar()
-  return clonar(base().reservas).sort(
-    (a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime(),
-  )
+  return contra(() => pedir<Reserva[]>('/api/reservas'))
 }
 
 export async function crearReserva(
   datos: Omit<Reserva, 'id' | 'estado' | 'mesaAsignadaId'>,
 ): Promise<Reserva> {
-  await esperar()
-  return escribir(['reservas'], (bd) => {
-    const reserva: Reserva = { ...datos, id: nuevoId('r'), estado: 'solicitada' }
-    bd.reservas.push(reserva)
-    return clonar(reserva)
-  })
+  // La crea el cliente desde el sitio publico, sin sesion.
+  return contra(() =>
+    pedir<Reserva>('/api/reservas', { metodo: 'POST', cuerpo: datos, sinSesion: true }),
+  )
 }
 
 export async function cambiarEstadoReserva(
@@ -823,32 +632,18 @@ export async function cambiarEstadoReserva(
   estado: EstadoReserva,
   mesaAsignadaId?: string,
 ): Promise<Reserva> {
-  await esperar()
-  return escribir(['reservas', 'mesas'], (bd) => {
-    const reserva = bd.reservas.find((r) => r.id === reservaId)
-    if (!reserva) throw new Error('La reserva no existe')
-    reserva.estado = estado
-    if (mesaAsignadaId !== undefined) reserva.mesaAsignadaId = mesaAsignadaId || undefined
-
-    if (estado === 'confirmada' && reserva.mesaAsignadaId) {
-      const mesa = bd.mesas.find((m) => m.id === reserva.mesaAsignadaId)
-      if (mesa && mesa.estado === 'libre') mesa.estado = 'reservada'
-    }
-    if ((estado === 'cancelada' || estado === 'cumplida' || estado === 'no_asistio') && reserva.mesaAsignadaId) {
-      const mesa = bd.mesas.find((m) => m.id === reserva.mesaAsignadaId)
-      if (mesa && mesa.estado === 'reservada') mesa.estado = 'libre'
-    }
-    return clonar(reserva)
-  })
+  return contra(() =>
+    pedir<Reserva>(`/api/reservas/${reservaId}/estado`, {
+      metodo: 'PATCH',
+      cuerpo: { estado, mesaAsignadaId: mesaAsignadaId ?? null },
+    }),
+  )
 }
 
 export async function reprogramarReserva(reservaId: string, fechaHora: string): Promise<void> {
-  await esperar()
-  escribir(['reservas'], (bd) => {
-    const reserva = bd.reservas.find((r) => r.id === reservaId)
-    if (!reserva) throw new Error('La reserva no existe')
-    reserva.fechaHora = fechaHora
-  })
+  return contra(() =>
+    pedir<void>(`/api/reservas/${reservaId}/fecha`, { metodo: 'PATCH', cuerpo: { fechaHora } }),
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -867,58 +662,8 @@ export interface IndicadoresDia {
   comensales: number
 }
 
-const esDeHoy = (fecha: string): boolean => claveDia(fecha) === claveDia()
-
-/**
- * Reparte los pagos por medio de cobro. Un pago mixto se abre en sus partes,
- * porque de lo contrario el efectivo declarado no cuadraria con la caja.
- */
-function totalesPorMetodo(pagos: Pago[]): {
-  efectivo: number
-  tarjeta: number
-  transferencia: number
-} {
-  const totales = { efectivo: 0, tarjeta: 0, transferencia: 0 }
-  for (const pago of pagos) {
-    if (pago.metodo === 'mixto') {
-      for (const parte of pago.divisiones ?? []) totales[parte.metodo] += parte.valor
-    } else {
-      totales[pago.metodo] += pago.total
-    }
-  }
-  return totales
-}
-
 export async function indicadoresDia(): Promise<IndicadoresDia> {
-  await esperar()
-  const bd = base()
-  const pagosHoy = bd.pagos.filter((p) => esDeHoy(p.fechaHora))
-  const ventaTotal = pagosHoy.reduce((s, p) => s + p.total, 0)
-
-  const tiempos: number[] = []
-  for (const orden of bd.ordenes) {
-    for (const item of orden.items) {
-      if (!item.enviadoEn || !item.listoEn) continue
-      if (!esDeHoy(item.listoEn)) continue
-      tiempos.push((new Date(item.listoEn).getTime() - new Date(item.enviadoEn).getTime()) / 60000)
-    }
-  }
-
-  const ordenesHoy = bd.ordenes.filter((o) => esDeHoy(o.abiertaEn))
-
-  return {
-    ventaTotal,
-    ordenes: pagosHoy.length,
-    ticketPromedio: pagosHoy.length ? Math.round(ventaTotal / pagosHoy.length) : 0,
-    mesasOcupadas: bd.mesas.filter((m) => m.estado !== 'libre').length,
-    mesasTotales: bd.mesas.length,
-    propinas: pagosHoy.reduce((s, p) => s + p.propina, 0),
-    inc: pagosHoy.reduce((s, p) => s + p.inc, 0),
-    minutosPromedioPreparacion: tiempos.length
-      ? Math.round(tiempos.reduce((s, t) => s + t, 0) / tiempos.length)
-      : 0,
-    comensales: ordenesHoy.reduce((s, o) => s + o.comensales, 0),
-  }
+  return contra(() => pedir<IndicadoresDia>('/api/caja/indicadores'))
 }
 
 export interface VentaHistorica {
@@ -936,31 +681,15 @@ export interface FiltroVentas {
 }
 
 export async function historicoVentas(filtro: FiltroVentas = {}): Promise<VentaHistorica[]> {
-  await esperar()
-  const bd = base()
-  const resultado: VentaHistorica[] = []
-
-  for (const pago of bd.pagos) {
-    const dia = claveDia(pago.fechaHora)
-    if (filtro.desde && dia < filtro.desde) continue
-    if (filtro.hasta && dia > filtro.hasta) continue
-    if (filtro.metodo && pago.metodo !== filtro.metodo) continue
-
-    const orden = bd.ordenes.find((o) => o.id === pago.ordenId)
-    if (!orden) continue
-    if (filtro.meseroId && orden.meseroId !== filtro.meseroId) continue
-
-    const mesa = bd.mesas.find((m) => m.id === orden.mesaId)
-    resultado.push({
-      orden: clonar(orden),
-      pago: clonar(pago),
-      mesaEtiqueta: mesa ? (mesa.nombre ?? `Mesa ${mesa.numero}`) : 'Mesa retirada',
-      meseroNombre: bd.usuarios.find((u) => u.id === orden.meseroId)?.nombre ?? '',
-    })
-  }
-
-  return resultado.sort(
-    (a, b) => new Date(b.pago.fechaHora).getTime() - new Date(a.pago.fechaHora).getTime(),
+  return contra(() =>
+    pedir<VentaHistorica[]>('/api/caja/ventas', {
+      consulta: {
+        desde: filtro.desde,
+        hasta: filtro.hasta,
+        meseroId: filtro.meseroId,
+        metodo: filtro.metodo,
+      },
+    }),
   )
 }
 
@@ -981,60 +710,18 @@ export interface ResumenTurno {
 }
 
 export async function resumenTurnoActual(): Promise<ResumenTurno> {
-  await esperar()
-  const bd = base()
-  const turno = turnoDe()
-  const hoy = claveDia()
-  const ayer = claveDia(new Date(Date.now() - 86400000))
-
-  const delTurno = bd.pagos.filter((p) => claveDia(p.fechaHora) === hoy && turnoDe(p.fechaHora) === turno)
-  const deAyer = bd.pagos.filter((p) => claveDia(p.fechaHora) === ayer && turnoDe(p.fechaHora) === turno)
-
-  const porMetodo = totalesPorMetodo(delTurno)
-  const ventaTotal = delTurno.reduce((s, p) => s + p.total, 0)
-
-  return {
-    fecha: hoy,
-    turno,
-    ventaTotal,
-    totalEfectivo: porMetodo.efectivo,
-    totalTarjeta: porMetodo.tarjeta,
-    totalTransferencia: porMetodo.transferencia,
-    propinasTotales: delTurno.reduce((s, p) => s + p.propina, 0),
-    incTotal: delTurno.reduce((s, p) => s + p.inc, 0),
-    ordenesAtendidas: delTurno.length,
-    ticketPromedio: delTurno.length ? Math.round(ventaTotal / delTurno.length) : 0,
-    ventaDiaAnterior: deAyer.reduce((s, p) => s + p.total, 0),
-    ordenesDiaAnterior: deAyer.length,
-  }
+  return contra(() => pedir<ResumenTurno>('/api/caja/turno'))
 }
 
 export async function listarCierres(): Promise<CierreCaja[]> {
-  await esperar()
-  return clonar(base().cierres).sort((a, b) => b.fechaHora.localeCompare(a.fechaHora))
+  return contra(() => pedir<CierreCaja[]>('/api/caja/cierres'))
 }
 
 export async function cerrarTurno(cerradoPor: string): Promise<CierreCaja> {
-  const resumen = await resumenTurnoActual()
-  return escribir(['cierres'], (bd) => {
-    const cierre: CierreCaja = {
-      id: nuevoId('cc'),
-      fecha: resumen.fecha,
-      turno: resumen.turno,
-      ventaTotal: resumen.ventaTotal,
-      totalEfectivo: resumen.totalEfectivo,
-      totalTarjeta: resumen.totalTarjeta,
-      totalTransferencia: resumen.totalTransferencia,
-      propinasTotales: resumen.propinasTotales,
-      incTotal: resumen.incTotal,
-      ordenesAtendidas: resumen.ordenesAtendidas,
-      ticketPromedio: resumen.ticketPromedio,
-      cerradoPor,
-      fechaHora: new Date().toISOString(),
-    }
-    bd.cierres.push(cierre)
-    return clonar(cierre)
-  })
+  // Igual que con el cobro, quien cierra la caja lo determina el token: el
+  // cierre es el documento con el que se entrega el dinero.
+  void cerradoPor
+  return contra(() => pedir<CierreCaja>('/api/caja/cierres', { metodo: 'POST' }))
 }
 
 export interface Reportes {
@@ -1046,94 +733,7 @@ export interface Reportes {
 }
 
 export async function reportes(dias = 10): Promise<Reportes> {
-  await esperar()
-  const bd = base()
-  const desde = Date.now() - dias * 86400000
-  const pagos = bd.pagos.filter((p) => new Date(p.fechaHora).getTime() >= desde)
-  const ordenesPorId = new Map(bd.ordenes.map((o) => [o.id, o]))
-
-  const productos = new Map<string, { unidades: number; ingreso: number }>()
-  const franjas = new Map<number, { ventas: number; ordenes: number }>()
-  const meseros = new Map<string, { ordenes: number; ventas: number; propinas: number }>()
-  const porDia = new Map<string, number>()
-
-  for (const pago of pagos) {
-    const orden = ordenesPorId.get(pago.ordenId)
-    if (!orden) continue
-
-    for (const item of orden.items) {
-      if (item.estado === 'anulado') continue
-      const actual = productos.get(item.nombre) ?? { unidades: 0, ingreso: 0 }
-      const adicionales = item.modificadoresSeleccionados.reduce((s, m) => s + m.precioAdicional, 0)
-      actual.unidades += item.cantidad
-      actual.ingreso += (item.precioUnitario + adicionales) * item.cantidad
-      productos.set(item.nombre, actual)
-    }
-
-    const hora = new Date(pago.fechaHora).getHours()
-    const franja = franjas.get(hora) ?? { ventas: 0, ordenes: 0 }
-    franja.ventas += pago.total
-    franja.ordenes += 1
-    franjas.set(hora, franja)
-
-    const mesero = meseros.get(orden.meseroId) ?? { ordenes: 0, ventas: 0, propinas: 0 }
-    mesero.ordenes += 1
-    mesero.ventas += pago.total
-    mesero.propinas += pago.propina
-    meseros.set(orden.meseroId, mesero)
-
-    const dia = claveDia(pago.fechaHora)
-    porDia.set(dia, (porDia.get(dia) ?? 0) + pago.total)
-  }
-
-  // Tiempo real de preparacion por producto, desde el envio hasta que sale listo.
-  const tiempos = new Map<string, { total: number; muestras: number }>()
-  for (const orden of bd.ordenes) {
-    for (const item of orden.items) {
-      if (!item.enviadoEn || !item.listoEn) continue
-      const minutos = (new Date(item.listoEn).getTime() - new Date(item.enviadoEn).getTime()) / 60000
-      if (minutos <= 0 || minutos > 180) continue
-      const actual = tiempos.get(item.nombre) ?? { total: 0, muestras: 0 }
-      actual.total += minutos
-      actual.muestras += 1
-      tiempos.set(item.nombre, actual)
-    }
-  }
-
-  return {
-    masVendidos: [...productos.entries()]
-      .map(([nombre, d]) => ({ nombre, ...d }))
-      .sort((a, b) => b.unidades - a.unidades)
-      .slice(0, 12),
-    porFranja: [...franjas.entries()]
-      .map(([hora, d]) => ({
-        hora,
-        franja: franjaHoraria(new Date(2026, 0, 1, hora)),
-        ventas: d.ventas,
-        ordenes: d.ordenes,
-      }))
-      .sort((a, b) => a.hora - b.hora),
-    porMesero: [...meseros.entries()]
-      .map(([id, d]) => ({
-        nombre: bd.usuarios.find((u) => u.id === id)?.nombre ?? 'Sin asignar',
-        ordenes: d.ordenes,
-        ventas: d.ventas,
-        propinas: d.propinas,
-        ticketPromedio: Math.round(d.ventas / d.ordenes),
-      }))
-      .sort((a, b) => b.ventas - a.ventas),
-    tiemposPorProducto: [...tiempos.entries()]
-      .map(([nombre, d]) => ({
-        nombre,
-        minutos: Math.round(d.total / d.muestras),
-        muestras: d.muestras,
-      }))
-      .sort((a, b) => b.minutos - a.minutos)
-      .slice(0, 12),
-    ventasPorDia: [...porDia.entries()]
-      .map(([dia, total]) => ({ dia, total }))
-      .sort((a, b) => a.dia.localeCompare(b.dia)),
-  }
+  return contra(() => pedir<Reportes>('/api/reportes', { consulta: { dias } }))
 }
 
 export interface Alerta {
@@ -1146,50 +746,7 @@ export interface Alerta {
 
 /** Mesas esperando comida hace rato y cuentas pedidas sin cobrar. */
 export async function alertas(umbralMinutos: number): Promise<Alerta[]> {
-  await esperar()
-  const bd = base()
-  const lista: Alerta[] = []
-  const ahora = Date.now()
-
-  for (const orden of bd.ordenes) {
-    if (orden.estado === 'pagada' || orden.estado === 'anulada') continue
-    const mesa = bd.mesas.find((m) => m.id === orden.mesaId)
-    if (!mesa) continue
-    const etiqueta = mesa.nombre ?? `Mesa ${mesa.numero}`
-
-    const enEspera = orden.items.filter(
-      (i) => i.turnoEnvio > 0 && (i.estado === 'pendiente' || i.estado === 'en_preparacion'),
-    )
-    const masAntiguo = enEspera
-      .map((i) => new Date(i.enviadoEn ?? orden.abiertaEn).getTime())
-      .sort((a, b) => a - b)[0]
-
-    if (masAntiguo) {
-      const minutos = Math.floor((ahora - masAntiguo) / 60000)
-      if (minutos >= umbralMinutos) {
-        lista.push({
-          id: `al_${orden.id}_demora`,
-          tipo: 'demora',
-          mesaId: mesa.id,
-          minutos,
-          mensaje: `${etiqueta} lleva ${minutos} min esperando comida`,
-        })
-      }
-    }
-
-    if (orden.estado === 'cuenta_pedida') {
-      const minutos = Math.floor((ahora - new Date(orden.abiertaEn).getTime()) / 60000)
-      lista.push({
-        id: `al_${orden.id}_cobro`,
-        tipo: 'cobro',
-        mesaId: mesa.id,
-        minutos,
-        mensaje: `${etiqueta} pidió la cuenta y sigue sin cobrar`,
-      })
-    }
-  }
-
-  return lista.sort((a, b) => b.minutos - a.minutos)
+  return contra(() => pedir<Alerta[]>('/api/caja/alertas', { consulta: { umbralMinutos } }))
 }
 
 /** Roles autorizados en cada area. Lo consulta la guarda de rutas. */

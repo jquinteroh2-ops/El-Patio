@@ -1,18 +1,21 @@
-import { CANAL_SYNC, CLAVE_ALMACEN } from './config'
-import type { BaseDatos } from './tipos'
+import { Client, type IMessage } from '@stomp/stompjs'
+import { TOPICOS, URL_WS } from './config'
 
 /**
- * Capa de persistencia y sincronizacion entre pestanas.
+ * Canal de sincronizacion entre dispositivos.
  *
- * Los datos viven en localStorage, que es compartido por todas las pestanas del
- * mismo origen. Cada escritura se anuncia por un BroadcastChannel para que las
- * demas pestanas relean de inmediato, sin esperar a que el usuario recargue.
+ * Antes esto era un BroadcastChannel sobre localStorage, que solo alcanzaba a
+ * las pestanas del mismo navegador. Por eso una comanda tomada en la tablet del
+ * mesero nunca aparecia en la pantalla de cocina, que es otro aparato: el
+ * sistema se veia funcionar en una demostracion y no servia en un salon.
  *
- * El evento `storage` del navegador queda como respaldo por si el canal no esta
- * disponible. Ninguno de los dos rebota al emisor, asi que ademas mantenemos una
- * lista de oyentes locales para refrescar la pestana que hizo el cambio.
+ * Ahora los avisos llegan por WebSocket desde el backend. La interfaz de
+ * `suscribir()` no cambio: las pantallas siguen escuchando igual, sin saber que
+ * debajo hay una red en vez de un canal local.
  *
- * Solo mockApi.ts debe usar este modulo.
+ * Por el canal no viaja ningun dato del negocio, solo el aviso de que algo
+ * cambio y en que area. Quien lo recibe vuelve a pedir los datos por el API,
+ * que si exige credencial.
  */
 
 export interface EventoSync {
@@ -28,33 +31,85 @@ type Oyente = (evento: EventoSync) => void
 export const ID_PESTANA = `p${Math.random().toString(36).slice(2, 8)}`
 
 const oyentes = new Set<Oyente>()
-let canal: BroadcastChannel | null = null
-let iniciado = false
 
-function obtenerCanal(): BroadcastChannel | null {
-  if (canal) return canal
-  if (typeof BroadcastChannel === 'undefined') return null
-  canal = new BroadcastChannel(CANAL_SYNC)
-  return canal
+// ---------------------------------------------------------------------------
+// Conexion con el canal
+// ---------------------------------------------------------------------------
+
+let cliente: Client | null = null
+let conectado = false
+
+/**
+ * Ultima version recibida.
+ *
+ * El backend numera los eventos de forma creciente. Al reconectar puede llegar
+ * un aviso viejo que estaba en vuelo; descartarlo evita una recarga inutil de
+ * todas las pantallas del salon.
+ */
+let ultimaVersion = 0
+
+/** Si el canal de tiempo real esta vivo en este momento. */
+export function canalConectado(): boolean {
+  return conectado
 }
 
-function iniciarEscucha(): void {
-  if (iniciado || typeof window === 'undefined') return
-  iniciado = true
-
-  const canalActivo = obtenerCanal()
-  if (canalActivo) {
-    canalActivo.onmessage = (mensaje: MessageEvent<EventoSync>) => {
-      if (!mensaje.data || mensaje.data.origen === ID_PESTANA) return
-      avisarOyentes(mensaje.data)
-    }
+function alRecibir(mensaje: IMessage): void {
+  try {
+    const evento = JSON.parse(mensaje.body) as EventoSync
+    if (!evento || !Array.isArray(evento.cambios)) return
+    if (evento.version <= ultimaVersion) return
+    ultimaVersion = evento.version
+    avisarOyentes(evento)
+  } catch (error) {
+    console.error('[almacen] evento ilegible', error)
   }
+}
 
-  // Respaldo: se dispara en las otras pestanas cuando cambia localStorage.
-  window.addEventListener('storage', (evento) => {
-    if (evento.key !== CLAVE_ALMACEN) return
-    avisarOyentes({ version: Date.now(), origen: 'storage', cambios: [] })
+function crearCliente(): Client {
+  const nuevo = new Client({
+    brokerURL: URL_WS,
+    // El latido detecta un cable cortado o un punto de acceso caido, que es lo
+    // que pasa en un restaurante. Sin el, el socket queda abierto contra nadie
+    // y las pantallas se congelan sin dar senal de que algo va mal.
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
+    reconnectDelay: 3000,
+    onConnect: () => {
+      conectado = true
+      for (const topico of Object.values(TOPICOS)) {
+        nuevo.subscribe(topico, alRecibir)
+      }
+      // Al recuperar el canal las pantallas pueden llevar minutos desfasadas:
+      // se les pide que relean todo. Todas las suscripciones incluyen 'todo',
+      // asi que este unico aviso las alcanza a todas.
+      avisarOyentes({ version: Date.now(), origen: 'reconexion', cambios: ['todo', 'canal'] })
+    },
+    onWebSocketClose: () => {
+      if (!conectado) return
+      conectado = false
+      // 'canal' no lo observa ninguna pantalla de datos: solo despierta al
+      // indicador de conexion para que el mesero vea que perdio la senal.
+      avisarOyentes({ version: Date.now(), origen: 'desconexion', cambios: ['canal'] })
+    },
+    onStompError: (trama) => {
+      console.error('[almacen] el canal rechazó la conexión', trama.headers.message)
+    },
   })
+  return nuevo
+}
+
+/** Abre el canal. Es idempotente: llamarla dos veces no abre dos sockets. */
+export function conectarCanal(): void {
+  if (cliente || typeof window === 'undefined') return
+  cliente = crearCliente()
+  cliente.activate()
+}
+
+/** Cierra el canal. Solo hace falta al desmontar la aplicacion entera. */
+export function desconectarCanal(): void {
+  conectado = false
+  void cliente?.deactivate()
+  cliente = null
 }
 
 function avisarOyentes(evento: EventoSync): void {
@@ -62,33 +117,44 @@ function avisarOyentes(evento: EventoSync): void {
     try {
       oyente(evento)
     } catch (error) {
-      console.error('[almacen] oyente fallo', error)
+      console.error('[almacen] oyente falló', error)
     }
   }
 }
 
 /**
- * Escucha cambios de datos, vengan de esta pestana o de otra.
+ * Escucha cambios de datos, vengan de este dispositivo o de cualquier otro.
  * Devuelve la funcion para dejar de escuchar.
  */
 export function suscribir(oyente: Oyente): () => void {
-  iniciarEscucha()
+  conectarCanal()
   oyentes.add(oyente)
   return () => {
     oyentes.delete(oyente)
   }
 }
 
-/** Anuncia un cambio a esta pestana y a todas las demas. */
+/**
+ * Anuncia un cambio hecho en este dispositivo.
+ *
+ * Los cambios de datos ya los anuncia el backend a todo el salon; esto solo
+ * sirve para lo que es propio de este aparato y el servidor no puede conocer,
+ * como la cola local de envios pendientes.
+ */
 export function notificar(cambios: string[], version: number): void {
-  const evento: EventoSync = { version, origen: ID_PESTANA, cambios }
-  avisarOyentes(evento)
-  obtenerCanal()?.postMessage(evento)
+  avisarOyentes({ version, origen: ID_PESTANA, cambios })
 }
 
 // ---------------------------------------------------------------------------
-// Lectura y escritura
+// Almacenamiento local
 // ---------------------------------------------------------------------------
+
+/**
+ * Lo unico que sigue viviendo en el navegador es la cola de envios pendientes,
+ * porque es justamente lo que hay que conservar cuando no se puede hablar con
+ * el servidor. Los datos del negocio ya no se guardan aqui: la fuente de verdad
+ * es PostgreSQL.
+ */
 
 export function leerCrudo<T>(clave: string, respaldo: T): T {
   if (typeof localStorage === 'undefined') return respaldo
@@ -108,21 +174,4 @@ export function escribirCrudo<T>(clave: string, valor: T): void {
   } catch (error) {
     console.error(`[almacen] no se pudo escribir ${clave}`, error)
   }
-}
-
-export function leerBD(): BaseDatos | null {
-  return leerCrudo<BaseDatos | null>(CLAVE_ALMACEN, null)
-}
-
-/** Guarda la base, sube la version y avisa a todas las pestanas. */
-export function guardarBD(bd: BaseDatos, cambios: string[] = []): BaseDatos {
-  const siguiente: BaseDatos = { ...bd, version: bd.version + 1 }
-  escribirCrudo(CLAVE_ALMACEN, siguiente)
-  notificar(cambios, siguiente.version)
-  return siguiente
-}
-
-export function borrarBD(): void {
-  if (typeof localStorage === 'undefined') return
-  localStorage.removeItem(CLAVE_ALMACEN)
 }

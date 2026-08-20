@@ -43,9 +43,6 @@ export const UMBRALES_COCINA = {
 /** Minutos sin cobrar que disparan alerta en el panel administrativo. */
 export const UMBRAL_ALERTA_ADMIN = 20
 
-/** Retardo artificial de mockApi, para que la interfaz se comporte como con red real. */
-export const LATENCIA_MS = { min: 150, max: 300 } as const
-
 /** Notas rapidas de un toque en la comandera. */
 export const NOTAS_RAPIDAS = [
   'Sin sal',
@@ -66,9 +63,55 @@ export const CARGOS_FRECUENTES = [
   { nombre: 'Reserva de zona privada', valor: 80000 },
 ] as const
 
-export const CLAVE_ALMACEN = 'elpatio.bd.v1'
+// ---------------------------------------------------------------------------
+// Conexion con el backend
+// ---------------------------------------------------------------------------
+
+/** Quita la barra final para que al concatenar rutas no queden dos seguidas. */
+const sinBarraFinal = (url: string): string => url.replace(/\/+$/, '')
+
+/**
+ * URL del API.
+ *
+ * Nunca se escribe una URL en un componente. En desarrollo apunta al backend
+ * local; en Railway la define la variable de entorno del servicio del frontend,
+ * porque el dominio cambia entre entornos y el codigo no puede saberlo.
+ */
+export const URL_API = sinBarraFinal(import.meta.env.VITE_URL_API ?? 'http://localhost:8080')
+
+/**
+ * URL del WebSocket.
+ *
+ * Si no viene declarada se deduce de la del API cambiando el esquema: sobre
+ * HTTPS tiene que ser wss, porque un navegador en una pagina segura rechaza
+ * abrir un socket en claro y el salon se quedaria sin tiempo real.
+ */
+export const URL_WS =
+  import.meta.env.VITE_URL_WS ?? `${URL_API.replace(/^http/, 'ws')}/ws`
+
+/**
+ * Topicos del canal de tiempo real. Tienen que coincidir con Topicos.java: si
+ * uno cambia de nombre, la pantalla que lo escuchaba se queda muda sin que nada
+ * falle de forma visible.
+ */
+export const TOPICOS = {
+  comandas: '/topic/comandas',
+  mesas: '/topic/mesas',
+  pedidos: '/topic/pedidos',
+  general: '/topic/general',
+} as const
+
+/**
+ * Margen con el que se renueva el token antes de que expire.
+ *
+ * Se renueva antes y no al fallar para que el mesero nunca vea un error de
+ * sesion en medio de una comanda: cuando el token esta por vencer, ya hay otro.
+ */
+export const MARGEN_RENOVACION_SEGUNDOS = 120
+
 export const CLAVE_SESION = 'elpatio.sesion.v1'
+export const CLAVE_ACCESO = 'elpatio.acceso.v1'
+export const CLAVE_REFRESCO = 'elpatio.refresco.v1'
 export const CLAVE_COLA = 'elpatio.cola.v1'
-export const CANAL_SYNC = 'elpatio.sync.v1'
 
 export const ETIQUETA_DEMO = 'Versión de demostración'

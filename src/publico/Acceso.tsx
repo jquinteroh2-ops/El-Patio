@@ -3,7 +3,6 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, LogIn } from 'lucide-react'
 import { useSesion } from '@/compartido/auth'
 import { RESTAURANTE } from '@/compartido/config'
-import { CREDENCIALES_DEMO } from '@/compartido/datosSemilla'
 import { Boton } from '@/componentes/ui/Boton'
 import { Campo } from '@/componentes/ui/Campo'
 import { AvisoDemo } from '@/componentes/AvisoDemo'
@@ -33,12 +32,6 @@ export default function Acceso() {
       setError(e instanceof Error ? e.message : 'No se pudo ingresar')
       setEnviando(false)
     }
-  }
-
-  const usarCredencial = (u: string, c: string) => {
-    setUsuario(u)
-    setClave(c)
-    setError(null)
   }
 
   return (
@@ -91,32 +84,18 @@ export default function Acceso() {
           </Boton>
         </form>
 
+        {/*
+          Aquí había una lista de credenciales de prueba con la clave escrita al
+          lado. Servía para la demostración, pero el sistema ya maneja el dinero
+          de la caja: una clave impresa en la pantalla de acceso es una clave
+          pública. Las claves ahora las genera el servidor al arrancar por
+          primera vez y se las entrega administración a cada persona.
+        */}
         <div className="mt-10 rounded-2xl border border-noche-700 bg-noche-900 p-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-ambar-400">
-            Credenciales de prueba
-          </p>
-          <ul className="space-y-2">
-            {CREDENCIALES_DEMO.map((c) => (
-              <li key={c.usuario}>
-                <button
-                  type="button"
-                  onClick={() => usarCredencial(c.usuario, c.clave)}
-                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-noche-700 bg-noche-850 px-3 py-2.5 text-left transition hover:border-ambar-500/50 hover:bg-noche-800"
-                >
-                  <span>
-                    <span className="block text-sm font-medium text-crema-100">{c.rol}</span>
-                    <span className="block text-xs text-noche-400">{c.destino}</span>
-                  </span>
-                  <span className="shrink-0 font-mono text-xs text-noche-300">
-                    {c.usuario} / {c.clave}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-xs leading-relaxed text-noche-500">
-            Toca una fila para llenar el formulario. Cada pestaña del navegador mantiene su propia
-            sesión: puedes tener al mesero en una y a cocina en otra al mismo tiempo.
+          <p className="text-xs leading-relaxed text-noche-500">
+            Cada pestaña del navegador mantiene su propia sesión: puedes tener al mesero en una y a
+            cocina en otra al mismo tiempo. Si olvidaste tu clave, pídele a administración que te la
+            cambie desde configuración.
           </p>
         </div>
       </div>

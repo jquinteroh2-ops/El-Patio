@@ -176,22 +176,40 @@ public class ServicioComandas {
   /**
    * Manda a cocina y barra lo que todavia no se ha enviado.
    *
-   * En el prototipo esta operacion tambien manejaba la cola por falta de senal.
-   * Ahora la cola vive en el dispositivo, que es donde se pierde el WiFi: si
-   * esta llamada respondio, es porque el servidor recibio, y `encolado` sale
-   * siempre en false.
+   * La cola por falta de senal vive en el dispositivo, que es donde se pierde
+   * el WiFi: si esta llamada respondio, es porque el servidor recibio, y
+   * `encolado` sale siempre en false.
+   *
+   * `itemIds` y `turno` son opcionales y solo los manda la comandera cuando
+   * esta vaciando su cola: sirven para reponer un envio exactamente como se
+   * dicto, sin arrastrar productos que el mesero agrego despues de que se
+   * cayera la senal. Sin ellos se envia todo lo pendiente, que es el caso
+   * normal.
+   *
+   * El conflicto lo resuelve el servidor, no el dispositivo: `aplicarEnvio`
+   * ignora los productos que ya salieron, asi que reponer un envio dos veces no
+   * duplica nada, y si la comanda se cerro entre tanto la guarda del agregado
+   * rechaza la operacion.
    */
   @Transactional
-  public Dtos.ResultadoEnvio enviarACocina(String ordenId) {
+  public Dtos.ResultadoEnvio enviarACocina(String ordenId, List<String> itemIds, Integer turnoPedido) {
     Orden orden = exigirOrden(ordenId);
+
     List<ItemOrden> pendientes = orden.itemsSinEnviar();
+    if (itemIds != null && !itemIds.isEmpty()) {
+      pendientes = pendientes.stream().filter(i -> itemIds.contains(i.getId())).toList();
+    }
 
     if (pendientes.isEmpty()) {
       throw new ReglaDeNegocioError("No hay productos nuevos para enviar");
     }
 
-    int turno = orden.proximoTurno();
-    int enviados = orden.aplicarEnvio(pendientes.stream().map(ItemOrden::getId).toList(), turno, reloj.ahora());
+    // El turno que pide el dispositivo nunca puede pisar uno ya usado en la
+    // mesa: si mientras estuvo sin senal alguien mando otro turno, este entra
+    // detras y no encima.
+    int turno = Math.max(orden.proximoTurno(), turnoPedido != null ? turnoPedido : 0);
+    int enviados =
+        orden.aplicarEnvio(pendientes.stream().map(ItemOrden::getId).toList(), turno, reloj.ahora());
     ordenes.guardar(orden);
 
     eventos.publicar(List.of("ordenes", "mesas", "cocina"));

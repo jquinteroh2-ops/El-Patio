@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CLAVE_COLA } from './config'
-import { escribirCrudo, leerBD, leerCrudo, notificar, suscribir } from './almacen'
+import { escribirCrudo, leerCrudo, notificar, suscribir } from './almacen'
 import type { EnvioPendiente } from './tipos'
 
 /**
@@ -8,11 +8,21 @@ import type { EnvioPendiente } from './tipos'
  *
  * En un restaurante real la tablet pierde WiFi. Si la comandera deja de
  * funcionar sin senal, el salon se paraliza. Aqui vive el estado de conexion y
- * la cola de envios que quedaron pendientes, persistida en localStorage para
- * que sobreviva incluso a un cierre de la aplicacion.
+ * la cola de envios que quedaron pendientes, guardada en el navegador para que
+ * sobreviva incluso a un cierre de la aplicacion.
+ *
+ * Hasta ahora la cola era una simulacion: todo estaba en localStorage y nada
+ * podia fallar de verdad. Con el backend, la cola cumple su proposito: guarda
+ * los envios a cocina que no alcanzaron a salir y los reenvia solos, en el
+ * mismo orden en que el mesero los dicto, apenas vuelve la senal.
+ *
+ * Alcance de lo que cubre: el envio a cocina. Tomar la comanda ya necesita
+ * servidor, porque el identificador de cada producto lo asigna la base. Un
+ * mesero completamente sin senal no puede empezar una mesa nueva; lo que si
+ * queda protegido es el corte a mitad de servicio, que es la falla frecuente.
  */
 
-/** Error que lanza mockApi cuando la operacion necesitaba red y no habia. */
+/** Error que lanza el cliente cuando la operacion necesitaba red y no habia. */
 export class SinConexionError extends Error {
   constructor(mensaje = 'Sin conexión') {
     super(mensaje)
@@ -20,9 +30,27 @@ export class SinConexionError extends Error {
   }
 }
 
-/** Interruptor de demostracion, guardado con los ajustes de la base. */
+// ---------------------------------------------------------------------------
+// Estado de conexion
+// ---------------------------------------------------------------------------
+
+/**
+ * Interruptor de demostracion, replicado en memoria.
+ *
+ * Vive en los ajustes del backend, pero `hayConexion()` tiene que responder sin
+ * esperar: lo consultan funciones sincronas y se llama antes de cada peticion.
+ * Por eso se guarda una copia local que mockApi refresca al leer los ajustes.
+ */
+let simulacionLocal = false
+
+export function fijarSimulacionSinConexion(activo: boolean): void {
+  if (simulacionLocal === activo) return
+  simulacionLocal = activo
+  notificar(['conexion'], Date.now())
+}
+
 export function simulandoSinConexion(): boolean {
-  return leerBD()?.ajustes.simularSinConexion ?? false
+  return simulacionLocal
 }
 
 /**
@@ -35,6 +63,13 @@ function navegadorEnLinea(): boolean {
   return navigator.onLine !== false
 }
 
+/**
+ * Si vale la pena intentar hablar con el servidor.
+ *
+ * No se consulta el estado del WebSocket para decidirlo: el canal puede estar
+ * reconectandose mientras el API responde perfectamente, y bloquear las
+ * peticiones por eso dejaria la comandera muerta sin motivo.
+ */
 export function hayConexion(): boolean {
   if (simulandoSinConexion()) return false
   return navegadorEnLinea()
@@ -76,6 +111,17 @@ export function vaciarCola(): void {
   guardarCola([])
 }
 
+/**
+ * Envios en el orden en que se dictaron.
+ *
+ * El orden importa: si las entradas quedaron en cola antes que los fuertes,
+ * tienen que salir a cocina en esa secuencia o el turno se invierte y los
+ * platos llegan a la mesa al reves.
+ */
+export function colaOrdenada(): EnvioPendiente[] {
+  return [...leerCola()].sort((a, b) => a.encoladoEn.localeCompare(b.encoladoEn))
+}
+
 // ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
@@ -88,14 +134,19 @@ export interface EstadoConexion {
 }
 
 /**
- * Estado de conexion vivo: reacciona al WiFi real del dispositivo y al
- * interruptor de demostracion accionado desde cualquier pestana.
+ * Estado de conexion vivo: reacciona al WiFi real del dispositivo, a la caida
+ * del canal de tiempo real y al interruptor de demostracion.
  */
 export function useEstadoConexion(): EstadoConexion {
   const calcular = (): EstadoConexion => {
     const simulada = simulandoSinConexion()
     return {
       simulada,
+      // A proposito NO se exige que el canal de tiempo real este vivo. Con el
+      // canal caido las pantallas dejan de refrescarse solas, pero el mesero
+      // sigue pudiendo comandar y cobrar contra el API; pintarle un aviso rojo
+      // seria una falsa alarma, y ademas parpadearia en cada carga mientras el
+      // socket termina de abrir.
       enLinea: !simulada && navegadorEnLinea(),
       pendientes: leerCola().length,
     }
@@ -116,6 +167,7 @@ export function useEstadoConexion(): EstadoConexion {
       window.removeEventListener('offline', actualizar)
       cancelarSync()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return estado

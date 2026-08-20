@@ -170,6 +170,15 @@ public final class Dtos {
    */
   public record ResultadoEnvio(boolean encolado, int turno, int cantidadItems) {}
 
+  /**
+   * Cuerpo opcional del envio a cocina.
+   *
+   * Solo lo manda la comandera cuando esta vaciando su cola de envios
+   * pendientes, para reponer un turno exactamente como se dicto. En el uso
+   * normal no viaja y el backend envia todo lo que este sin salir.
+   */
+  public record PeticionEnvio(List<String> itemIds, Integer turno) {}
+
   // -------------------------------------------------------------------------
   // Cocina
   // -------------------------------------------------------------------------

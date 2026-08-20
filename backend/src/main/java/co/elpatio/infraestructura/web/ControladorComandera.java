@@ -102,10 +102,32 @@ public class ControladorComandera {
     return ResponseEntity.noContent().build();
   }
 
-  /** Equivale a `enviarACocina(ordenId)`. */
+  /**
+   * Equivale a `enviarACocina(ordenId)`.
+   *
+   * El cuerpo es opcional: sin el se manda todo lo pendiente. La comandera lo
+   * usa al vaciar su cola para reponer un turno tal como se dicto.
+   */
   @PostMapping("/ordenes/{ordenId}/enviar")
-  public Dtos.ResultadoEnvio enviarACocina(@PathVariable String ordenId) {
-    return comandas.enviarACocina(ordenId);
+  public Dtos.ResultadoEnvio enviarACocina(
+      @PathVariable String ordenId, @RequestBody(required = false) Dtos.PeticionEnvio peticion) {
+    return comandas.enviarACocina(
+        ordenId,
+        peticion == null ? null : peticion.itemIds(),
+        peticion == null ? null : peticion.turno());
+  }
+
+  /**
+   * La comanda por su identificador.
+   *
+   * `obtenerOrdenDeMesa` parte de la mesa, pero el envio a cocina y el vaciado
+   * de la cola solo conocen el identificador de la comanda: sin esta ruta la
+   * comandera no podria saber que productos le faltan por mandar.
+   */
+  @GetMapping("/ordenes/{ordenId}")
+  @PreAuthorize("hasAnyRole('MESERO', 'CAJERO', 'ADMINISTRADOR')")
+  public Orden obtenerOrden(@PathVariable String ordenId) {
+    return comandas.obtenerOrden(ordenId);
   }
 
   /** Equivale a `agregarCargo(ordenId, nombre, valor, agregadoPor)`. */
