@@ -118,6 +118,20 @@ export type EstadoPedido =
   | 'rechazado'
   | 'cancelado'
 
+/**
+ * Donde hay que llevar el pedido, en coordenadas.
+ *
+ * Complementa la direccion escrita, no la reemplaza. `precisionMetros` es el
+ * radio dentro del cual el navegador afirma que esta el punto: un GPS da unos
+ * quince metros y una posicion deducida de la IP da dos kilometros, y la
+ * segunda parece precisa sin serlo.
+ */
+export interface UbicacionEntrega {
+  latitud: number
+  longitud: number
+  precisionMetros?: number
+}
+
 /** Quien pidio desde fuera del salon. */
 export interface ClienteExterno {
   nombre: string
@@ -223,6 +237,8 @@ export interface Orden {
   /** Solo en pedidos externos: es el recorrido que ve recepcion. */
   estadoPedido?: EstadoPedido
   cliente?: ClienteExterno
+  /** Solo si el cliente autorizo compartirla. Nunca es obligatoria. */
+  ubicacion?: UbicacionEntrega
   zonaDomicilioId?: string
   /** Linea aparte DESPUES del impuesto: el envio no causa INC ni propina. */
   costoEnvio?: number

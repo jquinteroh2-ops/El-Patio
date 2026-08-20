@@ -12,6 +12,7 @@ import co.elpatio.dominio.error.ReglaDeNegocioError;
 import co.elpatio.dominio.pedido.ClienteExterno;
 import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
+import co.elpatio.dominio.pedido.UbicacionEntrega;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
@@ -20,6 +21,7 @@ import co.elpatio.dominio.puertos.Repositorios;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,10 @@ public class ServicioPedidos {
   private final Reloj reloj;
   private final PublicadorEventos eventos;
 
+  /** Donde queda el local, para medir que tan lejos pidio el cliente. */
+  private final double latitudLocal;
+  private final double longitudLocal;
+
   public ServicioPedidos(
       Repositorios.DeOrdenes ordenes,
       Repositorios.DeCarta carta,
@@ -52,7 +58,11 @@ public class ServicioPedidos {
       Repositorios.DeAjustes ajustes,
       GeneradorIds ids,
       Reloj reloj,
-      PublicadorEventos eventos) {
+      PublicadorEventos eventos,
+      @Value("${elpatio.local.latitud}") double latitudLocal,
+      @Value("${elpatio.local.longitud}") double longitudLocal) {
+    this.latitudLocal = latitudLocal;
+    this.longitudLocal = longitudLocal;
     this.ordenes = ordenes;
     this.carta = carta;
     this.zonas = zonas;
@@ -181,6 +191,14 @@ public class ServicioPedidos {
     orden.setCostoEnvio(costoEnvio);
     orden.setMetodoPagoPrevisto(datos.metodoPagoPrevisto());
     orden.setNotas(datos.notas());
+
+    // La ubicacion solo tiene sentido en un domicilio, y solo si el cliente la
+    // compartio. Que falte no invalida nada: la direccion escrita es la que
+    // manda y el pedido entra igual.
+    if (tipo == TipoPedido.DOMICILIO && datos.latitud() != null && datos.longitud() != null) {
+      orden.setUbicacion(
+          new UbicacionEntrega(datos.latitud(), datos.longitud(), datos.precisionMetros()));
+    }
     orden.setMinutosEstimados(zona != null ? zona.getMinutosEstimados() : null);
 
     for (Dtos.NuevoItem nuevo : datos.items()) {
@@ -257,7 +275,10 @@ public class ServicioPedidos {
               orden,
               orden.etiquetaCanal(),
               nombreZona,
-              CalculadoraCuenta.calcular(orden, porcentajeInc)));
+              CalculadoraCuenta.calcular(orden, porcentajeInc),
+              orden.getUbicacion() == null
+                  ? null
+                  : orden.getUbicacion().metrosHasta(latitudLocal, longitudLocal)));
     }
 
     lista.sort(Comparator.comparing(p -> p.orden().inicioDeEspera()));

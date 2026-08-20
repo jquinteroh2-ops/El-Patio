@@ -4,8 +4,10 @@ import {
   BellOff,
   Bike,
   Check,
+  Crosshair,
   MapPin,
   MessageCircle,
+  Navigation,
   Phone,
   Printer,
   ShoppingBag,
@@ -35,6 +37,13 @@ import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { IndicadorConexion } from '@/componentes/IndicadorConexion'
+import {
+  PRECISION_ACEPTABLE_METROS,
+  distanciaLegible,
+  enlaceMapa,
+  enlaceMapaPorDireccion,
+  enlaceWaze,
+} from '@/publico/ubicacion'
 
 /**
  * Recepcion de domicilios y para llevar.
@@ -445,7 +454,7 @@ function TarjetaPedido({
   onEntregar,
   onImprimir,
 }: PropsTarjeta) {
-  const { orden, cuenta, etiqueta, zonaNombre } = pedido
+  const { orden, cuenta, etiqueta, zonaNombre, metrosDelLocal } = pedido
   // El reloj corre desde que el cliente pidio, no desde que alguien lo miro.
   const espera = minutosDesde(orden.recibidoEn ?? orden.abiertaEn)
   const estado = orden.estadoPedido as EstadoPedido
@@ -487,13 +496,77 @@ function TarjetaPedido({
 
       {/* --- Entrega --- */}
       {orden.tipo === 'domicilio' && (
-        <p className="mb-2 flex items-start gap-1.5 text-xs text-noche-300">
-          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-noche-500" aria-hidden />
-          <span>
-            {orden.cliente?.direccion}
-            {zonaNombre && <span className="text-noche-500"> · {zonaNombre}</span>}
-          </span>
-        </p>
+        <div className="mb-2">
+          <p className="flex items-start gap-1.5 text-xs text-noche-300">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-noche-500" aria-hidden />
+            <span>
+              {orden.cliente?.direccion}
+              {zonaNombre && <span className="text-noche-500"> · {zonaNombre}</span>}
+            </span>
+          </p>
+
+          {/*
+            La dirección escrita manda; la coordenada es la ayuda. Si el cliente
+            la compartió se ofrece navegación directa, y si no, un enlace de
+            búsqueda armado con la dirección, que es menos preciso pero mejor
+            que salir a adivinar.
+          */}
+          {orden.ubicacion ? (
+            <div className="mt-1.5">
+              <div className="flex gap-1.5">
+                <a
+                  href={enlaceWaze(orden.ubicacion)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-crema-100 transition hover:border-ambar-500/50"
+                >
+                  <Navigation className="h-3 w-3" aria-hidden />
+                  Waze
+                </a>
+                <a
+                  href={enlaceMapa(orden.ubicacion)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-crema-100 transition hover:border-ambar-500/50"
+                >
+                  <Crosshair className="h-3 w-3" aria-hidden />
+                  Mapa
+                </a>
+              </div>
+
+              {/* Una coordenada de dos kilómetros de radio parece precisa y no
+                  lo es: hay que decirlo antes de que alguien salga confiado. */}
+              {orden.ubicacion.precisionMetros !== undefined &&
+                orden.ubicacion.precisionMetros > PRECISION_ACEPTABLE_METROS && (
+                  <p className="mt-1 text-xs text-estado-proceso">
+                    Ubicación aproximada (±{orden.ubicacion.precisionMetros} m): guíese por la
+                    dirección.
+                  </p>
+                )}
+
+              {/* Pidió desde lejos: casi siempre significa que estaba en otro
+                  sitio y la coordenada no es la de la entrega. */}
+              {metrosDelLocal !== undefined && metrosDelLocal > 5000 && (
+                <p className="mt-1 text-xs text-estado-proceso">
+                  Pidió {distanciaLegible(metrosDelLocal)} del local: confirme la dirección antes de
+                  despachar.
+                </p>
+              )}
+            </div>
+          ) : (
+            orden.cliente?.direccion && (
+              <a
+                href={enlaceMapaPorDireccion(orden.cliente.direccion, orden.cliente.barrio)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1.5 inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-noche-300 transition hover:border-ambar-500/50"
+              >
+                <MapPin className="h-3 w-3" aria-hidden />
+                Buscar la dirección en el mapa
+              </a>
+            )
+          )}
+        </div>
       )}
 
       {/* --- Productos --- */}

@@ -515,6 +515,10 @@ export interface NuevoPedidoExterno {
   zonaDomicilioId?: string
   metodoPagoPrevisto?: MetodoPago
   notas?: string
+  /** Ubicacion del cliente, si autorizo compartirla. Los tres son opcionales. */
+  latitud?: number
+  longitud?: number
+  precisionMetros?: number
   items: NuevoItem[]
 }
 
@@ -548,6 +552,12 @@ export interface PedidoEnRecepcion {
   etiqueta: string
   zonaNombre?: string
   cuenta: Cuenta
+  /**
+   * Metros entre el punto que compartio el cliente y el local. Sirve para
+   * detectar al que pidio desde el trabajo para que le lleven a la casa: si el
+   * punto esta lejos, quien despacha tiene que fiarse de la direccion escrita.
+   */
+  metrosDelLocal?: number
 }
 
 export async function listarPedidos(incluirCerrados = false): Promise<PedidoEnRecepcion[]> {

@@ -8,6 +8,7 @@ import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.pedido.ClienteExterno;
 import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
+import co.elpatio.dominio.pedido.UbicacionEntrega;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -88,6 +89,15 @@ public class FilaOrden {
   @Column(name = "cliente_barrio")
   private String clienteBarrio;
 
+  @Column(name = "cliente_latitud")
+  private Double clienteLatitud;
+
+  @Column(name = "cliente_longitud")
+  private Double clienteLongitud;
+
+  @Column(name = "ubicacion_precision_metros")
+  private Integer ubicacionPrecisionMetros;
+
   @Column(name = "zona_domicilio_id")
   private String zonaDomicilioId;
 
@@ -145,6 +155,11 @@ public class FilaOrden {
         clienteNombre == null && clienteTelefono == null
             ? null
             : new ClienteExterno(clienteNombre, clienteTelefono, clienteDireccion, clienteBarrio));
+    // O estan las dos coordenadas o no hay ubicacion: media coordenada no ubica.
+    orden.setUbicacion(
+        clienteLatitud == null || clienteLongitud == null
+            ? null
+            : new UbicacionEntrega(clienteLatitud, clienteLongitud, ubicacionPrecisionMetros));
     orden.setZonaDomicilioId(zonaDomicilioId);
     orden.setCostoEnvio(costoEnvio);
     orden.setMetodoPagoPrevisto(
@@ -186,6 +201,10 @@ public class FilaOrden {
     this.clienteTelefono = cliente == null ? null : cliente.telefono();
     this.clienteDireccion = cliente == null ? null : cliente.direccion();
     this.clienteBarrio = cliente == null ? null : cliente.barrio();
+    UbicacionEntrega ubicacion = orden.getUbicacion();
+    this.clienteLatitud = ubicacion == null ? null : ubicacion.latitud();
+    this.clienteLongitud = ubicacion == null ? null : ubicacion.longitud();
+    this.ubicacionPrecisionMetros = ubicacion == null ? null : ubicacion.precisionMetros();
     this.zonaDomicilioId = orden.getZonaDomicilioId();
     this.costoEnvio = orden.getCostoEnvio();
     this.metodoPagoPrevisto =

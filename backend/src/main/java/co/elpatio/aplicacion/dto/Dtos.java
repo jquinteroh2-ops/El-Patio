@@ -219,6 +219,13 @@ public final class Dtos {
       String zonaDomicilioId,
       MetodoPago metodoPagoPrevisto,
       String notas,
+      /**
+       * Ubicacion del cliente, si autorizo compartirla. Los tres campos son
+       * opcionales: un pedido sin ellos es igual de valido.
+       */
+      Double latitud,
+      Double longitud,
+      Integer precisionMetros,
       List<NuevoItem> items) {}
 
   /** Lo que se le muestra al cliente al confirmar: su numero y cuanto tarda. */
@@ -226,7 +233,17 @@ public final class Dtos {
 
   /** Un pedido tal como lo pinta la pantalla de recepcion. */
   public record PedidoEnRecepcion(
-      Orden orden, String etiqueta, String zonaNombre, Cuenta cuenta) {}
+      Orden orden,
+      String etiqueta,
+      String zonaNombre,
+      Cuenta cuenta,
+      /**
+       * Distancia en metros entre el punto que compartio el cliente y el local.
+       * Nula si no compartio ubicacion. Sirve para detectar al que pidio desde
+       * el trabajo para que le lleven a la casa: la coordenada esta lejos de la
+       * direccion escrita y quien despacha tiene que fiarse de la segunda.
+       */
+      Long metrosDelLocal) {}
 
   public record PeticionAceptar(int minutosEstimados) {}
 

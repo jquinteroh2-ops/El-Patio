@@ -1,13 +1,20 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Bike, Check, Clock, ShoppingBag, Trash2 } from 'lucide-react'
+import { ArrowLeft, Bike, Check, Clock, Crosshair, MapPin, ShoppingBag, Trash2 } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { PedidoCreado } from '@/compartido/mockApi'
 import { DIGITOS_TELEFONO, RESTAURANTE } from '@/compartido/config'
 import { formatoCOP } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
-import type { EstadoCanal, MetodoPago, TipoPedido, ZonaDomicilio } from '@/compartido/tipos'
+import type {
+  EstadoCanal,
+  MetodoPago,
+  TipoPedido,
+  UbicacionEntrega,
+  ZonaDomicilio,
+} from '@/compartido/tipos'
 import { useCarrito, precioLinea } from './carrito'
+import { PRECISION_ACEPTABLE_METROS, pedirUbicacion } from './ubicacion'
 import { Filete } from './Ornamento'
 
 /**
@@ -51,6 +58,12 @@ export default function Pedir() {
   const [metodo, setMetodo] = useState<MetodoPago>('efectivo')
   const [notas, setNotas] = useState('')
 
+  // La ubicación es opcional en todo momento: si el cliente no la comparte, el
+  // pedido entra igual y la dirección escrita es la que manda.
+  const [ubicacion, setUbicacion] = useState<UbicacionEntrega | null>(null)
+  const [buscandoUbicacion, setBuscandoUbicacion] = useState(false)
+  const [avisoUbicacion, setAvisoUbicacion] = useState<string | null>(null)
+
   const [intentado, setIntentado] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -78,6 +91,30 @@ export default function Pedir() {
     return lista
   }, [nombre, telefono, tipo, zonaId, direccion, faltaParaElMinimo, zona, carrito.lineas.length])
 
+  const tomarUbicacion = async () => {
+    setBuscandoUbicacion(true)
+    setAvisoUbicacion(null)
+    const resultado = await pedirUbicacion()
+    setBuscandoUbicacion(false)
+
+    switch (resultado.estado) {
+      case 'lista':
+        setUbicacion(resultado.ubicacion)
+        break
+      case 'negada':
+        setAvisoUbicacion(
+          'No autorizó la ubicación. No hay problema: llegamos con la dirección que escribió.',
+        )
+        break
+      case 'sin_soporte':
+        setAvisoUbicacion('Su navegador no puede compartir la ubicación. Siga con la dirección.')
+        break
+      case 'fallo':
+        setAvisoUbicacion(resultado.mensaje)
+        break
+    }
+  }
+
   const enviar = async (evento: FormEvent) => {
     evento.preventDefault()
     setIntentado(true)
@@ -95,6 +132,10 @@ export default function Pedir() {
         zonaDomicilioId: tipo === 'domicilio' ? zonaId : undefined,
         metodoPagoPrevisto: metodo,
         notas: notas.trim() || undefined,
+        // Solo viaja si el cliente la compartió y el pedido es a domicilio.
+        latitud: tipo === 'domicilio' ? ubicacion?.latitud : undefined,
+        longitud: tipo === 'domicilio' ? ubicacion?.longitud : undefined,
+        precisionMetros: tipo === 'domicilio' ? ubicacion?.precisionMetros : undefined,
         items: carrito.lineas.map((l) => ({
           itemCartaId: l.itemCartaId,
           cantidad: l.cantidad,
@@ -397,6 +438,75 @@ export default function Pedir() {
                 placeholder="Calle 12 #4-33, casa de dos pisos"
                 required
               />
+            </div>
+
+            {/*
+              Ubicación exacta. Es opcional a propósito y el texto lo dice: en
+              Turbaco muchas casas no tienen nomenclatura clara y el punto le
+              ahorra al domiciliario la llamada de «¿por dónde es?». Si el
+              cliente no quiere darla, el pedido entra igual.
+            */}
+            <div className="rounded-sm border border-crema-100/10 p-4">
+              <p className={etiquetaCampo}>Ubicación exacta (opcional)</p>
+
+              {ubicacion ? (
+                <div>
+                  <p className="flex items-start gap-2 text-sm text-crema-100">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+                    <span>
+                      Ubicación compartida
+                      {ubicacion.precisionMetros !== undefined && (
+                        <span className="block text-xs text-crema-100/50">
+                          {ubicacion.precisionMetros <= PRECISION_ACEPTABLE_METROS
+                            ? `Precisión de unos ${ubicacion.precisionMetros} m`
+                            : `Precisión de ${ubicacion.precisionMetros} m: es aproximada, así que la dirección sigue siendo importante`}
+                        </span>
+                      )}
+                    </span>
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={tomarUbicacion}
+                      disabled={buscandoUbicacion}
+                      className="min-h-[40px] rounded-sm border border-crema-100/20 px-3.5 text-xs text-crema-100/70 transition hover:border-ambar-400 hover:text-ambar-300 disabled:opacity-60"
+                    >
+                      {buscandoUbicacion ? 'Buscando…' : 'Volver a tomarla'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUbicacion(null)
+                        setAvisoUbicacion(null)
+                      }}
+                      className="min-h-[40px] rounded-sm border border-crema-100/20 px-3.5 text-xs text-crema-100/50 transition hover:border-crema-100/40"
+                    >
+                      Quitarla
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="mb-3 text-xs leading-relaxed text-crema-100/50">
+                    Si está en el lugar de entrega, compartir su ubicación nos ayuda a llegar sin
+                    llamarlo. Si está pidiendo desde otro sitio, mejor déjelo así: vale la dirección
+                    que escribió arriba.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={tomarUbicacion}
+                    disabled={buscandoUbicacion}
+                    className="inline-flex min-h-[48px] items-center gap-2 rounded-sm border border-crema-100/25 px-4 text-sm text-crema-100 transition hover:border-ambar-400 hover:text-ambar-300 disabled:opacity-60"
+                  >
+                    <Crosshair className="h-4 w-4" aria-hidden />
+                    {buscandoUbicacion ? 'Buscando su ubicación…' : 'Estoy aquí, usar mi ubicación'}
+                  </button>
+                </>
+              )}
+
+              {avisoUbicacion && (
+                <p className="mt-3 text-xs leading-relaxed text-crema-100/50">{avisoUbicacion}</p>
+              )}
             </div>
           </>
         )}

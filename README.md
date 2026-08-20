@@ -21,6 +21,7 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Variables de entorno](#variables-de-entorno)
 - [Cómo crear usuarios](#cómo-crear-usuarios)
 - [Respaldos y restauración](#respaldos-y-restauración)
+- [Ubicación exacta de los domicilios](#ubicación-exacta-de-los-domicilios)
 - [Impresión en caja](#impresión-en-caja)
 - [Desarrollo local](#desarrollo-local)
 
@@ -59,6 +60,8 @@ ELPATIO_JWT_SECRETO   <genérelo, ver abajo>
 ELPATIO_CORS_ORIGENES https://el-dominio-del-frontend
 ELPATIO_PERFIL        produccion
 ELPATIO_ZONA          America/Bogota
+ELPATIO_LATITUD       <latitud del local>
+ELPATIO_LONGITUD      <longitud del local>
 ```
 
 `${{Postgres.DATABASE_URL}}` es la sintaxis de Railway para referenciar otro
@@ -142,6 +145,8 @@ sus claves:
 | `ELPATIO_CORS_ORIGENES` | sí | `http://localhost:5173` | Dominios autorizados, separados por coma |
 | `ELPATIO_PERFIL` | no | `desarrollo` | `produccion` cambia los registros a JSON |
 | `ELPATIO_ZONA` | no | `America/Bogota` | Zona del día operativo y del turno |
+| `ELPATIO_LATITUD` | no | `10.3403` | Latitud del local, para medir distancias |
+| `ELPATIO_LONGITUD` | no | `-75.4136` | Longitud del local |
 | `ELPATIO_JWT_MINUTOS` | no | `20` | Vida del token de acceso |
 | `ELPATIO_JWT_DIAS_REFRESCO` | no | `30` | Vida del token de refresco |
 | `PORT` | no | `8080` | Lo inyecta Railway |
@@ -275,6 +280,37 @@ Restaurado:  5,18,59,19,12,2,7
 
 CORRECTO: el respaldo restaura la misma cantidad de filas en todas las tablas.
 ```
+
+---
+
+## Ubicación exacta de los domicilios
+
+Cuando un cliente pide a domicilio, el formulario le ofrece compartir su
+ubicación. Si acepta, la tarjeta de recepción muestra botones de **Waze** y
+**Mapa** que abren el punto exacto; si no, muestra un enlace de búsqueda armado
+con la dirección escrita.
+
+Es **opcional en todo momento**: si el cliente niega el permiso, el pedido entra
+igual y la dirección escrita es la que manda.
+
+Recepción ve dos advertencias cuando corresponde:
+
+- **«Ubicación aproximada (±N m)»** cuando el navegador informó poca precisión.
+  Un GPS da unos quince metros; una posición deducida de la IP da kilómetros y
+  *parece* precisa sin serlo.
+- **«Pidió a N km del local»** cuando el punto está lejos, que casi siempre
+  significa que el cliente estaba en otro sitio —el trabajo, por ejemplo— y la
+  coordenada no es la de la entrega.
+
+> **Ponga las coordenadas reales del local.** `ELPATIO_LATITUD` y
+> `ELPATIO_LONGITUD` traen por defecto el centro de Turbaco, no la puerta del
+> restaurante. Sirven para que la cuenta de distancia no falle, no para navegar.
+> Se sacan abriendo Google Maps sobre el local y copiando el par de números que
+> aparece en la URL.
+
+La ubicación es dato personal preciso. Solo se captura con un toque explícito
+del cliente, solo se guarda en domicilios, y solo la ve quien despacha —que ya
+son los únicos roles con acceso a `/api/pedidos`—.
 
 ---
 

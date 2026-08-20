@@ -7,6 +7,7 @@ import co.elpatio.dominio.cobro.MetodoPago;
 import co.elpatio.dominio.pedido.ClienteExterno;
 import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
+import co.elpatio.dominio.pedido.UbicacionEntrega;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -59,6 +60,13 @@ public class Orden {
   private EstadoPedido estadoPedido;
 
   private ClienteExterno cliente;
+
+  /**
+   * Donde hay que llevarlo, en coordenadas. Opcional: el cliente puede negar el
+   * permiso y el pedido entra igual. La direccion escrita es la que manda.
+   */
+  private UbicacionEntrega ubicacion;
+
   private String zonaDomicilioId;
 
   /**
@@ -475,6 +483,8 @@ public class Orden {
   public void setEstadoPedido(EstadoPedido estadoPedido) { this.estadoPedido = estadoPedido; }
   public ClienteExterno getCliente() { return cliente; }
   public void setCliente(ClienteExterno cliente) { this.cliente = cliente; }
+  public UbicacionEntrega getUbicacion() { return ubicacion; }
+  public void setUbicacion(UbicacionEntrega ubicacion) { this.ubicacion = ubicacion; }
   public String getZonaDomicilioId() { return zonaDomicilioId; }
   public void setZonaDomicilioId(String zonaDomicilioId) { this.zonaDomicilioId = zonaDomicilioId; }
   public long getCostoEnvio() { return costoEnvio; }

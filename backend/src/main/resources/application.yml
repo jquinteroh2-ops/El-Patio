@@ -62,6 +62,17 @@ management:
 elpatio:
   # El día operativo y el turno se calculan en esta zona, nunca en UTC.
   zona-horaria: ${ELPATIO_ZONA:America/Bogota}
+
+  # Dónde queda el local, para medir qué tan lejos pidió el cliente.
+  #
+  # Los valores por defecto son el centro de Turbaco, NO la puerta del
+  # restaurante: sirven para que la cuenta no falle, no para navegar. Ponga las
+  # coordenadas reales antes de salir a producción; se sacan abriendo Google
+  # Maps sobre el local y copiando el par que aparece en la URL.
+  local:
+    latitud: ${ELPATIO_LATITUD:10.3403}
+    longitud: ${ELPATIO_LONGITUD:-75.4136}
+
   jwt:
     # Sin valor por defecto a propósito: si falta, el backend no arranca. Un
     # secreto de ejemplo funcionando en producción es peor que un fallo visible.
