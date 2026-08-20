@@ -1,0 +1,29 @@
+# PostgreSQL para desarrollo local.
+#
+# En Railway la base es un servicio gestionado y estas credenciales no existen:
+# aquí son deliberadamente triviales porque el puerto solo escucha en localhost.
+#
+# Se publica en el 5433 y no en el 5432 porque muchas máquinas de desarrollo ya
+# tienen un PostgreSQL propio instalado en el puerto estándar. Si el contenedor
+# lo tomara también, el host resolvería contra la instalación local y el error
+# que aparece es «autenticación fallida», que no dice nada sobre el conflicto.
+services:
+  base:
+    image: postgres:16-alpine
+    container_name: elpatio-base
+    environment:
+      POSTGRES_DB: elpatio
+      POSTGRES_USER: elpatio
+      POSTGRES_PASSWORD: elpatio
+    ports:
+      - '5433:5432'
+    volumes:
+      - datos-elpatio:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U elpatio -d elpatio']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  datos-elpatio:

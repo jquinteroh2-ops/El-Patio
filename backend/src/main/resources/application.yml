@@ -1,0 +1,74 @@
+# Configuración del backend.
+#
+# Nada de lo que cambia entre entornos está escrito aquí: todo entra por
+# variables de entorno. Los valores por defecto que se ven abajo son los de la
+# máquina de desarrollo, y ninguno es un secreto real.
+
+spring:
+  application:
+    name: el-patio-backend
+
+  datasource:
+    # Railway entrega DATABASE_URL; en local se apunta al Postgres del docker compose.
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/elpatio}
+    username: ${DATABASE_USUARIO:elpatio}
+    password: ${DATABASE_CLAVE:elpatio}
+    hikari:
+      maximum-pool-size: ${BD_POOL_MAX:10}
+      connection-timeout: 10000
+
+  jpa:
+    hibernate:
+      # El esquema lo manda Flyway. Que Hibernate lo toque sería tener dos
+      # fuentes de verdad y descubrir la diferencia en producción.
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+  # Railway y cualquier proxy ponen el HTTPS por delante: sin esto la aplicación
+  # se cree en http y arma mal las URLs absolutas.
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+elpatio:
+  # El día operativo y el turno se calculan en esta zona, nunca en UTC.
+  zona-horaria: ${ELPATIO_ZONA:America/Bogota}
+  jwt:
+    # Sin valor por defecto a propósito: si falta, el backend no arranca. Un
+    # secreto de ejemplo funcionando en producción es peor que un fallo visible.
+    secreto: ${ELPATIO_JWT_SECRETO}
+    minutos-acceso: ${ELPATIO_JWT_MINUTOS:20}
+    dias-refresco: ${ELPATIO_JWT_DIAS_REFRESCO:30}
+  cors:
+    # Lista separada por comas. Nunca `*`: el navegador envía el token.
+    origenes: ${ELPATIO_CORS_ORIGENES:http://localhost:5173}
+
+logging:
+  level:
+    root: ${LOG_NIVEL:INFO}
+    co.elpatio: ${LOG_NIVEL_APP:INFO}
