@@ -25,6 +25,8 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Impresión en caja](#impresión-en-caja)
 - [Desarrollo local](#desarrollo-local)
 
+Aparte: [análisis de facturación electrónica ante la DIAN](FACTURACION-DIAN.md).
+
 ---
 
 ## Cómo desplegar en Railway
