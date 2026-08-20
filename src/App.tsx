@@ -31,7 +31,8 @@ import Configuracion from '@/admin/Configuracion'
 export default function App() {
   const [listo, setListo] = useState(false)
 
-  // Siembra los datos de demostracion la primera vez que se abre el navegador.
+  // Comprueba que el servidor conteste antes de pintar nada, para no abrir
+  // pantallas vacias sin explicacion. No bloquea si falla.
   useEffect(() => {
     void api.inicializar().finally(() => setListo(true))
   }, [])

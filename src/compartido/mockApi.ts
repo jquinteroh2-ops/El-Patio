@@ -3,7 +3,6 @@ import {
   SinConexionError,
   colaOrdenada,
   encolar,
-  fijarSimulacionSinConexion,
   hayConexion,
   leerCola,
   marcarIntento,
@@ -98,20 +97,6 @@ export async function inicializar(): Promise<void> {
   }
 }
 
-/**
- * Ya no existe un salon de demostracion que reiniciar: los datos viven en
- * PostgreSQL y son los del restaurante. Borrarlos desde un boton de la interfaz
- * seria destruir el historico de ventas.
- *
- * Se conserva la funcion porque la pantalla de configuracion todavia la llama;
- * el boton desaparece en la fase 4, junto con el resto del modo demostracion.
- */
-export async function reiniciarDemo(): Promise<void> {
-  throw new Error(
-    'El sistema ya trabaja contra la base real: no hay datos de demostración que reiniciar',
-  )
-}
-
 // ---------------------------------------------------------------------------
 // Acceso
 // ---------------------------------------------------------------------------
@@ -172,44 +157,22 @@ export async function guardarUsuario(usuario: Usuario): Promise<Usuario> {
 
 export async function obtenerAjustes(): Promise<Ajustes> {
   return contra(async () => {
-    const ajustes = await pedir<Ajustes>('/api/ajustes')
-    // La copia local del interruptor se refresca aqui porque `hayConexion()` es
-    // sincrona y no puede consultarlo cada vez que va a salir una peticion.
-    fijarSimulacionSinConexion(ajustes.simularSinConexion)
-    return ajustes
+    return await pedir<Ajustes>('/api/ajustes')
   })
 }
 
 export async function actualizarAjustes(cambios: Partial<Ajustes>): Promise<Ajustes> {
   return contra(async () => {
-    const ajustes = await pedir<Ajustes>('/api/ajustes', {
+    return await pedir<Ajustes>('/api/ajustes', {
       metodo: 'PUT',
       cuerpo: {
         porcentajeInc: cambios.porcentajeInc,
-        simularSinConexion: cambios.simularSinConexion,
+        domiciliosPausados: cambios.domiciliosPausados,
+        domiciliosDesde: cambios.domiciliosDesde,
+        domiciliosHasta: cambios.domiciliosHasta,
       },
     })
-    fijarSimulacionSinConexion(ajustes.simularSinConexion)
-    return ajustes
   })
-}
-
-/**
- * Interruptor de demostracion de la caida de WiFi. Sigue siendo sincrono porque
- * la pantalla lo usa como un interruptor y tiene que responder al instante.
- *
- * El estado local se cambia de una vez y el aviso al servidor sale detras. Al
- * activarlo el envio ni siquiera saldra, que es exactamente lo que se quiere
- * demostrar; al desactivarlo, la peticion viaja y deja el ajuste igual en todos
- * los dispositivos.
- */
-export function alternarSinConexion(activo: boolean): void {
-  fijarSimulacionSinConexion(activo)
-  if (activo) return
-  void pedir<Ajustes>('/api/ajustes', {
-    metodo: 'PUT',
-    cuerpo: { simularSinConexion: false },
-  }).catch((error) => console.error('[api] no se pudo guardar el interruptor', error))
 }
 
 // ---------------------------------------------------------------------------

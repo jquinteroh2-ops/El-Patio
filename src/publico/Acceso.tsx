@@ -5,7 +5,6 @@ import { useSesion } from '@/compartido/auth'
 import { RESTAURANTE } from '@/compartido/config'
 import { Boton } from '@/componentes/ui/Boton'
 import { Campo } from '@/componentes/ui/Campo'
-import { AvisoDemo } from '@/componentes/AvisoDemo'
 
 export default function Acceso() {
   const { sesion, ingresar, rutaInicial } = useSesion()
@@ -100,9 +99,6 @@ export default function Acceso() {
         </div>
       </div>
 
-      <footer className="mx-auto w-full max-w-md pt-8 text-center">
-        <AvisoDemo />
-      </footer>
     </div>
   )
 }

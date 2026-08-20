@@ -1,5 +1,5 @@
 import { precioItem } from '@/compartido/calculos'
-import { ETIQUETA_DEMO, RESTAURANTE } from '@/compartido/config'
+import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
 import { formatoCOP, formatoFechaHora } from '@/compartido/formato'
 import type { Orden, Pago } from '@/compartido/tipos'
 
@@ -124,8 +124,8 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre }: Props) 
         <p className="text-xs text-bosque-950/70">
           La propina es voluntaria. Si no está de acuerdo con ella, puede solicitar su retiro.
         </p>
-        <p className="mt-2 text-[0.65rem] uppercase tracking-widest text-bosque-950/40">
-          {ETIQUETA_DEMO}
+        <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/50">
+          {DATOS_FISCALES.leyenda}
         </p>
       </footer>
     </article>

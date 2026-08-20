@@ -230,10 +230,9 @@ async function mensajeDeError(respuesta: Response): Promise<string> {
 export async function pedir<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
   const { metodo = 'GET', cuerpo, consulta, sinSesion = false } = opciones
 
-  // El interruptor de demostracion y la caida real de WiFi se tratan igual: si
-  // no hay senal no se intenta la peticion, para que el error llegue de
-  // inmediato y la comandera pueda encolar en vez de esperar el tiempo de
-  // espera del navegador con el mesero mirando la pantalla.
+  // Sin senal no se intenta la peticion, para que el error llegue de inmediato
+  // y la comandera pueda encolar en vez de esperar el tiempo de espera del
+  // navegador con el mesero mirando la pantalla.
   if (!hayConexion()) throw new SinConexionError()
 
   const cabeceras: Record<string, string> = {}

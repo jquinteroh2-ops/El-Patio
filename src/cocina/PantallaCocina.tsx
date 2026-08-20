@@ -8,7 +8,6 @@ import { minutosDesde } from '@/compartido/formato'
 import { useReloj, useSyncedState } from '@/compartido/useSyncedState'
 import type { Destino, EstadoItem } from '@/compartido/tipos'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
-import { AvisoDemo } from '@/componentes/AvisoDemo'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { TarjetaComanda } from './TarjetaComanda'
@@ -244,9 +243,6 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
         })}
       </main>
 
-      <footer className="border-t border-noche-800 px-4 py-2.5 text-center">
-        <AvisoDemo />
-      </footer>
     </div>
   )
 }

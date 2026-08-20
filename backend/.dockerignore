@@ -1,4 +1,4 @@
 target/
+respaldos/
 .env
 *.log
-respaldos/

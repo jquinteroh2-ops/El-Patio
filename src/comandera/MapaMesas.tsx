@@ -9,7 +9,6 @@ import { formatoCOP } from '@/compartido/formato'
 import { useReloj, useSyncedState } from '@/compartido/useSyncedState'
 import type { Zona } from '@/compartido/tipos'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
-import { AvisoDemo } from '@/componentes/AvisoDemo'
 import { Boton } from '@/componentes/ui/Boton'
 import { Cargando } from '@/componentes/ui/Cargando'
 import { Contador } from '@/componentes/ui/Contador'
@@ -150,9 +149,6 @@ export default function MapaMesas() {
         )}
       </main>
 
-      <footer className="px-4 pb-4 pt-2 text-center">
-        <AvisoDemo />
-      </footer>
 
       <HojaInferior
         abierta={!!mesaAAbrir}

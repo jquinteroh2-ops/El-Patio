@@ -75,7 +75,6 @@ public final class Dtos {
 
   public record AjustesDto(
       int porcentajeInc,
-      boolean simularSinConexion,
       int consecutivoOrden,
       LocalDate fechaConsecutivo,
       boolean domiciliosPausados,
@@ -85,7 +84,6 @@ public final class Dtos {
   /** Cambios parciales de ajustes: lo que venga en null se deja como esta. */
   public record CambiosAjustes(
       Integer porcentajeInc,
-      Boolean simularSinConexion,
       Boolean domiciliosPausados,
       LocalTime domiciliosDesde,
       LocalTime domiciliosHasta) {}

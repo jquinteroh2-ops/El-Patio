@@ -42,9 +42,6 @@ public class ServicioAjustes {
       if (inc < 0 || inc > 100) throw new ReglaDeNegocioError("El INC debe estar entre 0 y 100");
       actuales.setPorcentajeInc(inc);
     }
-    if (cambios.simularSinConexion() != null) {
-      actuales.setSimularSinConexion(cambios.simularSinConexion());
-    }
     if (cambios.domiciliosPausados() != null) {
       actuales.setDomiciliosPausados(cambios.domiciliosPausados());
     }
@@ -65,7 +62,6 @@ public class ServicioAjustes {
   private Dtos.AjustesDto aDto(Ajustes valor) {
     return new Dtos.AjustesDto(
         valor.getPorcentajeInc(),
-        valor.isSimularSinConexion(),
         valor.getConsecutivoOrden(),
         valor.getFechaConsecutivo(),
         valor.isDomiciliosPausados(),

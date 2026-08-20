@@ -1,0 +1,9 @@
+# Los guiones de shell tienen que quedar con saltos de línea de Unix aunque se
+# editen en Windows: bash no acepta el retorno de carro y falla con un error que
+# no dice nada («$'\r': command not found»).
+*.sh text eol=lf
+
+# El Dockerfile y los archivos que se copian dentro de una imagen Linux, igual.
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

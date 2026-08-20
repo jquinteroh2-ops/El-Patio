@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Instagram, MapPin, MessageCircle, Phone } from 'lucide-react'
-import { ETIQUETA_DEMO, RESTAURANTE } from '@/compartido/config'
+import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 
 const SALUDO_WHATSAPP = `Hola, quisiera información sobre ${RESTAURANTE.nombreCompleto}.`
@@ -105,7 +105,9 @@ export default function LayoutPublico() {
 
         <div className="border-t border-crema-100/10">
           <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-5 py-5 text-center sm:flex-row sm:justify-between">
-            <span className="text-xs text-crema-100/35">{ETIQUETA_DEMO}</span>
+            <span className="text-xs text-crema-100/35">
+              {RESTAURANTE.nombreCompleto} · NIT {DATOS_FISCALES.nit}
+            </span>
             {/* Acceso del personal: existe, pero no compite con la carta ni la reserva. */}
             <Link
               to="/acceso"

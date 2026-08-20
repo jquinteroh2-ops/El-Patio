@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Salida de registros.
+
+  En desarrollo se imprime en texto, que es lo que un humano lee mientras
+  trabaja. En produccion se imprime en JSON, porque Railway y cualquier
+  agregador reciben una linea por evento y con texto suelto no pueden separar
+  el nivel del mensaje ni filtrar por campo.
+
+  Lo que NUNCA entra al registro: claves, tokens ni datos de tarjeta. Las claves
+  del personal se imprimen por System.out una sola vez al sembrar, justamente
+  para que no queden indexadas aqui.
+-->
+<configuration>
+  <springProperty scope="context" name="aplicacion" source="spring.application.name"/>
+
+  <!-- Desarrollo: legible por una persona. -->
+  <springProfile name="!produccion">
+    <appender name="CONSOLA" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="CONSOLA"/>
+    </root>
+  </springProfile>
+
+  <!-- Produccion: una linea de JSON por evento. -->
+  <springProfile name="produccion">
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <timeZone>UTC</timeZone>
+        <!-- El nombre de la aplicacion ya viaja como propiedad del contexto
+             (springProperty de arriba); repetirlo en customFields dejaba el
+             campo duplicado en cada linea. -->
+        <fieldNames>
+          <timestamp>momento</timestamp>
+          <level>nivel</level>
+          <message>mensaje</message>
+          <logger>origen</logger>
+          <thread>hilo</thread>
+          <stackTrace>traza</stackTrace>
+        </fieldNames>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="JSON"/>
+    </root>
+    <!-- Hibernate y Spring son ruidosos en INFO durante el arranque. -->
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.springframework.web" level="WARN"/>
+  </springProfile>
+</configuration>

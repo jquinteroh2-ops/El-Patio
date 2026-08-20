@@ -1,14 +1,12 @@
 import { useState } from 'react'
-import { CloudOff, Percent, RotateCcw, Users, Utensils } from 'lucide-react'
+import { Percent, Users, Utensils } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { MesaEnMapa } from '@/compartido/mockApi'
-import { useEstadoConexion, vaciarCola } from '@/compartido/conexion'
 import { formatoCOP } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type { Ajustes, Rol, Usuario } from '@/compartido/tipos'
 import { NOMBRE_ZONA } from '@/compartido/estados'
 import { Boton } from '@/componentes/ui/Boton'
-import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { Interruptor } from '@/componentes/ui/Interruptor'
 import { useAvisos } from '@/componentes/ui/Avisos'
@@ -24,7 +22,6 @@ const NOMBRE_ROL: Record<Rol, string> = {
 
 const AJUSTES_VACIOS: Ajustes = {
   porcentajeInc: 8,
-  simularSinConexion: false,
   consecutivoOrden: 0,
   fechaConsecutivo: '',
   domiciliosPausados: false,
@@ -34,7 +31,6 @@ const AJUSTES_VACIOS: Ajustes = {
 
 export default function Configuracion() {
   const { mostrar } = useAvisos()
-  const conexion = useEstadoConexion()
 
   const { datos: ajustes } = useSyncedState<Ajustes>(
     () => api.obtenerAjustes(),
@@ -57,8 +53,6 @@ export default function Configuracion() {
 
   const [inc, setInc] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
-  const [reiniciando, setReiniciando] = useState(false)
-  const [confirmarReinicio, setConfirmarReinicio] = useState(false)
 
   const valorInc = inc ?? String(ajustes.porcentajeInc)
 
@@ -77,30 +71,6 @@ export default function Configuracion() {
       mostrar(e instanceof Error ? e.message : 'No se pudo guardar', 'error')
     } finally {
       setGuardando(false)
-    }
-  }
-
-  const alternarConexion = (sinConexion: boolean) => {
-    api.alternarSinConexion(sinConexion)
-    mostrar(
-      sinConexion
-        ? 'Modo sin conexión activado. La comandera sigue funcionando.'
-        : 'Conexión restablecida. Las comandas en cola salen solas.',
-      sinConexion ? 'info' : 'exito',
-    )
-  }
-
-  const reiniciar = async () => {
-    setReiniciando(true)
-    try {
-      vaciarCola()
-      await api.reiniciarDemo()
-      setConfirmarReinicio(false)
-      mostrar('Salón reiniciado con datos frescos', 'exito')
-    } catch (e) {
-      mostrar(e instanceof Error ? e.message : 'No se pudo reiniciar', 'error')
-    } finally {
-      setReiniciando(false)
     }
   }
 
@@ -158,57 +128,6 @@ export default function Configuracion() {
 
       {/* ---------- Domicilios ---------- */}
       <ZonasDomicilio ajustes={ajustes} />
-
-      {/* ---------- Demostración ---------- */}
-      <section className="rounded-2xl border border-ambar-500/30 bg-noche-900 p-4">
-        <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-crema-100">
-          <CloudOff className="h-4 w-4" aria-hidden />
-          Demostración
-        </h2>
-        <p className="mb-4 text-xs leading-relaxed text-noche-400">
-          Herramientas para mostrar el sistema en vivo. No forman parte de la operación diaria.
-        </p>
-
-        <div className="space-y-3">
-          <div className="flex items-start justify-between gap-3 rounded-xl border border-noche-700 bg-noche-850 p-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-crema-100">Simular pérdida de WiFi</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-noche-400">
-                La comandera sigue tomando pedidos y los guarda en una cola local. Al apagar el
-                interruptor salen solos hacia cocina.
-              </p>
-              {conexion.pendientes > 0 && (
-                <p className="mt-2">
-                  <Insignia tono="proceso">
-                    {conexion.pendientes} {conexion.pendientes === 1 ? 'comanda' : 'comandas'} en cola
-                  </Insignia>
-                </p>
-              )}
-            </div>
-            <Interruptor
-              activo={ajustes.simularSinConexion}
-              onCambiar={alternarConexion}
-              etiqueta="Simular sin conexión"
-              descripcion={ajustes.simularSinConexion ? 'Sin señal' : 'En línea'}
-            />
-          </div>
-
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-noche-700 bg-noche-850 p-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-crema-100">Reiniciar el salón</p>
-              <p className="mt-0.5 text-xs text-noche-400">
-                Vuelve a sembrar mesas, comandas e histórico con la hora actual.
-              </p>
-            </div>
-            <Boton
-              icono={<RotateCcw className="h-4 w-4" />}
-              onClick={() => setConfirmarReinicio(true)}
-            >
-              Reiniciar
-            </Boton>
-          </div>
-        </div>
-      </section>
 
       {/* ---------- Usuarios ---------- */}
       <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
@@ -287,24 +206,6 @@ export default function Configuracion() {
           {mesas.length} mesas en total, {mesas.reduce((s, m) => s + m.capacidad, 0)} puestos.
         </p>
       </section>
-
-      <HojaInferior
-        abierta={confirmarReinicio}
-        titulo="Reiniciar el salón"
-        descripcion="Solo para la demostración"
-        onCerrar={() => setConfirmarReinicio(false)}
-        pie={
-          <Boton variante="peligro" tamano="grande" bloque cargando={reiniciando} onClick={reiniciar}>
-            Sí, reiniciar todo
-          </Boton>
-        }
-      >
-        <p className="text-sm leading-relaxed text-noche-300">
-          Se borran las comandas, los pagos y las reservas de esta demostración, y se vuelven a
-          sembrar con la hora actual: seis mesas ocupadas, tres comandas en cocina y diez días de
-          histórico. Las demás pestañas abiertas se actualizan solas.
-        </p>
-      </HojaInferior>
     </div>
   )
 }

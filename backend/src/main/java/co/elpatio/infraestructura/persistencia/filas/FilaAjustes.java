@@ -21,9 +21,6 @@ public class FilaAjustes {
   @Column(name = "porcentaje_inc")
   private int porcentajeInc;
 
-  @Column(name = "simular_sin_conexion")
-  private boolean simularSinConexion;
-
   @Column(name = "consecutivo_orden")
   private int consecutivoOrden;
 
@@ -42,7 +39,6 @@ public class FilaAjustes {
   public Ajustes aDominio() {
     Ajustes ajustes = new Ajustes();
     ajustes.setPorcentajeInc(porcentajeInc);
-    ajustes.setSimularSinConexion(simularSinConexion);
     ajustes.setConsecutivoOrden(consecutivoOrden);
     ajustes.setFechaConsecutivo(fechaConsecutivo);
     ajustes.setDomiciliosPausados(domiciliosPausados);
@@ -54,7 +50,6 @@ public class FilaAjustes {
   public void volcar(Ajustes ajustes) {
     this.id = UNICA;
     this.porcentajeInc = ajustes.getPorcentajeInc();
-    this.simularSinConexion = ajustes.isSimularSinConexion();
     this.consecutivoOrden = ajustes.getConsecutivoOrden();
     this.fechaConsecutivo = ajustes.getFechaConsecutivo();
     this.domiciliosPausados = ajustes.isDomiciliosPausados();

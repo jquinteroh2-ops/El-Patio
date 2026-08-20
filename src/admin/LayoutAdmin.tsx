@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import { useSesionActiva } from '@/compartido/auth'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
-import { AvisoDemo } from '@/componentes/AvisoDemo'
 
 /** `soloAdmin` mantiene reportes y configuracion fuera de la vista del cajero. */
 const SECCIONES = [
@@ -60,9 +59,6 @@ export default function LayoutAdmin() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-noche-800 px-4 py-3 text-center">
-        <AvisoDemo />
-      </footer>
     </div>
   )
 }

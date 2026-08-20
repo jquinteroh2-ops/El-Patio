@@ -48,13 +48,7 @@ public class ControladorAdministracion {
     return ajustes.obtener();
   }
 
-  /**
-   * Equivale a `actualizarAjustes(cambios)`.
-   *
-   * `alternarSinConexion(activo)` de mockApi.ts entra por aqui con solo el campo
-   * `simularSinConexion`: era la misma escritura, y separarla en otra ruta solo
-   * duplicaria la validacion del porcentaje de INC.
-   */
+  /** Equivale a `actualizarAjustes(cambios)`. Solo cambia lo que venga informado. */
   @PutMapping("/ajustes")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Dtos.AjustesDto actualizarAjustes(@RequestBody Dtos.CambiosAjustes cambios) {

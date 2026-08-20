@@ -200,4 +200,3 @@ export const CLAVE_ACCESO = 'elpatio.acceso.v1'
 export const CLAVE_REFRESCO = 'elpatio.refresco.v1'
 export const CLAVE_COLA = 'elpatio.cola.v1'
 
-export const ETIQUETA_DEMO = 'Versión de demostración'

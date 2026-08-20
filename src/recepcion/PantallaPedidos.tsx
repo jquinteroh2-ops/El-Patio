@@ -34,7 +34,6 @@ import { Contador } from '@/componentes/ui/Contador'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { useAvisos } from '@/componentes/ui/Avisos'
-import { AvisoDemo } from '@/componentes/AvisoDemo'
 import { IndicadorConexion } from '@/componentes/IndicadorConexion'
 
 /**
@@ -276,9 +275,6 @@ export default function PantallaPedidos() {
         </div>
       </div>
 
-      <footer className="border-t border-noche-800 py-3 text-center">
-        <AvisoDemo />
-      </footer>
 
       {/* ---------- Aceptar ---------- */}
       <HojaInferior

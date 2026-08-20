@@ -35,25 +35,6 @@ export class SinConexionError extends Error {
 // ---------------------------------------------------------------------------
 
 /**
- * Interruptor de demostracion, replicado en memoria.
- *
- * Vive en los ajustes del backend, pero `hayConexion()` tiene que responder sin
- * esperar: lo consultan funciones sincronas y se llama antes de cada peticion.
- * Por eso se guarda una copia local que mockApi refresca al leer los ajustes.
- */
-let simulacionLocal = false
-
-export function fijarSimulacionSinConexion(activo: boolean): void {
-  if (simulacionLocal === activo) return
-  simulacionLocal = activo
-  notificar(['conexion'], Date.now())
-}
-
-export function simulandoSinConexion(): boolean {
-  return simulacionLocal
-}
-
-/**
  * Solo damos por caida la senal cuando el navegador lo afirma. Si el entorno no
  * expone `onLine`, se asume conexion: es preferible intentar el envio y fallar
  * que dejar la comandera bloqueada por una propiedad que no existe.
@@ -71,7 +52,6 @@ function navegadorEnLinea(): boolean {
  * peticiones por eso dejaria la comandera muerta sin motivo.
  */
 export function hayConexion(): boolean {
-  if (simulandoSinConexion()) return false
   return navegadorEnLinea()
 }
 
@@ -128,29 +108,20 @@ export function colaOrdenada(): EnvioPendiente[] {
 
 export interface EstadoConexion {
   enLinea: boolean
-  /** true cuando la caida la provoco el interruptor de demostracion. */
-  simulada: boolean
   pendientes: number
 }
 
-/**
- * Estado de conexion vivo: reacciona al WiFi real del dispositivo, a la caida
- * del canal de tiempo real y al interruptor de demostracion.
- */
+/** Estado de conexion vivo: reacciona al WiFi real del dispositivo. */
 export function useEstadoConexion(): EstadoConexion {
-  const calcular = (): EstadoConexion => {
-    const simulada = simulandoSinConexion()
-    return {
-      simulada,
-      // A proposito NO se exige que el canal de tiempo real este vivo. Con el
-      // canal caido las pantallas dejan de refrescarse solas, pero el mesero
-      // sigue pudiendo comandar y cobrar contra el API; pintarle un aviso rojo
-      // seria una falsa alarma, y ademas parpadearia en cada carga mientras el
-      // socket termina de abrir.
-      enLinea: !simulada && navegadorEnLinea(),
-      pendientes: leerCola().length,
-    }
-  }
+  const calcular = (): EstadoConexion => ({
+    // A proposito NO se exige que el canal de tiempo real este vivo. Con el
+    // canal caido las pantallas dejan de refrescarse solas, pero el mesero
+    // sigue pudiendo comandar y cobrar contra el API; pintarle un aviso rojo
+    // seria una falsa alarma, y ademas parpadearia en cada carga mientras el
+    // socket termina de abrir.
+    enLinea: navegadorEnLinea(),
+    pendientes: leerCola().length,
+  })
 
   const [estado, setEstado] = useState<EstadoConexion>(calcular)
 

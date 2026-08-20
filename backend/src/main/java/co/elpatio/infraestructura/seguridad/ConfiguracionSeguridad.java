@@ -90,6 +90,25 @@ public class ConfiguracionSeguridad {
                     .requestMatchers("/api/salon/**").hasAnyRole("MESERO", "CAJERO", "ADMINISTRADOR")
 
                     .anyRequest().authenticated())
+        .headers(
+            cabeceras ->
+                cabeceras
+                    // HTTPS obligatorio. Railway termina el TLS por delante, asi
+                    // que la aplicacion no redirige: le dice al navegador que
+                    // para este dominio no vuelva a intentar en claro. Un ano,
+                    // que es el minimo que exige la lista de precarga.
+                    .httpStrictTransportSecurity(
+                        hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+                    // El API responde JSON: nada de esto se embebe en un marco
+                    // ni se abre como documento en otra pagina.
+                    .frameOptions(marco -> marco.deny())
+                    .contentTypeOptions(tipo -> {})
+                    .referrerPolicy(
+                        politica ->
+                            politica.policy(
+                                org.springframework.security.web.header.writers
+                                        .ReferrerPolicyHeaderWriter.ReferrerPolicy
+                                    .SAME_ORIGIN)))
         .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(
             manejo ->

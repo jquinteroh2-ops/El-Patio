@@ -8,6 +8,10 @@ spring:
   application:
     name: el-patio-backend
 
+  # `produccion` cambia los registros a JSON. Railway lo define en el servicio.
+  profiles:
+    active: ${ELPATIO_PERFIL:desarrollo}
+
   datasource:
     # Railway entrega DATABASE_URL; en local se apunta al Postgres del docker compose.
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/elpatio}

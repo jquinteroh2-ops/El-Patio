@@ -323,8 +323,6 @@ export interface CierreCaja {
 export interface Ajustes {
   /** Impuesto Nacional al Consumo, en porcentaje. Configurable por establecimiento. */
   porcentajeInc: number
-  /** Interruptor de demostracion: simula perdida de WiFi en la comandera. */
-  simularSinConexion: boolean
   /** Consecutivo de comandas del dia. */
   consecutivoOrden: number
   /** Fecha del consecutivo, para reiniciarlo cada dia. */
