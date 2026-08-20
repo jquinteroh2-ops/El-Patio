@@ -1,0 +1,9 @@
+# El contexto de construccion del backend es la raiz del repositorio, asi que
+# lo que se excluye se declara aqui y no en backend/.dockerignore.
+node_modules/
+dist/
+backend/target/
+backend/respaldos/
+.git/
+.env
+*.log

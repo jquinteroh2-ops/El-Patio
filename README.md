@@ -402,6 +402,18 @@ máquinas ya tienen un PostgreSQL propio en el puerto estándar. Si los dos
 compiten, el error que aparece es «autenticación fallida», que no dice nada
 sobre el conflicto.
 
+### Construir la imagen del backend
+
+El contexto es la **raíz del repositorio**, no `backend/`:
+
+```bash
+docker build -f backend/Dockerfile -t elpatio-backend .
+```
+
+Es lo que permite que Railway la construya apuntándole
+`RAILWAY_DOCKERFILE_PATH=backend/Dockerfile`, sin configurar a mano el
+directorio raíz del servicio.
+
 ### Comprobaciones
 
 ```bash

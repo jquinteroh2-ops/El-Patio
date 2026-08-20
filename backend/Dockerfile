@@ -4,6 +4,13 @@
 # versión de Java quede escrita y no dependa de lo que el constructor adivine:
 # el proyecto compila contra 21 y un salto silencioso a otra versión es la clase
 # de sorpresa que aparece en el despliegue y no en la máquina de nadie.
+#
+# OJO CON EL CONTEXTO: las rutas son relativas a la RAÍZ del repositorio, no a
+# esta carpeta. Es lo que permite que Railway lo construya con solo apuntarle
+# RAILWAY_DOCKERFILE_PATH=backend/Dockerfile, sin tener que configurar a mano el
+# directorio raíz del servicio en el panel.
+#
+#   docker build -f backend/Dockerfile .        <- desde la raíz del repo
 
 # ---------------------------------------------------------------------------
 # Compilación
@@ -14,10 +21,10 @@ WORKDIR /obra
 # Las dependencias se resuelven en una capa aparte: mientras el pom no cambie,
 # Docker reutiliza la caché y no vuelve a bajar medio Maven Central en cada
 # despliegue.
-COPY pom.xml .
+COPY backend/pom.xml .
 RUN mvn -B -q dependency:go-offline
 
-COPY src ./src
+COPY backend/src ./src
 RUN mvn -B -q clean package -DskipTests
 
 # ---------------------------------------------------------------------------
