@@ -17,6 +17,9 @@ import {
   Wallet,
 } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
+import { IMPRIMIR_COMANDA_AUTOMATICO } from '@/compartido/config'
+import { imprimir } from '@/impresion/impresora'
+import { ComandaTermica } from '@/impresion/ComandaTermica'
 import type { MesaEnMapa, OrdenDetallada } from '@/compartido/mockApi'
 import { agruparPorTurno, calcularCuenta, itemsSinEnviar, precioItem } from '@/compartido/calculos'
 import { CARGOS_FRECUENTES } from '@/compartido/config'
@@ -120,9 +123,39 @@ export default function OrdenMesa() {
   }
 
   const etiquetaMesa = mesa.nombre ?? `Mesa ${mesa.numero}`
+
+  /**
+   * Saca la comanda en papel para cocina y para barra.
+   *
+   * Salen dos tickets porque son dos puestos de trabajo distintos: el plato va
+   * a la plancha y el coctel a la barra, y cada uno necesita el suyo. Si un
+   * destino no lleva nada en ese turno, no se imprime en blanco.
+   */
+  const imprimirComandas = (turno: number) => {
+    const delTurno = orden.items.filter((i) => i.turnoEnvio === turno && i.estado !== 'anulado')
+    for (const destino of ['cocina', 'bar'] as const) {
+      const suyos = delTurno.filter((i) => i.destino === destino)
+      if (suyos.length === 0) continue
+      imprimir(
+        <ComandaTermica
+          etiqueta={etiquetaMesa}
+          numero={orden.numero}
+          turno={turno}
+          destino={destino}
+          atendidoPor={detalle?.meseroNombre ?? ''}
+          items={suyos}
+          notas={orden.notas}
+        />,
+      )
+    }
+  }
+
   const enviar = () =>
     ejecutar(async () => {
       const resultado = await api.enviarACocina(orden.id)
+      // La comanda impresa es un respaldo: si la pantalla de cocina se cae, el
+      // papel sigue estando. Por eso sale sola solo si el dueno lo pidio.
+      if (IMPRIMIR_COMANDA_AUTOMATICO && !resultado.encolado) imprimirComandas(resultado.turno)
       return resultado.encolado
         ? `Sin señal: el turno ${resultado.turno} quedó en cola y saldrá solo al reconectar`
         : `Turno ${resultado.turno} enviado · ${resultado.cantidadItems} productos`

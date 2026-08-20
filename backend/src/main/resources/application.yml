@@ -23,10 +23,10 @@ spring:
       # fuentes de verdad y descubrir la diferencia en producción.
       ddl-auto: validate
     open-in-view: false
-    properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
+    # Sin `jdbc.time_zone`: los instantes se guardan en TIMESTAMPTZ, que ya es
+    # absoluto y no necesita ayuda. Forzar la zona hacía que Hibernate
+    # reinterpretara también las columnas TIME, y el horario de domicilios
+    # guardado como 11:30 se leía como 06:30.
 
   flyway:
     enabled: true

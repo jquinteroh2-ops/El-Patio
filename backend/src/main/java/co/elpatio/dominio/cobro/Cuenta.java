@@ -12,6 +12,12 @@ public record Cuenta(
     int porcentajeInc,
     /** Decoracion, descorche, servicios especiales. No causan INC. */
     long cargosAdicionales,
+    /**
+     * Domicilio. Linea aparte DESPUES del impuesto: llevar un pedido no es
+     * consumo de alimentos ni bebidas, asi que no causa INC, y tampoco entra en
+     * la base sobre la que se calcula la propina, que es del servicio de mesa.
+     */
+    long costoEnvio,
     /** Voluntaria. Cero mientras el cliente no la autorice. */
     long propina,
     int porcentajePropina,

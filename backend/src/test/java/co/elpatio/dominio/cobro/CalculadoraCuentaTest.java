@@ -47,6 +47,15 @@ class CalculadoraCuentaTest {
     return orden;
   }
 
+  private static Orden domicilio(List<ItemOrden> items, long costoEnvio) {
+    Orden orden = orden(items, List.of());
+    orden.setMesaId(null);
+    orden.setTipo(co.elpatio.dominio.pedido.TipoPedido.DOMICILIO);
+    orden.setEstadoPedido(co.elpatio.dominio.pedido.EstadoPedido.NUEVO);
+    orden.setCostoEnvio(costoEnvio);
+    return orden;
+  }
+
   private static CargoAdicional cargo(long valor) {
     return new CargoAdicional("cg1", "Descorche", valor, "Katherine", Instant.now());
   }
@@ -191,6 +200,55 @@ class CalculadoraCuentaTest {
   }
 
   // ---------------------------------------------------------------------------
+
+  @Nested
+  @DisplayName("Domicilio")
+  class Domicilio {
+
+    @Test
+    @DisplayName("el envío no causa INC: llevar un pedido no es consumo")
+    void elEnvioNoCausaInc() {
+      Cuenta cuenta = CalculadoraCuenta.calcular(domicilio(List.of(item(50000, 1)), 7000), 8);
+      assertThat(cuenta.subtotal()).isEqualTo(50000);
+      // 8% de 50.000, no de 57.000.
+      assertThat(cuenta.inc()).isEqualTo(4000);
+      assertThat(cuenta.costoEnvio()).isEqualTo(7000);
+      assertThat(cuenta.total()).isEqualTo(61000);
+    }
+
+    @Test
+    @DisplayName("el envío no entra en la base de la propina")
+    void elEnvioNoEntraEnLaPropina() {
+      Cuenta cuenta = CalculadoraCuenta.calcular(domicilio(List.of(item(50000, 1)), 7000), 8, 10, null);
+      // 10% de 50.000, no de 57.000: nadie propina por el domicilio que paga.
+      assertThat(cuenta.propina()).isEqualTo(5000);
+      assertThat(cuenta.total()).isEqualTo(50000 + 4000 + 7000 + 5000);
+    }
+
+    @Test
+    @DisplayName("el envío va después del impuesto, como línea aparte")
+    void elEnvioVaDespuesDelImpuesto() {
+      Cuenta cuenta = CalculadoraCuenta.calcular(domicilio(List.of(item(50000, 1)), 7000), 8);
+      assertThat(cuenta.subtotal() + cuenta.inc() + cuenta.costoEnvio()).isEqualTo(cuenta.total());
+    }
+
+    @Test
+    @DisplayName("para llevar no cobra envío")
+    void paraLlevarNoCobraEnvio() {
+      Orden orden = orden(List.of(item(50000, 1)), List.of());
+      orden.setTipo(co.elpatio.dominio.pedido.TipoPedido.LLEVAR);
+      Cuenta cuenta = CalculadoraCuenta.calcular(orden, 8);
+      assertThat(cuenta.costoEnvio()).isZero();
+      assertThat(cuenta.total()).isEqualTo(54000);
+    }
+
+    @Test
+    @DisplayName("una orden de mesa nunca trae envío")
+    void mesaSinEnvio() {
+      Cuenta cuenta = CalculadoraCuenta.calcular(orden(List.of(item(50000, 1)), List.of()), 8);
+      assertThat(cuenta.costoEnvio()).isZero();
+    }
+  }
 
   @Nested
   @DisplayName("División de la cuenta")

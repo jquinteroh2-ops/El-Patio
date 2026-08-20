@@ -37,6 +37,7 @@ const Contexto = createContext<ContextoValor | null>(null)
 const RUTA_POR_ROL: Record<Rol, string> = {
   mesero: '/comandera',
   cocina: '/cocina',
+  recepcion: '/recepcion',
   cajero: '/admin',
   administrador: '/admin',
 }

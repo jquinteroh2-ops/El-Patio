@@ -1,6 +1,6 @@
 import { RESTAURANTE } from './config'
-import { formatoFechaLarga, formatoHora, telefonoWhatsApp } from './formato'
-import type { Reserva } from './tipos'
+import { formatoCOP, formatoFechaLarga, formatoHora, telefonoWhatsApp } from './formato'
+import type { Orden, Reserva } from './tipos'
 
 /**
  * Mensajes de WhatsApp para responder reservas.
@@ -50,6 +50,67 @@ export function mensajeRechazo(reserva: Reserva): string {
   const saludo = `Hola ${primerNombre(reserva.nombreCliente)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`
   const cuerpo = `Lamentablemente no tenemos disponibilidad para ${personas(reserva.personas)} ${cuando(reserva.fechaHora)}.`
   const cierre = 'Nos encantaría recibirlo otro día. Escríbanos y buscamos el horario que mejor le sirva.'
+
+  return sinPuntoDoble(`${saludo}\n\n${cuerpo}\n\n${cierre}`)
+}
+
+// ---------------------------------------------------------------------------
+// Domicilios y para llevar
+// ---------------------------------------------------------------------------
+
+/**
+ * Mensajes del canal de pedidos.
+ *
+ * Mismo criterio que con las reservas: el texto se arma aqui para que el dueno
+ * pueda cambiar el tono de la casa en un solo archivo, y siempre se le muestra
+ * al usuario antes de enviarlo. Nada sale a nombre del restaurante sin que
+ * alguien lo lea.
+ */
+
+const nombreDelCliente = (orden: Orden): string =>
+  primerNombre(orden.cliente?.nombre ?? '')
+
+/** Confirmacion: el pedido se acepto y se le promete un tiempo. */
+export function mensajePedidoConfirmado(orden: Orden, total: number): string {
+  const saludo = `Hola ${nombreDelCliente(orden)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`
+  const cuerpo = `Confirmamos su pedido n.º ${orden.numero} por ${formatoCOP(total)}.`
+  const tiempo = orden.minutosEstimados
+    ? orden.tipo === 'domicilio'
+      ? ` Se lo estamos llevando en unos ${orden.minutosEstimados} minutos.`
+      : ` Puede pasar a recogerlo en unos ${orden.minutosEstimados} minutos.`
+    : ''
+  const cierre =
+    orden.tipo === 'domicilio'
+      ? `Lo llevamos a ${orden.cliente?.direccion ?? 'la dirección indicada'}. Si necesita cambiar algo, respóndanos por aquí.`
+      : `Lo esperamos en ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}.`
+
+  return sinPuntoDoble(`${saludo}\n\n${cuerpo}${tiempo}\n\n${cierre}`)
+}
+
+/** El domicilio ya salio del local. */
+export function mensajePedidoEnCamino(orden: Orden): string {
+  const saludo = `Hola ${nombreDelCliente(orden)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`
+  const quien = orden.repartidor ? ` Se lo lleva ${orden.repartidor}.` : ''
+  const cuerpo = `Su pedido n.º ${orden.numero} ya va en camino.${quien}`
+  const cierre = 'Cualquier cosa, respóndanos por aquí.'
+
+  return sinPuntoDoble(`${saludo}\n\n${cuerpo}\n\n${cierre}`)
+}
+
+/** El para llevar esta listo en el mostrador. */
+export function mensajePedidoListoParaRecoger(orden: Orden): string {
+  const saludo = `Hola ${nombreDelCliente(orden)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`
+  const cuerpo = `Su pedido n.º ${orden.numero} ya está listo y lo tenemos empacado.`
+  const cierre = `Lo esperamos en ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}.`
+
+  return sinPuntoDoble(`${saludo}\n\n${cuerpo}\n\n${cierre}`)
+}
+
+/** No se le puede atender. Se le dice por que: el cliente merece una razon. */
+export function mensajePedidoRechazado(orden: Orden, motivo: string): string {
+  const saludo = `Hola ${nombreDelCliente(orden)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`
+  const cuerpo = `Lamentablemente no podemos atender su pedido n.º ${orden.numero}: ${motivo.toLowerCase()}.`
+  const cierre = 'Le pedimos disculpas. Nos encantaría atenderlo en otro momento.'
 
   return sinPuntoDoble(`${saludo}\n\n${cuerpo}\n\n${cierre}`)
 }

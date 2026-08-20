@@ -3,6 +3,10 @@ package co.elpatio.dominio.comanda;
 import co.elpatio.dominio.carta.Destino;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.error.ReglaDeNegocioError;
+import co.elpatio.dominio.cobro.MetodoPago;
+import co.elpatio.dominio.pedido.ClienteExterno;
+import co.elpatio.dominio.pedido.EstadoPedido;
+import co.elpatio.dominio.pedido.TipoPedido;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,6 +44,41 @@ public class Orden {
   private String motivoAnulacion;
   /** Comanda que reemplaza a esta cuando se anulo una ya cobrada. */
   private String ordenReemplazoId;
+
+  // ---------------------------------------------------------------------------
+  // Canal
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Por donde entro la venta. Las comandas de mesa, que son todas las que
+   * existian antes del canal externo, se quedan en MESA sin tocar nada.
+   */
+  private TipoPedido tipo = TipoPedido.MESA;
+
+  /** Solo lo llevan los pedidos externos: es el recorrido que ve recepcion. */
+  private EstadoPedido estadoPedido;
+
+  private ClienteExterno cliente;
+  private String zonaDomicilioId;
+
+  /**
+   * Lo que cuesta llevarlo. Va como linea aparte despues del impuesto: el
+   * envio no es consumo, asi que no causa INC ni entra en la base de la propina.
+   */
+  private long costoEnvio;
+
+  /** Lo que el cliente dijo que pensaba pagar. El cobro real vive en `Pago`. */
+  private MetodoPago metodoPagoPrevisto;
+
+  private Integer minutosEstimados;
+  private String repartidor;
+  private String motivoRechazo;
+
+  /**
+   * Cuando entro el pedido. El cronometro de recepcion cuenta desde aqui y no
+   * desde `abiertaEn`: para el cliente el reloj arranco cuando pidio.
+   */
+  private Instant recibidoEn;
 
   public Orden() {}
 
@@ -309,6 +348,98 @@ public class Orden {
         .orElse(null);
   }
 
+  // -------------------------------------------------------------------------
+  // Recorrido del pedido externo
+  // -------------------------------------------------------------------------
+
+  public boolean esExterno() {
+    return tipo != null && tipo.esExterno();
+  }
+
+  private void exigirExterno() {
+    if (!esExterno()) throw new ReglaDeNegocioError("Esta comanda es de mesa, no de recepción");
+  }
+
+  /** Como se nombra el pedido en cocina y en el comprobante. */
+  public String etiquetaCanal() {
+    return switch (tipo) {
+      case DOMICILIO -> "Domicilio #" + numero;
+      case LLEVAR -> "Para llevar #" + numero;
+      case MESA -> "Mesa";
+    };
+  }
+
+  /**
+   * Mueve el pedido al siguiente estado.
+   *
+   * El recorrido no se puede saltar ni devolver. Sin esa guarda, un pedido
+   * podria quedar entregado sin haber pasado por despachado, y entonces nadie
+   * sabria quien lo llevo cuando el cliente llame a reclamar.
+   */
+  public void cambiarEstadoPedido(EstadoPedido siguiente) {
+    exigirExterno();
+    if (!estadoPedido.puedePasarA(siguiente)) {
+      throw new ReglaDeNegocioError(
+          "Un pedido " + estadoPedido.codigo() + " no puede pasar a " + siguiente.codigo());
+    }
+    estadoPedido = siguiente;
+  }
+
+  /**
+   * Recepcion acepta el pedido y fija el tiempo que le promete al cliente.
+   *
+   * El tiempo estimado se guarda al aceptar y no al recibir, porque quien
+   * conoce la carga real de la cocina en ese momento es la persona que esta
+   * mirando la pantalla, no una tabla de tiempos por zona.
+   */
+  public void aceptar(int minutos) {
+    exigirExterno();
+    if (minutos <= 0) throw new ReglaDeNegocioError("El tiempo estimado tiene que ser mayor que cero");
+    cambiarEstadoPedido(EstadoPedido.ACEPTADO);
+    minutosEstimados = minutos;
+  }
+
+  /** Rechaza el pedido dejando escrito el porque: el cliente merece una razon. */
+  public void rechazar(String motivo) {
+    exigirExterno();
+    if (motivo == null || motivo.isBlank()) {
+      throw new ReglaDeNegocioError("Dígale al cliente por qué no se le puede atender");
+    }
+    cambiarEstadoPedido(EstadoPedido.RECHAZADO);
+    motivoRechazo = motivo.trim();
+    // Un pedido rechazado no puede seguir contando como venta abierta.
+    estado = EstadoOrden.ANULADA;
+    motivoAnulacion = "Pedido rechazado: " + motivoRechazo;
+  }
+
+  public void cancelar(String motivo) {
+    exigirExterno();
+    cambiarEstadoPedido(EstadoPedido.CANCELADO);
+    motivoRechazo = motivo == null || motivo.isBlank() ? "Cancelado" : motivo.trim();
+    estado = EstadoOrden.ANULADA;
+    motivoAnulacion = "Pedido cancelado: " + motivoRechazo;
+  }
+
+  /**
+   * Sale del local. En domicilio se exige quien lo lleva: si el cliente llama
+   * porque no le ha llegado, alguien tiene que poder decir con quien salio.
+   */
+  public void despachar(String quienLoLleva) {
+    exigirExterno();
+    if (tipo == TipoPedido.DOMICILIO && (quienLoLleva == null || quienLoLleva.isBlank())) {
+      throw new ReglaDeNegocioError("Anote quién lleva el domicilio antes de despacharlo");
+    }
+    cambiarEstadoPedido(EstadoPedido.DESPACHADO);
+    repartidor = quienLoLleva == null || quienLoLleva.isBlank() ? null : quienLoLleva.trim();
+  }
+
+  /** Minutos que lleva esperando el cliente desde que hizo el pedido. */
+  public Instant inicioDeEspera() {
+    return recibidoEn != null ? recibidoEn : abiertaEn;
+  }
+
+  // -------------------------------------------------------------------------
+
   public String getId() { return id; }
   public void setId(String id) { this.id = id; }
   public String getMesaId() { return mesaId; }
@@ -337,4 +468,25 @@ public class Orden {
   public void setMotivoAnulacion(String motivoAnulacion) { this.motivoAnulacion = motivoAnulacion; }
   public String getOrdenReemplazoId() { return ordenReemplazoId; }
   public void setOrdenReemplazoId(String ordenReemplazoId) { this.ordenReemplazoId = ordenReemplazoId; }
+
+  public TipoPedido getTipo() { return tipo; }
+  public void setTipo(TipoPedido tipo) { this.tipo = tipo != null ? tipo : TipoPedido.MESA; }
+  public EstadoPedido getEstadoPedido() { return estadoPedido; }
+  public void setEstadoPedido(EstadoPedido estadoPedido) { this.estadoPedido = estadoPedido; }
+  public ClienteExterno getCliente() { return cliente; }
+  public void setCliente(ClienteExterno cliente) { this.cliente = cliente; }
+  public String getZonaDomicilioId() { return zonaDomicilioId; }
+  public void setZonaDomicilioId(String zonaDomicilioId) { this.zonaDomicilioId = zonaDomicilioId; }
+  public long getCostoEnvio() { return costoEnvio; }
+  public void setCostoEnvio(long costoEnvio) { this.costoEnvio = costoEnvio; }
+  public MetodoPago getMetodoPagoPrevisto() { return metodoPagoPrevisto; }
+  public void setMetodoPagoPrevisto(MetodoPago valor) { this.metodoPagoPrevisto = valor; }
+  public Integer getMinutosEstimados() { return minutosEstimados; }
+  public void setMinutosEstimados(Integer minutosEstimados) { this.minutosEstimados = minutosEstimados; }
+  public String getRepartidor() { return repartidor; }
+  public void setRepartidor(String repartidor) { this.repartidor = repartidor; }
+  public String getMotivoRechazo() { return motivoRechazo; }
+  public void setMotivoRechazo(String motivoRechazo) { this.motivoRechazo = motivoRechazo; }
+  public Instant getRecibidoEn() { return recibidoEn; }
+  public void setRecibidoEn(Instant recibidoEn) { this.recibidoEn = recibidoEn; }
 }

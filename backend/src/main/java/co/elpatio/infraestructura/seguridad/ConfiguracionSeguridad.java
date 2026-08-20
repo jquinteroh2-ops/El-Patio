@@ -67,6 +67,14 @@ public class ConfiguracionSeguridad {
                     .requestMatchers(HttpMethod.GET, "/api/carta/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/reservas").permitAll()
 
+                    // El cliente pide desde su celular sin tener usuario. Son las
+                    // dos unicas rutas del canal abiertas, y las dos escriben o
+                    // leen solo lo que ese cliente necesita para pedir.
+                    .requestMatchers(HttpMethod.GET, "/api/pedidos/canal").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/pedidos").permitAll()
+                    .requestMatchers("/api/pedidos/**")
+                        .hasAnyRole("RECEPCION", "CAJERO", "ADMINISTRADOR")
+
                     // El cajero entra a la comandera para cobrar y para ver el
                     // salon desde el panel; lo que puede hacer una vez dentro lo
                     // decide el @PreAuthorize de cada metodo, que es donde la

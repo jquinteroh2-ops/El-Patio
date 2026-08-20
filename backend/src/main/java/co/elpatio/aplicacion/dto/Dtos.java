@@ -10,6 +10,10 @@ import co.elpatio.dominio.comanda.EstadoItem;
 import co.elpatio.dominio.comanda.ItemOrden;
 import co.elpatio.dominio.comanda.ModificadorSeleccionado;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.cobro.Cuenta;
+import co.elpatio.dominio.pedido.EstadoPedido;
+import co.elpatio.dominio.pedido.TipoPedido;
+import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Rol;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.salon.EstadoMesa;
@@ -17,6 +21,7 @@ import co.elpatio.dominio.salon.Mesa;
 import co.elpatio.dominio.salon.Zona;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -69,10 +74,21 @@ public final class Dtos {
   // -------------------------------------------------------------------------
 
   public record AjustesDto(
-      int porcentajeInc, boolean simularSinConexion, int consecutivoOrden, LocalDate fechaConsecutivo) {}
+      int porcentajeInc,
+      boolean simularSinConexion,
+      int consecutivoOrden,
+      LocalDate fechaConsecutivo,
+      boolean domiciliosPausados,
+      LocalTime domiciliosDesde,
+      LocalTime domiciliosHasta) {}
 
   /** Cambios parciales de ajustes: lo que venga en null se deja como esta. */
-  public record CambiosAjustes(Integer porcentajeInc, Boolean simularSinConexion) {}
+  public record CambiosAjustes(
+      Integer porcentajeInc,
+      Boolean simularSinConexion,
+      Boolean domiciliosPausados,
+      LocalTime domiciliosDesde,
+      LocalTime domiciliosHasta) {}
 
   // -------------------------------------------------------------------------
   // Salon
@@ -180,6 +196,47 @@ public final class Dtos {
   public record PeticionEnvio(List<String> itemIds, Integer turno) {}
 
   // -------------------------------------------------------------------------
+  // Domicilios y para llevar
+  // -------------------------------------------------------------------------
+
+  /**
+   * Lo que el sitio publico necesita antes de dejar pedir.
+   *
+   * Viaja el horario aunque el backend ya decidio si esta abierto, para que la
+   * pagina pueda decirle al cliente a que hora volver en vez de solo negarse.
+   */
+  public record EstadoCanal(
+      boolean abierto,
+      boolean pausado,
+      LocalTime desde,
+      LocalTime hasta,
+      List<ZonaDomicilio> zonas) {}
+
+  public record NuevoPedidoExterno(
+      TipoPedido tipo,
+      String nombre,
+      String telefono,
+      String direccion,
+      String barrio,
+      String zonaDomicilioId,
+      MetodoPago metodoPagoPrevisto,
+      String notas,
+      List<NuevoItem> items) {}
+
+  /** Lo que se le muestra al cliente al confirmar: su numero y cuanto tarda. */
+  public record PedidoCreado(String id, int numero, Integer minutosEstimados, Cuenta cuenta) {}
+
+  /** Un pedido tal como lo pinta la pantalla de recepcion. */
+  public record PedidoEnRecepcion(
+      Orden orden, String etiqueta, String zonaNombre, Cuenta cuenta) {}
+
+  public record PeticionAceptar(int minutosEstimados) {}
+
+  public record PeticionDespacho(String repartidor) {}
+
+  public record PeticionEstadoPedido(EstadoPedido estado) {}
+
+  // -------------------------------------------------------------------------
   // Cocina
   // -------------------------------------------------------------------------
 
@@ -260,6 +317,12 @@ public final class Dtos {
       long incTotal,
       int ordenesAtendidas,
       long ticketPromedio,
+      /** Venta por canal. La suma de los tres es `ventaTotal`. */
+      long totalSalon,
+      long totalDomicilio,
+      long totalLlevar,
+      /** Lo cobrado por envios, ya incluido dentro de `totalDomicilio`. */
+      long totalEnvios,
       /** Mismo turno del dia anterior, para comparar. */
       long ventaDiaAnterior,
       int ordenesDiaAnterior) {}
@@ -271,7 +334,11 @@ public final class Dtos {
       List<VentaPorFranja> porFranja,
       List<VentaPorMesero> porMesero,
       List<TiempoProducto> tiemposPorProducto,
-      List<VentaPorDia> ventasPorDia) {}
+      List<VentaPorDia> ventasPorDia,
+      /** Cuanto pesa cada canal. Es la pregunta que el dueno hace primero. */
+      List<VentaPorCanal> porCanal) {}
+
+  public record VentaPorCanal(TipoPedido canal, int ordenes, long ventas, long ticketPromedio) {}
 
   public record ProductoVendido(String nombre, int unidades, long ingreso) {}
 

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Rol {
   MESERO,
   COCINA,
+  /** Recibe y gestiona lo que entra por domicilio y para llevar. */
+  RECEPCION,
   CAJERO,
   ADMINISTRADOR;
 

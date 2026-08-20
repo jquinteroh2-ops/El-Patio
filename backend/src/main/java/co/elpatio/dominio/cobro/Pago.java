@@ -13,6 +13,8 @@ public class Pago {
   private long inc;
   private long propina;
   private long cargosAdicionales;
+  /** Lo cobrado por llevarlo. Se guarda con el pago y no se recalcula. */
+  private long costoEnvio;
   private long total;
   private MetodoPago metodo;
   private List<DivisionPago> divisiones = new ArrayList<>();
@@ -58,6 +60,8 @@ public class Pago {
   public void setPropina(long propina) { this.propina = propina; }
   public long getCargosAdicionales() { return cargosAdicionales; }
   public void setCargosAdicionales(long cargosAdicionales) { this.cargosAdicionales = cargosAdicionales; }
+  public long getCostoEnvio() { return costoEnvio; }
+  public void setCostoEnvio(long costoEnvio) { this.costoEnvio = costoEnvio; }
   public long getTotal() { return total; }
   public void setTotal(long total) { this.total = total; }
   public MetodoPago getMetodo() { return metodo; }

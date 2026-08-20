@@ -1,5 +1,5 @@
 import { UMBRALES_COCINA } from './config'
-import type { EstadoItem, EstadoMesa, Zona } from './tipos'
+import type { EstadoItem, EstadoMesa, EstadoPedido, TipoPedido, Zona } from './tipos'
 
 /**
  * Tokens de presentacion compartidos por la comandera, la cocina y el panel.
@@ -62,6 +62,37 @@ export const NOMBRE_ZONA: Record<Zona, string> = {
   salon: 'Salón',
   terraza: 'Terraza',
   privado: 'Privados',
+}
+
+export const ETIQUETA_PEDIDO: Record<EstadoPedido, string> = {
+  nuevo: 'Nuevo',
+  aceptado: 'Aceptado',
+  en_preparacion: 'En preparación',
+  listo: 'Listo',
+  despachado: 'Despachado',
+  entregado: 'Entregado',
+  rechazado: 'Rechazado',
+  cancelado: 'Cancelado',
+}
+
+export const TONO_PEDIDO: Record<
+  EstadoPedido,
+  'neutro' | 'listo' | 'proceso' | 'demorado' | 'ambar'
+> = {
+  nuevo: 'ambar',
+  aceptado: 'proceso',
+  en_preparacion: 'proceso',
+  listo: 'listo',
+  despachado: 'listo',
+  entregado: 'neutro',
+  rechazado: 'demorado',
+  cancelado: 'demorado',
+}
+
+export const ETIQUETA_TIPO_PEDIDO: Record<TipoPedido, string> = {
+  mesa: 'Salón',
+  domicilio: 'Domicilio',
+  llevar: 'Para llevar',
 }
 
 /** Color del cronometro segun lo que lleve esperando la comida. */

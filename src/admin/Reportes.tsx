@@ -6,6 +6,7 @@ import { UMBRALES_COCINA } from '@/compartido/config'
 import { formatoCOP, formatoCOPCorto, formatoFecha } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import { BarrasHora, BarrasHorizontales, Tabla, Tarjeta } from './Graficas'
+import { ETIQUETA_TIPO_PEDIDO } from '@/compartido/estados'
 
 const VACIO: DatosReportes = {
   masVendidos: [],
@@ -13,6 +14,7 @@ const VACIO: DatosReportes = {
   porMesero: [],
   tiemposPorProducto: [],
   ventasPorDia: [],
+  porCanal: [],
 }
 
 const DIAS = [7, 10, 30]
@@ -97,6 +99,34 @@ export default function Reportes() {
           </section>
 
           <div className="grid gap-4 lg:grid-cols-2">
+            {/* ---------- Venta por canal ---------- */}
+            <Tarjeta
+              titulo="De dónde viene la venta"
+              descripcion={`Salón, domicilio y para llevar en los últimos ${dias} días`}
+            >
+              {comoTabla ? (
+                <Tabla
+                  columnas={['Canal', 'Pedidos', 'Venta', 'Ticket']}
+                  filas={datos.porCanal.map((c) => [
+                    ETIQUETA_TIPO_PEDIDO[c.canal],
+                    c.ordenes,
+                    formatoCOP(c.ventas),
+                    formatoCOP(c.ticketPromedio),
+                  ])}
+                />
+              ) : (
+                <BarrasHorizontales
+                  datos={datos.porCanal.map((c) => ({
+                    etiqueta: ETIQUETA_TIPO_PEDIDO[c.canal],
+                    valor: c.ventas,
+                    texto: formatoCOPCorto(c.ventas),
+                    detalle: `${c.ordenes} ${c.ordenes === 1 ? 'pedido' : 'pedidos'} · ${formatoCOPCorto(c.ticketPromedio)} c/u`,
+                  }))}
+                  vacio="Todavía no hay ventas en el período"
+                />
+              )}
+            </Tarjeta>
+
             {/* ---------- Más vendidos ---------- */}
             <Tarjeta
               titulo="Productos más vendidos"

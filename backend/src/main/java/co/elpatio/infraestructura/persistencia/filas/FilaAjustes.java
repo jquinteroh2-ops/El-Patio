@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 /** Fila unica de la tabla `ajustes`. El id siempre es 1. */
 @Entity
@@ -29,12 +30,24 @@ public class FilaAjustes {
   @Column(name = "fecha_consecutivo")
   private LocalDate fechaConsecutivo;
 
+  @Column(name = "domicilios_pausados")
+  private boolean domiciliosPausados;
+
+  @Column(name = "domicilios_desde")
+  private LocalTime domiciliosDesde;
+
+  @Column(name = "domicilios_hasta")
+  private LocalTime domiciliosHasta;
+
   public Ajustes aDominio() {
     Ajustes ajustes = new Ajustes();
     ajustes.setPorcentajeInc(porcentajeInc);
     ajustes.setSimularSinConexion(simularSinConexion);
     ajustes.setConsecutivoOrden(consecutivoOrden);
     ajustes.setFechaConsecutivo(fechaConsecutivo);
+    ajustes.setDomiciliosPausados(domiciliosPausados);
+    ajustes.setDomiciliosDesde(domiciliosDesde);
+    ajustes.setDomiciliosHasta(domiciliosHasta);
     return ajustes;
   }
 
@@ -44,6 +57,9 @@ public class FilaAjustes {
     this.simularSinConexion = ajustes.isSimularSinConexion();
     this.consecutivoOrden = ajustes.getConsecutivoOrden();
     this.fechaConsecutivo = ajustes.getFechaConsecutivo();
+    this.domiciliosPausados = ajustes.isDomiciliosPausados();
+    this.domiciliosDesde = ajustes.getDomiciliosDesde();
+    this.domiciliosHasta = ajustes.getDomiciliosHasta();
   }
 
   public int getConsecutivoOrden() { return consecutivoOrden; }

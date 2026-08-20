@@ -12,6 +12,15 @@ export interface Cuenta {
   porcentajeInc: number
   /** Decoracion, descorche, servicios especiales. No causan INC. */
   cargosAdicionales: number
+  /**
+   * Domicilio. Linea aparte DESPUES del impuesto.
+   *
+   * El INC grava el consumo de alimentos y bebidas, y llevar un pedido hasta
+   * una casa no es consumo: por eso el envio no causa impuesto. Tampoco entra
+   * en la base de la propina, que retribuye el servicio de mesa y en un
+   * domicilio no existe.
+   */
+  costoEnvio: number
   /** Voluntaria. Cero mientras el cliente no la autorice. */
   propina: number
   porcentajePropina: number
@@ -42,9 +51,11 @@ export function calcularCargos(cargos: CargoAdicional[]): number {
  *    propina, y no sobre los cargos adicionales, que no son consumo.
  *  - La propina se calcula sobre el mismo subtotal y por defecto es 0: solo
  *    entra si el mesero la agrega despues de consultarla con el cliente.
+ *  - EL DOMICILIO NO LLEVA INC NI PROPINA. El envio entra como una linea
+ *    aparte, despues del impuesto, y queda fuera de las dos bases de calculo.
  */
 export function calcularCuenta(
-  orden: Pick<Orden, 'items' | 'cargosAdicionales'>,
+  orden: Pick<Orden, 'items' | 'cargosAdicionales'> & Pick<Partial<Orden>, 'costoEnvio'>,
   porcentajeInc: number,
   porcentajePropina = 0,
   propinaManual?: number,
@@ -52,6 +63,10 @@ export function calcularCuenta(
   const subtotal = calcularSubtotal(orden.items)
   const inc = Math.round((subtotal * porcentajeInc) / 100)
   const cargosAdicionales = calcularCargos(orden.cargosAdicionales)
+  const costoEnvio = orden.costoEnvio ?? 0
+
+  // El envio queda fuera de la base de la propina, igual que queda fuera de la
+  // del impuesto: nadie propina por el domicilio que ya esta pagando.
   const propina =
     propinaManual !== undefined
       ? Math.max(0, Math.round(propinaManual))
@@ -62,9 +77,10 @@ export function calcularCuenta(
     inc,
     porcentajeInc,
     cargosAdicionales,
+    costoEnvio,
     propina,
     porcentajePropina,
-    total: subtotal + inc + cargosAdicionales + propina,
+    total: subtotal + inc + cargosAdicionales + costoEnvio + propina,
   }
 }
 

@@ -74,6 +74,7 @@ public class ServicioCobro {
     pago.setInc(cuenta.inc());
     pago.setPropina(cuenta.propina());
     pago.setCargosAdicionales(cuenta.cargosAdicionales());
+    pago.setCostoEnvio(cuenta.costoEnvio());
     pago.setTotal(cuenta.total());
     pago.setMetodo(datos.metodo());
     pago.setDivisiones(datos.divisiones());
@@ -87,13 +88,14 @@ public class ServicioCobro {
     ordenes.guardar(orden);
     Pago guardado = pagos.guardar(pago);
 
-    Mesa mesa = mesas.porId(orden.getMesaId()).orElse(null);
+    // Un domicilio no ocupa mesa: no hay nada que liberar.
+    Mesa mesa = orden.getMesaId() == null ? null : mesas.porId(orden.getMesaId()).orElse(null);
     if (mesa != null && orden.getId().equals(mesa.getOrdenActivaId())) {
       mesa.liberar();
       mesas.guardar(mesa);
     }
 
-    eventos.publicar(List.of("ordenes", "mesas", "pagos"));
+    eventos.publicar(List.of("ordenes", "mesas", "pagos", "pedidos"));
     return guardado;
   }
 
@@ -109,7 +111,9 @@ public class ServicioCobro {
     return new Dtos.ComprobanteDetallado(
         pago,
         orden,
-        mesas.porId(orden.getMesaId()).map(Mesa::etiqueta).orElse("Mesa retirada"),
+        orden.esExterno()
+            ? orden.etiquetaCanal()
+            : mesas.porId(orden.getMesaId()).map(Mesa::etiqueta).orElse("Mesa retirada"),
         usuarios.porId(orden.getMeseroId()).map(u -> u.getNombre()).orElse(""));
   }
 }

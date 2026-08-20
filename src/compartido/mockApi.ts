@@ -9,6 +9,7 @@ import {
   marcarIntento,
   quitarDeCola,
 } from './conexion'
+import type { Cuenta } from './calculos'
 import type {
   Ajustes,
   CargoAdicional,
@@ -25,10 +26,14 @@ import type {
   ModificadorSeleccionado,
   Orden,
   Pago,
+  EstadoCanal,
+  EstadoPedido,
   Reserva,
   Rol,
   Sesion,
+  TipoPedido,
   Usuario,
+  ZonaDomicilio,
 } from './tipos'
 
 /**
@@ -526,6 +531,128 @@ export async function agregarNota(ordenId: string, notas: string): Promise<void>
 }
 
 // ---------------------------------------------------------------------------
+// Domicilios y para llevar
+// ---------------------------------------------------------------------------
+
+/**
+ * Lo que el sitio publico necesita antes de dejar pedir: si el canal esta
+ * abierto, a que zonas se lleva y cuanto cuesta cada una. Sin sesion, porque
+ * lo consulta el cliente desde la calle.
+ */
+export async function estadoCanal(): Promise<EstadoCanal> {
+  return contra(() => pedir<EstadoCanal>('/api/pedidos/canal', { sinSesion: true }))
+}
+
+export interface NuevoPedidoExterno {
+  tipo: Exclude<TipoPedido, 'mesa'>
+  nombre: string
+  telefono: string
+  direccion?: string
+  barrio?: string
+  zonaDomicilioId?: string
+  metodoPagoPrevisto?: MetodoPago
+  notas?: string
+  items: NuevoItem[]
+}
+
+export interface PedidoCreado {
+  id: string
+  numero: number
+  minutosEstimados?: number
+  cuenta: Cuenta
+}
+
+/**
+ * ESTE ES EL PUNTO donde un pedido hecho desde la calle entra al restaurante.
+ *
+ * En el prototipo esta funcion escribia en el localStorage del propio celular
+ * del cliente, asi que el pedido no llegaba a ninguna parte: la pantalla de
+ * recepcion es otro aparato. Ahora es un POST de verdad, y de el sale el evento
+ * que enciende la pantalla de recepcion sin que nadie recargue.
+ *
+ * Las validaciones se repiten en el servidor: el formulario protege al cliente
+ * de equivocarse, el servidor protege al restaurante de pedidos imposibles.
+ */
+export async function crearPedidoExterno(datos: NuevoPedidoExterno): Promise<PedidoCreado> {
+  return contra(() =>
+    pedir<PedidoCreado>('/api/pedidos', { metodo: 'POST', cuerpo: datos, sinSesion: true }),
+  )
+}
+
+/** Un pedido tal como lo pinta la pantalla de recepcion. */
+export interface PedidoEnRecepcion {
+  orden: Orden
+  etiqueta: string
+  zonaNombre?: string
+  cuenta: Cuenta
+}
+
+export async function listarPedidos(incluirCerrados = false): Promise<PedidoEnRecepcion[]> {
+  return contra(() =>
+    pedir<PedidoEnRecepcion[]>('/api/pedidos', { consulta: { incluirCerrados } }),
+  )
+}
+
+/**
+ * Recepcion acepta el pedido y con eso entra a cocina.
+ *
+ * Los productos salen por el mismo camino que los de una mesa, asi que cada uno
+ * cae en su destino segun lo que diga la carta: cocina no tiene una pantalla
+ * aparte para domicilios ni tiene que saber de donde vino.
+ */
+export async function aceptarPedido(ordenId: string, minutosEstimados: number): Promise<Orden> {
+  return contra(() =>
+    pedir<Orden>(`/api/pedidos/${ordenId}/aceptar`, {
+      metodo: 'POST',
+      cuerpo: { minutosEstimados },
+    }),
+  )
+}
+
+export async function rechazarPedido(ordenId: string, motivo: string): Promise<Orden> {
+  return contra(() =>
+    pedir<Orden>(`/api/pedidos/${ordenId}/rechazar`, { metodo: 'POST', cuerpo: { motivo } }),
+  )
+}
+
+export async function cancelarPedido(ordenId: string, motivo: string): Promise<Orden> {
+  return contra(() =>
+    pedir<Orden>(`/api/pedidos/${ordenId}/cancelar`, { metodo: 'POST', cuerpo: { motivo } }),
+  )
+}
+
+export async function cambiarEstadoPedido(ordenId: string, estado: EstadoPedido): Promise<Orden> {
+  return contra(() =>
+    pedir<Orden>(`/api/pedidos/${ordenId}/estado`, { metodo: 'PATCH', cuerpo: { estado } }),
+  )
+}
+
+/** En domicilio se exige quien lo lleva: el cliente puede llamar a preguntar. */
+export async function despacharPedido(ordenId: string, repartidor: string): Promise<Orden> {
+  return contra(() =>
+    pedir<Orden>(`/api/pedidos/${ordenId}/despachar`, { metodo: 'POST', cuerpo: { repartidor } }),
+  )
+}
+
+export async function entregarPedido(ordenId: string): Promise<Orden> {
+  return contra(() => pedir<Orden>(`/api/pedidos/${ordenId}/entregar`, { metodo: 'POST' }))
+}
+
+// --- Zonas ------------------------------------------------------------------
+
+export async function listarZonasDomicilio(): Promise<ZonaDomicilio[]> {
+  return contra(() => pedir<ZonaDomicilio[]>('/api/pedidos/zonas'))
+}
+
+export async function guardarZonaDomicilio(zona: ZonaDomicilio): Promise<ZonaDomicilio> {
+  return contra(() => pedir<ZonaDomicilio>('/api/pedidos/zonas', { metodo: 'PUT', cuerpo: zona }))
+}
+
+export async function eliminarZonaDomicilio(zonaId: string): Promise<void> {
+  return contra(() => pedir<void>(`/api/pedidos/zonas/${zonaId}`, { metodo: 'DELETE' }))
+}
+
+// ---------------------------------------------------------------------------
 // Cocina y barra
 // ---------------------------------------------------------------------------
 
@@ -704,6 +831,12 @@ export interface ResumenTurno {
   incTotal: number
   ordenesAtendidas: number
   ticketPromedio: number
+  /** Venta por canal. La suma de los tres es `ventaTotal`. */
+  totalSalon: number
+  totalDomicilio: number
+  totalLlevar: number
+  /** Lo cobrado por envios, ya incluido dentro de `totalDomicilio`. */
+  totalEnvios: number
   /** Mismo turno del dia anterior, para comparar. */
   ventaDiaAnterior: number
   ordenesDiaAnterior: number
@@ -730,6 +863,8 @@ export interface Reportes {
   porMesero: { nombre: string; ordenes: number; ventas: number; ticketPromedio: number; propinas: number }[]
   tiemposPorProducto: { nombre: string; minutos: number; muestras: number }[]
   ventasPorDia: { dia: string; total: number }[]
+  /** Cuanto pesa cada canal. Es la pregunta que el dueno hace primero. */
+  porCanal: { canal: TipoPedido; ordenes: number; ventas: number; ticketPromedio: number }[]
 }
 
 export async function reportes(dias = 10): Promise<Reportes> {
@@ -753,6 +888,9 @@ export async function alertas(umbralMinutos: number): Promise<Alerta[]> {
 export const ACCESO_POR_AREA: Record<string, Rol[]> = {
   comandera: ['mesero', 'administrador'],
   cocina: ['cocina', 'administrador'],
+  // El cajero y el administrador tambien entran a recepcion: en un restaurante
+  // de este tamano la misma persona atiende el telefono y la caja.
+  recepcion: ['recepcion', 'cajero', 'administrador'],
   admin: ['cajero', 'administrador'],
   reportes: ['administrador'],
 }

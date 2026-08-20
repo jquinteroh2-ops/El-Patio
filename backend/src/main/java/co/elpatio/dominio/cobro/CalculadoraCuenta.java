@@ -17,6 +17,10 @@ import java.util.List;
  *    no sobre los cargos adicionales, que no son consumo.
  *  - La propina es voluntaria: por defecto es cero y solo entra si alguien la
  *    agrego despues de consultarla con el cliente. Nunca se aplica sola.
+ *  - El domicilio NO lleva INC ni propina. El INC grava el consumo de alimentos
+ *    y bebidas, y llevar un pedido hasta una casa no es consumo; la propina
+ *    retribuye el servicio de mesa, que en un domicilio no existe. El envio
+ *    entra como una linea aparte, despues del impuesto.
  *
  * Todo se redondea a pesos enteros porque el peso colombiano no tiene
  * fracciones: un centavo que sobrevive al calculo termina descuadrando la caja.
@@ -51,6 +55,10 @@ public final class CalculadoraCuenta {
     long subtotal = subtotal(orden.getItems());
     long inc = Math.round((double) subtotal * porcentajeInc / 100);
     long cargos = totalCargos(orden.getCargosAdicionales());
+    long envio = orden.getCostoEnvio();
+
+    // El envio queda fuera de la base de la propina, igual que queda fuera de
+    // la del impuesto: nadie propina por el domicilio que ya esta pagando.
     long propina =
         propinaManual != null
             ? Math.max(0, propinaManual)
@@ -61,9 +69,10 @@ public final class CalculadoraCuenta {
         inc,
         porcentajeInc,
         cargos,
+        envio,
         propina,
         porcentajePropina,
-        subtotal + inc + cargos + propina);
+        subtotal + inc + cargos + envio + propina);
   }
 
   // ---------------------------------------------------------------------------

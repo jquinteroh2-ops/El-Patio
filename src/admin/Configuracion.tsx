@@ -12,10 +12,12 @@ import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { Interruptor } from '@/componentes/ui/Interruptor'
 import { useAvisos } from '@/componentes/ui/Avisos'
+import { ZonasDomicilio } from './ZonasDomicilio'
 
 const NOMBRE_ROL: Record<Rol, string> = {
   mesero: 'Mesero',
   cocina: 'Cocina',
+  recepcion: 'Recepción',
   cajero: 'Cajero',
   administrador: 'Administrador',
 }
@@ -25,6 +27,9 @@ const AJUSTES_VACIOS: Ajustes = {
   simularSinConexion: false,
   consecutivoOrden: 0,
   fechaConsecutivo: '',
+  domiciliosPausados: false,
+  domiciliosDesde: '11:30:00',
+  domiciliosHasta: '21:30:00',
 }
 
 export default function Configuracion() {
@@ -150,6 +155,9 @@ export default function Configuracion() {
           de impuesto.
         </p>
       </section>
+
+      {/* ---------- Domicilios ---------- */}
+      <ZonasDomicilio ajustes={ajustes} />
 
       {/* ---------- Demostración ---------- */}
       <section className="rounded-2xl border border-ambar-500/30 bg-noche-900 p-4">

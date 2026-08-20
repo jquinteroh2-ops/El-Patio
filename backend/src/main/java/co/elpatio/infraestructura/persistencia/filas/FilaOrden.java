@@ -3,7 +3,11 @@ package co.elpatio.infraestructura.persistencia.filas;
 import co.elpatio.dominio.comanda.CargoAdicional;
 import co.elpatio.dominio.comanda.EstadoOrden;
 import co.elpatio.dominio.comanda.ItemOrden;
+import co.elpatio.dominio.cobro.MetodoPago;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.pedido.ClienteExterno;
+import co.elpatio.dominio.pedido.EstadoPedido;
+import co.elpatio.dominio.pedido.TipoPedido;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -65,6 +69,45 @@ public class FilaOrden {
   @Column(name = "orden_reemplazo_id")
   private String ordenReemplazoId;
 
+  // --- Canal del pedido -----------------------------------------------------
+
+  private String tipo;
+
+  @Column(name = "estado_pedido")
+  private String estadoPedido;
+
+  @Column(name = "cliente_nombre")
+  private String clienteNombre;
+
+  @Column(name = "cliente_telefono")
+  private String clienteTelefono;
+
+  @Column(name = "cliente_direccion")
+  private String clienteDireccion;
+
+  @Column(name = "cliente_barrio")
+  private String clienteBarrio;
+
+  @Column(name = "zona_domicilio_id")
+  private String zonaDomicilioId;
+
+  @Column(name = "costo_envio")
+  private long costoEnvio;
+
+  @Column(name = "metodo_pago_previsto")
+  private String metodoPagoPrevisto;
+
+  @Column(name = "minutos_estimados")
+  private Integer minutosEstimados;
+
+  private String repartidor;
+
+  @Column(name = "motivo_rechazo")
+  private String motivoRechazo;
+
+  @Column(name = "recibido_en")
+  private Instant recibidoEn;
+
   /**
    * `nullable = false` no es decorativo: sin el, Hibernate inserta el hijo con
    * la clave foranea vacia y la rellena con un UPDATE posterior, que choca
@@ -94,6 +137,22 @@ public class FilaOrden {
     orden.setNotas(notas);
     orden.setMotivoAnulacion(motivoAnulacion);
     orden.setOrdenReemplazoId(ordenReemplazoId);
+    orden.setTipo(tipo == null ? TipoPedido.MESA : TipoPedido.de(tipo));
+    orden.setEstadoPedido(estadoPedido == null ? null : EstadoPedido.de(estadoPedido));
+    // El cliente solo existe si hay algo que guardar: una orden de mesa no
+    // lleva datos de contacto y no tiene por que cargar un objeto vacio.
+    orden.setCliente(
+        clienteNombre == null && clienteTelefono == null
+            ? null
+            : new ClienteExterno(clienteNombre, clienteTelefono, clienteDireccion, clienteBarrio));
+    orden.setZonaDomicilioId(zonaDomicilioId);
+    orden.setCostoEnvio(costoEnvio);
+    orden.setMetodoPagoPrevisto(
+        metodoPagoPrevisto == null ? null : MetodoPago.de(metodoPagoPrevisto));
+    orden.setMinutosEstimados(minutosEstimados);
+    orden.setRepartidor(repartidor);
+    orden.setMotivoRechazo(motivoRechazo);
+    orden.setRecibidoEn(recibidoEn);
     orden.setItems(new ArrayList<>(items.stream().map(FilaItemOrden::aDominio).toList()));
     orden.setCargosAdicionales(
         new ArrayList<>(cargos.stream().map(FilaCargoAdicional::aDominio).toList()));
@@ -120,6 +179,21 @@ public class FilaOrden {
     this.notas = orden.getNotas();
     this.motivoAnulacion = orden.getMotivoAnulacion();
     this.ordenReemplazoId = orden.getOrdenReemplazoId();
+    this.tipo = orden.getTipo().codigo();
+    this.estadoPedido = orden.getEstadoPedido() == null ? null : orden.getEstadoPedido().codigo();
+    ClienteExterno cliente = orden.getCliente();
+    this.clienteNombre = cliente == null ? null : cliente.nombre();
+    this.clienteTelefono = cliente == null ? null : cliente.telefono();
+    this.clienteDireccion = cliente == null ? null : cliente.direccion();
+    this.clienteBarrio = cliente == null ? null : cliente.barrio();
+    this.zonaDomicilioId = orden.getZonaDomicilioId();
+    this.costoEnvio = orden.getCostoEnvio();
+    this.metodoPagoPrevisto =
+        orden.getMetodoPagoPrevisto() == null ? null : orden.getMetodoPagoPrevisto().codigo();
+    this.minutosEstimados = orden.getMinutosEstimados();
+    this.repartidor = orden.getRepartidor();
+    this.motivoRechazo = orden.getMotivoRechazo();
+    this.recibidoEn = orden.getRecibidoEn();
 
     // Se reconstruye la coleccion en su sitio: reasignar la lista rompe el
     // seguimiento de huerfanos y deja filas viejas colgando en la tabla.

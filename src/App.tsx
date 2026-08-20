@@ -11,12 +11,14 @@ import LayoutPublico from '@/publico/LayoutPublico'
 import Inicio from '@/publico/Inicio'
 import Carta from '@/publico/Carta'
 import Reservar from '@/publico/Reservar'
+import Pedir from '@/publico/Pedir'
 import Acceso from '@/publico/Acceso'
 import MapaMesas from '@/comandera/MapaMesas'
 import OrdenMesa from '@/comandera/OrdenMesa'
 import SelectorProductos from '@/comandera/SelectorProductos'
 import CuentaMesa from '@/comandera/CuentaMesa'
 import PantallaCocina from '@/cocina/PantallaCocina'
+import PantallaPedidos from '@/recepcion/PantallaPedidos'
 import LayoutAdmin from '@/admin/LayoutAdmin'
 import InicioAdmin from '@/admin/InicioAdmin'
 import Reservas from '@/admin/Reservas'
@@ -46,6 +48,7 @@ export default function App() {
               <Route path="/" element={<Inicio />} />
               <Route path="/carta" element={<Carta />} />
               <Route path="/reservar" element={<Reservar />} />
+              <Route path="/pedir" element={<Pedir />} />
             </Route>
             <Route path="/acceso" element={<Acceso />} />
 
@@ -97,6 +100,16 @@ export default function App() {
               element={
                 <GuardaRuta roles={['cocina', 'administrador']}>
                   <PantallaCocina destino="bar" />
+                </GuardaRuta>
+              }
+            />
+
+            {/* ---------- Recepcion de domicilios y para llevar ---------- */}
+            <Route
+              path="/recepcion"
+              element={
+                <GuardaRuta roles={['recepcion', 'cajero', 'administrador']}>
+                  <PantallaPedidos />
                 </GuardaRuta>
               }
             />

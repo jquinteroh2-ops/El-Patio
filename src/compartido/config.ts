@@ -64,6 +64,92 @@ export const CARGOS_FRECUENTES = [
 ] as const
 
 // ---------------------------------------------------------------------------
+// Domicilios y para llevar
+// ---------------------------------------------------------------------------
+
+/**
+ * Las zonas de domicilio NO estan aqui.
+ *
+ * Viven en la base y se administran desde /admin/configuracion, porque el dueno
+ * sube la tarifa de una zona cuando sube la gasolina y no puede necesitar un
+ * despliegue para eso. Lo que queda en este archivo es lo que la interfaz
+ * necesita saber sin preguntarle al servidor.
+ */
+
+/** Minutos que se le promete al cliente cuando la zona no dice otra cosa. */
+export const MINUTOS_ESTIMADOS_POR_DEFECTO = 40
+
+/**
+ * Monto minimo de referencia que se muestra en el sitio publico antes de que
+ * el cliente escoja barrio. El que manda es el de la zona, que valida el
+ * servidor: este solo evita que la pagina prometa algo distinto.
+ */
+export const MONTO_MINIMO_DOMICILIO = 30000
+
+/** Minutos que lleva un pedido esperando antes de que recepcion deba mirarlo. */
+export const UMBRAL_ALERTA_PEDIDO = 10
+
+/** Un celular colombiano tiene diez digitos y empieza por 3. */
+export const DIGITOS_TELEFONO = 10
+
+/** Como se nombra cada canal en pantalla. */
+export const ETIQUETA_CANAL = {
+  mesa: 'Salón',
+  domicilio: 'Domicilio',
+  llevar: 'Para llevar',
+} as const
+
+/** Los estados de un pedido, en el orden en que ocurren. */
+export const ESTADOS_PEDIDO = [
+  { estado: 'nuevo', etiqueta: 'Nuevos' },
+  { estado: 'aceptado', etiqueta: 'Aceptados' },
+  { estado: 'en_preparacion', etiqueta: 'En preparación' },
+  { estado: 'listo', etiqueta: 'Listos' },
+  { estado: 'despachado', etiqueta: 'Despachados' },
+] as const
+
+/** Motivos frecuentes de rechazo. Siempre se puede escribir otro. */
+export const MOTIVOS_RECHAZO = [
+  'La cocina está saturada en este momento',
+  'No tenemos disponible lo que pidió',
+  'No llegamos a esa dirección',
+  'No pudimos confirmar el pedido por teléfono',
+] as const
+
+// ---------------------------------------------------------------------------
+// Impresion
+// ---------------------------------------------------------------------------
+
+/**
+ * Datos del establecimiento que van en el comprobante.
+ *
+ * `resolucion` y `prefijo` estan vacios a proposito: este documento NO es una
+ * factura electronica ante la DIAN, es un comprobante interno de venta. El
+ * espacio queda previsto para cuando el restaurante se habilite; hasta que la
+ * DIAN entregue una resolucion real, aqui no puede aparecer un numero.
+ */
+export const DATOS_FISCALES = {
+  razonSocial: 'Restaurante El Patio S.A.S.',
+  nit: '901.234.567-8',
+  regimen: 'Responsable de impuesto al consumo',
+  responsabilidad: 'No responsable de IVA',
+  /** Lo entrega la DIAN al habilitarse. Nunca se inventa. */
+  resolucion: '',
+  prefijo: '',
+  /** Texto que la ley exige mientras no haya facturacion electronica. */
+  leyenda: 'Este documento no es una factura electrónica de venta. Comprobante interno.',
+} as const
+
+/** Ancho del rollo de la impresora termica, en milimetros. */
+export const ANCHO_TICKET_MM = 80
+
+/** Si la comanda sale sola a cocina al enviar el turno. */
+export const IMPRIMIR_COMANDA_AUTOMATICO = false
+
+/** Copias del comprobante de venta. Una para el cliente, otra para la caja. */
+export const COPIAS_COMPROBANTE = 1
+
+// ---------------------------------------------------------------------------
 // Conexion con el backend
 // ---------------------------------------------------------------------------
 

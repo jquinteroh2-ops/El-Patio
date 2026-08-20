@@ -6,6 +6,7 @@ import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.reserva.Reserva;
 import co.elpatio.dominio.salon.Mesa;
@@ -90,6 +91,16 @@ public final class Repositorios {
     Optional<Reserva> porId(String id);
 
     Reserva guardar(Reserva reserva);
+  }
+
+  public interface DeZonasDomicilio {
+    List<ZonaDomicilio> listar();
+
+    Optional<ZonaDomicilio> porId(String id);
+
+    ZonaDomicilio guardar(ZonaDomicilio zona);
+
+    void eliminar(String id);
   }
 
   public interface DeCierres {

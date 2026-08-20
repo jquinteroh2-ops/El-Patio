@@ -60,8 +60,11 @@ public class ServicioCocina {
     List<Dtos.TurnoEnCocina> bloques = new ArrayList<>();
 
     for (Orden orden : ordenes.activas()) {
-      Mesa mesa = porMesa.get(orden.getMesaId());
-      if (mesa == null) continue;
+      // Un domicilio o un para llevar no tiene mesa. Cocina los ve igual que
+      // los del salon, solo cambia la etiqueta: no hay una pantalla aparte ni
+      // una regla distinta, que era justo lo que habia que evitar.
+      Mesa mesa = orden.getMesaId() == null ? null : porMesa.get(orden.getMesaId());
+      if (mesa == null && !orden.esExterno()) continue;
 
       for (Orden.GrupoTurno grupo : orden.agruparPorTurno(orden.itemsEnviadosDe(destino))) {
         // Un turno servido por completo ya no ocupa espacio en la pantalla.
@@ -71,9 +74,9 @@ public class ServicioCocina {
             new Dtos.TurnoEnCocina(
                 orden.getId(),
                 orden.getNumero(),
-                mesa.getId(),
-                mesa.etiqueta(),
-                mesa.getZona(),
+                mesa == null ? null : mesa.getId(),
+                mesa == null ? orden.etiquetaCanal() : mesa.etiqueta(),
+                mesa == null ? null : mesa.getZona(),
                 nombres.getOrDefault(orden.getMeseroId(), ""),
                 grupo.turno(),
                 grupo.items().get(0).getEnviadoEn() != null

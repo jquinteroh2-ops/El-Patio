@@ -1,5 +1,16 @@
 import { useState } from 'react'
-import { Banknote, CreditCard, Lock, Smartphone, TrendingDown, TrendingUp } from 'lucide-react'
+import {
+  Banknote,
+  Bike,
+  CreditCard,
+  Lock,
+  Printer,
+  ShoppingBag,
+  Smartphone,
+  TrendingDown,
+  TrendingUp,
+  Utensils,
+} from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { ResumenTurno } from '@/compartido/mockApi'
 import { useSesionActiva } from '@/compartido/auth'
@@ -10,6 +21,8 @@ import { Boton } from '@/componentes/ui/Boton'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { useAvisos } from '@/componentes/ui/Avisos'
+import { imprimir } from '@/impresion/impresora'
+import { CierreTermico } from '@/impresion/CierreTermico'
 
 const VACIO: ResumenTurno = {
   fecha: '',
@@ -22,6 +35,10 @@ const VACIO: ResumenTurno = {
   incTotal: 0,
   ordenesAtendidas: 0,
   ticketPromedio: 0,
+  totalSalon: 0,
+  totalDomicilio: 0,
+  totalLlevar: 0,
+  totalEnvios: 0,
   ventaDiaAnterior: 0,
   ordenesDiaAnterior: 0,
 }
@@ -53,6 +70,21 @@ export default function Cierre() {
   const sumaMetodos =
     resumen.totalEfectivo + resumen.totalTarjeta + resumen.totalTransferencia
   const cuadra = sumaMetodos === resumen.ventaTotal
+
+  // La caja tiene que cuadrar por las dos lecturas: por medio de pago, que es
+  // contra lo que se cuenta el efectivo del cajon, y por canal, que es lo que
+  // responde de donde vino la venta. Si una de las dos no da, hay algo mal.
+  const sumaCanales = resumen.totalSalon + resumen.totalDomicilio + resumen.totalLlevar
+  const cuadranCanales = sumaCanales === resumen.ventaTotal
+
+  const canales = [
+    { icono: Utensils, etiqueta: 'Salón', valor: resumen.totalSalon },
+    { icono: Bike, etiqueta: 'Domicilio', valor: resumen.totalDomicilio },
+    { icono: ShoppingBag, etiqueta: 'Para llevar', valor: resumen.totalLlevar },
+  ]
+
+  const imprimirCierre = () =>
+    imprimir(<CierreTermico resumen={resumen} cerradoPor={sesion.nombre} />)
 
   const cerrar = async () => {
     setCerrando(true)
@@ -121,6 +153,36 @@ export default function Cierre() {
             ))}
           </div>
 
+          {/* ---------- Por canal ---------- */}
+          <div className="mt-3 border-t border-noche-800 pt-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-noche-500">
+              De dónde vino la venta
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {canales.map(({ icono: Icono, etiqueta, valor }) => (
+                <div key={etiqueta} className="rounded-xl border border-noche-800 bg-noche-850 p-3">
+                  <Icono className="mb-1.5 h-4 w-4 text-noche-500" aria-hidden />
+                  <p className="text-base font-semibold tabular-nums text-crema-100">
+                    {formatoCOP(valor)}
+                  </p>
+                  <p className="text-xs text-noche-400">{etiqueta}</p>
+                </div>
+              ))}
+            </div>
+            {resumen.totalEnvios > 0 && (
+              <p className="mt-2 text-xs text-noche-500">
+                De lo del domicilio, {formatoCOP(resumen.totalEnvios)} son envíos: no es venta de
+                cocina, es un costo que se le traslada al cliente.
+              </p>
+            )}
+            {!cuadranCanales && resumen.ventaTotal > 0 && (
+              <p className="mt-2 text-xs font-medium text-estado-demorado">
+                Los canales suman {formatoCOP(sumaCanales)} y la venta es{' '}
+                {formatoCOP(resumen.ventaTotal)}. Avise al administrador antes de cerrar.
+              </p>
+            )}
+          </div>
+
           <dl className="mt-3 space-y-1.5 border-t border-noche-800 pt-3 text-sm">
             <div className="flex justify-between text-noche-300">
               <dt>Cuentas cobradas</dt>
@@ -151,7 +213,16 @@ export default function Cierre() {
             </p>
           )}
 
-          <div className="mt-4">
+          <div className="mt-4 space-y-2">
+            <Boton
+              variante="secundario"
+              tamano="grande"
+              bloque
+              onClick={imprimirCierre}
+              icono={<Printer className="h-5 w-5" />}
+            >
+              Imprimir el corte
+            </Boton>
             <Boton
               variante="principal"
               tamano="grande"

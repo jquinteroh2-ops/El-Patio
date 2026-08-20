@@ -9,6 +9,7 @@ import co.elpatio.dominio.comanda.EstadoOrden;
 import co.elpatio.dominio.comanda.ItemOrden;
 import co.elpatio.dominio.comanda.ModificadorSeleccionado;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.pedido.TipoPedido;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
@@ -134,12 +135,14 @@ public class ServicioAdministracion {
       if (orden == null) continue;
       if (meseroId != null && !meseroId.isBlank() && !meseroId.equals(orden.getMeseroId())) continue;
 
-      Mesa mesa = porMesa.get(orden.getMesaId());
+      Mesa mesa = orden.getMesaId() == null ? null : porMesa.get(orden.getMesaId());
       resultado.add(
           new Dtos.VentaHistorica(
               orden,
               pago,
-              mesa != null ? mesa.etiqueta() : "Mesa retirada",
+              orden.esExterno()
+                  ? orden.etiquetaCanal()
+                  : (mesa != null ? mesa.etiqueta() : "Mesa retirada"),
               nombres.getOrDefault(orden.getMeseroId(), "")));
     }
 
@@ -160,6 +163,12 @@ public class ServicioAdministracion {
     List<Pago> deAyer = pagosDelTurno(hoy.minusDays(1), turno);
     long ventaTotal = delTurno.stream().mapToLong(Pago::getTotal).sum();
 
+    // El canal de cada pago sale de su comanda: el pago no lo guarda porque ya
+    // esta en la orden, y duplicarlo abriria la puerta a que se contradigan.
+    Map<String, TipoPedido> canalPorOrden =
+        ordenes.listar().stream()
+            .collect(Collectors.toMap(Orden::getId, Orden::getTipo, (a, b) -> a));
+
     return new Dtos.ResumenTurno(
         hoy,
         turno,
@@ -171,6 +180,10 @@ public class ServicioAdministracion {
         delTurno.stream().mapToLong(Pago::getInc).sum(),
         delTurno.size(),
         delTurno.isEmpty() ? 0 : Math.round((double) ventaTotal / delTurno.size()),
+        totalDeCanal(delTurno, canalPorOrden, TipoPedido.MESA),
+        totalDeCanal(delTurno, canalPorOrden, TipoPedido.DOMICILIO),
+        totalDeCanal(delTurno, canalPorOrden, TipoPedido.LLEVAR),
+        delTurno.stream().mapToLong(Pago::getCostoEnvio).sum(),
         deAyer.stream().mapToLong(Pago::getTotal).sum(),
         deAyer.size());
   }
@@ -196,6 +209,10 @@ public class ServicioAdministracion {
     cierre.setIncTotal(resumen.incTotal());
     cierre.setOrdenesAtendidas(resumen.ordenesAtendidas());
     cierre.setTicketPromedio(resumen.ticketPromedio());
+    cierre.setTotalSalon(resumen.totalSalon());
+    cierre.setTotalDomicilio(resumen.totalDomicilio());
+    cierre.setTotalLlevar(resumen.totalLlevar());
+    cierre.setTotalEnvios(resumen.totalEnvios());
     cierre.setCerradoPor(cerradoPor);
     cierre.setFechaHora(reloj.ahora());
 
@@ -216,6 +233,7 @@ public class ServicioAdministracion {
     Map<String, Orden> porId =
         ordenes.listar().stream().collect(Collectors.toMap(Orden::getId, Function.identity()));
 
+    Map<TipoPedido, long[]> canales = new LinkedHashMap<>(); // [ordenes, ventas]
     Map<String, long[]> productos = new LinkedHashMap<>(); // [unidades, ingreso]
     Map<Integer, long[]> franjas = new LinkedHashMap<>(); // [ventas, ordenes]
     Map<String, long[]> meseros = new LinkedHashMap<>(); // [ordenes, ventas, propinas]
@@ -244,6 +262,10 @@ public class ServicioAdministracion {
       mesero[0] += 1;
       mesero[1] += pago.getTotal();
       mesero[2] += pago.getPropina();
+
+      long[] canal = canales.computeIfAbsent(orden.getTipo(), c -> new long[2]);
+      canal[0] += 1;
+      canal[1] += pago.getTotal();
 
       String dia = reloj.diaDe(pago.getFechaHora()).format(CLAVE_DIA);
       porDia.merge(dia, pago.getTotal(), Long::sum);
@@ -304,6 +326,18 @@ public class ServicioAdministracion {
         porDia.entrySet().stream()
             .map(e -> new Dtos.VentaPorDia(e.getKey(), e.getValue()))
             .sorted(Comparator.comparing(Dtos.VentaPorDia::dia))
+            .toList(),
+        canales.entrySet().stream()
+            .map(
+                e ->
+                    new Dtos.VentaPorCanal(
+                        e.getKey(),
+                        (int) e.getValue()[0],
+                        e.getValue()[1],
+                        e.getValue()[0] == 0
+                            ? 0
+                            : Math.round((double) e.getValue()[1] / e.getValue()[0])))
+            .sorted(Comparator.comparingLong(Dtos.VentaPorCanal::ventas).reversed())
             .toList());
   }
 
@@ -326,9 +360,11 @@ public class ServicioAdministracion {
     List<Dtos.Alerta> lista = new ArrayList<>();
 
     for (Orden orden : ordenes.activas()) {
-      Mesa mesa = porMesa.get(orden.getMesaId());
-      if (mesa == null) continue;
-      String etiqueta = mesa.etiqueta();
+      // Un pedido externo tambien puede quedarse esperando en la plancha, y el
+      // administrador tiene el mismo derecho a enterarse que con una mesa.
+      Mesa mesa = orden.getMesaId() == null ? null : porMesa.get(orden.getMesaId());
+      if (mesa == null && !orden.esExterno()) continue;
+      String etiqueta = mesa != null ? mesa.etiqueta() : orden.etiquetaCanal();
 
       Instant masAntiguo = orden.esperaMasAntigua();
       if (masAntiguo != null) {
@@ -340,7 +376,7 @@ public class ServicioAdministracion {
                   "demora",
                   etiqueta + " lleva " + minutos + " min esperando comida",
                   minutos,
-                  mesa.getId()));
+                  mesa == null ? null : mesa.getId()));
         }
       }
 
@@ -352,7 +388,7 @@ public class ServicioAdministracion {
                 "cobro",
                 etiqueta + " pidió la cuenta y sigue sin cobrar",
                 minutos,
-                mesa.getId()));
+                mesa == null ? null : mesa.getId()));
       }
     }
 
@@ -375,5 +411,13 @@ public class ServicioAdministracion {
 
   private long totalEn(List<Pago> lista, MetodoPago metodo) {
     return lista.stream().mapToLong(p -> p.valorEn(metodo)).sum();
+  }
+
+  private long totalDeCanal(
+      List<Pago> lista, Map<String, TipoPedido> canalPorOrden, TipoPedido canal) {
+    return lista.stream()
+        .filter(p -> canalPorOrden.getOrDefault(p.getOrdenId(), TipoPedido.MESA) == canal)
+        .mapToLong(Pago::getTotal)
+        .sum();
   }
 }

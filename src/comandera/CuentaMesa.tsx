@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Receipt, SplitSquareHorizontal, Tag, Wallet } from 'lucide-react'
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Printer,
+  Receipt,
+  SplitSquareHorizontal,
+  Tag,
+  Wallet,
+} from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { OrdenDetallada } from '@/compartido/mockApi'
 import { calcularCuenta, precioItem } from '@/compartido/calculos'
@@ -16,6 +24,8 @@ import { ControlPropina, type Propina } from './ControlPropina'
 import { HojaDivision } from './HojaDivision'
 import { HojaPago, type PartePago } from './HojaPago'
 import { Comprobante } from './Comprobante'
+import { imprimir } from '@/impresion/impresora'
+import { ComprobanteTermico } from '@/impresion/ComprobanteTermico'
 
 interface Cobrado {
   pago: Pago
@@ -71,6 +81,44 @@ export default function CuentaMesa() {
 
   if (cargando) return <Cargando pantallaCompleta mensaje="Preparando la cuenta" />
 
+  /**
+   * Saca el comprobante en la termica despues de cobrar.
+   *
+   * Si la cuenta se dividio, sale un tiquete por parte: cada comensal se lleva
+   * el suyo con lo que le toco pagar. Sin eso, cuatro personas que dividieron
+   * se quedarian con un solo papel y ninguno podria justificar su gasto.
+   */
+  const imprimirComprobanteFinal = () => {
+    if (!cobrado) return
+    const cuentaFinal = calcularCuenta(cobrado.orden, porcentajeInc, 0, cobrado.pago.propina)
+    const divisiones = cobrado.pago.divisiones ?? []
+
+    if (divisiones.length > 1) {
+      for (const parte of divisiones) {
+        imprimir(
+          <ComprobanteTermico
+            orden={cobrado.orden}
+            cuenta={cuentaFinal}
+            etiqueta={cobrado.mesaEtiqueta}
+            atendidoPor={cobrado.meseroNombre}
+            parte={parte}
+          />,
+        )
+      }
+      return
+    }
+
+    imprimir(
+      <ComprobanteTermico
+        orden={cobrado.orden}
+        cuenta={cuentaFinal}
+        etiqueta={cobrado.mesaEtiqueta}
+        atendidoPor={cobrado.meseroNombre}
+        metodo={cobrado.pago.metodo}
+      />,
+    )
+  }
+
   // ---- Comprobante, despues de cobrar ----
   if (cobrado) {
     return (
@@ -84,7 +132,16 @@ export default function CuentaMesa() {
 
         <Comprobante {...cobrado} />
 
-        <div className="mx-auto mt-5 flex w-full max-w-md gap-2">
+        <div className="mx-auto mt-5 flex w-full max-w-md flex-col gap-2">
+          <Boton
+            variante="secundario"
+            tamano="grande"
+            bloque
+            icono={<Printer className="h-5 w-5" aria-hidden />}
+            onClick={() => imprimirComprobanteFinal()}
+          >
+            Imprimir comprobante
+          </Boton>
           <Boton
             variante="principal"
             tamano="grande"
@@ -216,6 +273,25 @@ export default function CuentaMesa() {
             </ul>
           </section>
         )}
+
+        <Boton
+          variante="secundario"
+          bloque
+          icono={<Printer className="h-5 w-5" aria-hidden />}
+          onClick={() =>
+            imprimir(
+              <ComprobanteTermico
+                orden={orden}
+                cuenta={cuenta}
+                etiqueta={etiquetaMesa}
+                atendidoPor={detalle.meseroNombre}
+                esPrecuenta
+              />,
+            )
+          }
+        >
+          Imprimir precuenta
+        </Boton>
 
         <ControlPropina
           subtotal={cuenta.subtotal}

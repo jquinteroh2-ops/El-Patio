@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Plus, ShoppingBag } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { CategoriaConItems } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
+import type { EstadoCanal, ItemCarta } from '@/compartido/tipos'
+import { HojaModificadores, type SeleccionProducto } from '@/comandera/HojaModificadores'
+import { useCarrito } from './carrito'
 import { Filete } from './Ornamento'
 
 export default function Carta() {
@@ -15,8 +20,22 @@ export default function Carta() {
     ['carta', 'todo'],
   )
 
+  // El canal decide si se puede pedir: fuera de horario o con la cocina
+  // saturada, la carta se sigue leyendo pero no aparece el boton de agregar.
+  const { datos: canal } = useSyncedState<EstadoCanal | null>(
+    () => api.estadoCanal(),
+    null,
+    [],
+    ['pedidos', 'ajustes', 'todo'],
+  )
+
+  const carrito = useCarrito()
+  const [aElegir, setAElegir] = useState<ItemCarta | null>(null)
+
   const [activa, setActiva] = useState<string | null>(null)
   const navRef = useRef<HTMLDivElement>(null)
+
+  const sePuedePedir = canal?.abierto === true
 
   // Resalta en la barra la categoría que se está leyendo.
   useEffect(() => {
@@ -46,6 +65,31 @@ export default function Carta() {
     boton?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
   }, [activa])
 
+  const aviso = useMemo(() => {
+    if (!canal) return null
+    if (canal.abierto) return null
+    if (canal.pausado) {
+      return 'Por ahora no estamos recibiendo pedidos en línea. La cocina está a tope; inténtelo en un rato.'
+    }
+    const hora = (t: string) => t.slice(0, 5)
+    return `Recibimos pedidos entre las ${hora(canal.desde)} y las ${hora(canal.hasta)}. Fuera de ese horario lo esperamos en el salón.`
+  }, [canal])
+
+  /** Los productos sin modificadores entran de un toque, sin abrir la hoja. */
+  const alTocarAgregar = (item: ItemCarta) => {
+    if ((item.modificadores?.length ?? 0) === 0) {
+      carrito.agregar(item, 1, [])
+      return
+    }
+    setAElegir(item)
+  }
+
+  const alConfirmarSeleccion = (seleccion: SeleccionProducto) => {
+    if (!aElegir) return
+    carrito.agregar(aElegir, seleccion.cantidad, seleccion.modificadores, seleccion.nota)
+    setAElegir(null)
+  }
+
   return (
     <>
       <section className="mx-auto max-w-3xl px-5 pb-10 pt-16 text-center">
@@ -57,6 +101,12 @@ export default function Carta() {
           incluyen el impuesto al consumo al momento de la cuenta.
         </p>
       </section>
+
+      {aviso && (
+        <p className="mx-auto mb-2 max-w-3xl rounded-sm border border-ambar-400/30 bg-ambar-500/10 px-5 py-3 text-center text-sm text-ambar-200">
+          {aviso}
+        </p>
+      )}
 
       {/* Navegación por categorías, siempre a la vista */}
       <div className="sticky top-16 z-30 border-y border-crema-100/10 bg-bosque-950/95 backdrop-blur">
@@ -111,6 +161,17 @@ export default function Carta() {
                           {item.descripcion}
                         </p>
                       )}
+
+                      {sePuedePedir && item.disponible && (
+                        <button
+                          type="button"
+                          onClick={() => alTocarAgregar(item)}
+                          className="mt-3 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-ambar-400 hover:text-ambar-300"
+                        >
+                          <Plus className="h-4 w-4" aria-hidden />
+                          Agregar
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -124,6 +185,38 @@ export default function Carta() {
           en la cuenta.
         </p>
       </div>
+
+      {/* Espacio para que el botón flotante no tape el último plato. */}
+      {carrito.unidades > 0 && <div className="h-24" aria-hidden />}
+
+      {/* ---------- Botón flotante con el conteo y el total corriente ---------- */}
+      {carrito.unidades > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-crema-100/10 bg-bosque-950/95 p-4 backdrop-blur">
+          <Link
+            to="/pedir"
+            className="mx-auto flex min-h-[56px] max-w-3xl items-center justify-between gap-4 rounded-sm bg-ambar-500 px-5 text-bosque-950 transition hover:bg-ambar-400"
+          >
+            <span className="flex items-center gap-2 font-semibold">
+              <ShoppingBag className="h-5 w-5" aria-hidden />
+              {carrito.unidades} {carrito.unidades === 1 ? 'producto' : 'productos'}
+            </span>
+            <span className="flex items-center gap-3">
+              <span className="font-titulo text-lg tabular-nums">
+                {formatoCOP(carrito.subtotal)}
+              </span>
+              <span className="text-sm font-semibold uppercase tracking-wider">Continuar</span>
+            </span>
+          </Link>
+        </div>
+      )}
+
+      {/* La misma hoja que usa la comandera: la elección del cliente y la del
+          mesero son la misma decisión, y no tiene sentido tener dos. */}
+      <HojaModificadores
+        item={aElegir}
+        onCerrar={() => setAElegir(null)}
+        onConfirmar={alConfirmarSeleccion}
+      />
     </>
   )
 }

@@ -7,7 +7,7 @@
 // Personal
 // ---------------------------------------------------------------------------
 
-export type Rol = 'mesero' | 'cocina' | 'cajero' | 'administrador'
+export type Rol = 'mesero' | 'cocina' | 'recepcion' | 'cajero' | 'administrador'
 
 export interface Usuario {
   id: string
@@ -90,6 +90,67 @@ export interface ItemCarta {
 }
 
 // ---------------------------------------------------------------------------
+// Canal del pedido
+// ---------------------------------------------------------------------------
+
+/**
+ * Por donde entro la venta.
+ *
+ * Un domicilio no es una entidad distinta de una comanda: es una comanda con
+ * otro canal. Por eso cocina lo ve igual que el de una mesa, la caja lo suma
+ * sin logica aparte y el INC se calcula con la misma regla.
+ */
+export type TipoPedido = 'mesa' | 'domicilio' | 'llevar'
+
+/**
+ * El recorrido de un pedido externo, en el orden en que ocurre.
+ *
+ * Es distinto de EstadoOrden: aquel sigue la cocina, este sigue al cliente. Un
+ * pedido puede estar `despachado` mientras su comanda ya esta `servida`.
+ */
+export type EstadoPedido =
+  | 'nuevo'
+  | 'aceptado'
+  | 'en_preparacion'
+  | 'listo'
+  | 'despachado'
+  | 'entregado'
+  | 'rechazado'
+  | 'cancelado'
+
+/** Quien pidio desde fuera del salon. */
+export interface ClienteExterno {
+  nombre: string
+  telefono: string
+  /** Obligatoria en domicilio; en para llevar no aplica. */
+  direccion?: string
+  barrio?: string
+}
+
+/** Un barrio al que se lleva, con lo que cuesta y lo que tarda llegar. */
+export interface ZonaDomicilio {
+  id: string
+  nombre: string
+  /** Lo que se le cobra al cliente por el envio. No causa INC ni propina. */
+  tarifa: number
+  /** Por debajo de esto el envio se comeria el margen del pedido. */
+  montoMinimo: number
+  minutosEstimados: number
+  activa: boolean
+  orden: number
+}
+
+/** Lo que el sitio publico necesita saber antes de dejar pedir. */
+export interface EstadoCanal {
+  abierto: boolean
+  pausado: boolean
+  /** hh:mm:ss en la hora del restaurante. */
+  desde: string
+  hasta: string
+  zonas: ZonaDomicilio[]
+}
+
+// ---------------------------------------------------------------------------
 // Comandas
 // ---------------------------------------------------------------------------
 
@@ -138,8 +199,13 @@ export interface CargoAdicional {
 
 export interface Orden {
   id: string
-  mesaId: string
-  meseroId: string
+  /**
+   * Los pedidos de domicilio y para llevar no tienen mesa, y hasta que
+   * recepcion los acepta tampoco tienen a quien atribuirselos. Por eso los dos
+   * campos son opcionales: no romper las ordenes de mesa era la condicion.
+   */
+  mesaId?: string
+  meseroId?: string
   /** Consecutivo del dia. */
   numero: number
   estado: EstadoOrden
@@ -149,6 +215,28 @@ export interface Orden {
   abiertaEn: string
   cerradaEn?: string
   notas?: string
+
+  // --- Canal ---------------------------------------------------------------
+
+  /** 'mesa' en todo lo que viene del salon. */
+  tipo: TipoPedido
+  /** Solo en pedidos externos: es el recorrido que ve recepcion. */
+  estadoPedido?: EstadoPedido
+  cliente?: ClienteExterno
+  zonaDomicilioId?: string
+  /** Linea aparte DESPUES del impuesto: el envio no causa INC ni propina. */
+  costoEnvio?: number
+  /** Lo que el cliente dijo que pensaba pagar. El cobro real vive en Pago. */
+  metodoPagoPrevisto?: MetodoPago
+  minutosEstimados?: number
+  repartidor?: string
+  motivoRechazo?: string
+  /** Cuando entro el pedido. El cronometro de recepcion cuenta desde aqui. */
+  recibidoEn?: string
+
+  /** Anulacion auditable de una comanda ya cobrada. */
+  motivoAnulacion?: string
+  ordenReemplazoId?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -170,6 +258,8 @@ export interface Pago {
   inc: number
   propina: number
   cargosAdicionales: number
+  /** Lo cobrado por llevarlo. Se guarda con el pago y no se recalcula. */
+  costoEnvio?: number
   total: number
   metodo: MetodoPago
   divisiones?: DivisionPago[]
@@ -216,30 +306,19 @@ export interface CierreCaja {
   incTotal: number
   ordenesAtendidas: number
   ticketPromedio: number
+  /** Venta por canal. La suma de los tres es `ventaTotal`. */
+  totalSalon: number
+  totalDomicilio: number
+  totalLlevar: number
+  /** Lo cobrado por envios, ya incluido dentro de `totalDomicilio`. */
+  totalEnvios: number
   cerradoPor: string
   fechaHora: string
 }
 
 // ---------------------------------------------------------------------------
-// Estado global persistido
+// Ajustes del establecimiento
 // ---------------------------------------------------------------------------
-
-/**
- * Todo lo que vive en localStorage y se comparte entre pestanas.
- * Solo mockApi lo lee y lo escribe.
- */
-export interface BaseDatos {
-  version: number
-  usuarios: Usuario[]
-  mesas: Mesa[]
-  categorias: CategoriaCarta[]
-  carta: ItemCarta[]
-  ordenes: Orden[]
-  pagos: Pago[]
-  reservas: Reserva[]
-  cierres: CierreCaja[]
-  ajustes: Ajustes
-}
 
 export interface Ajustes {
   /** Impuesto Nacional al Consumo, en porcentaje. Configurable por establecimiento. */
@@ -250,6 +329,11 @@ export interface Ajustes {
   consecutivoOrden: number
   /** Fecha del consecutivo, para reiniciarlo cada dia. */
   fechaConsecutivo: string
+  /** Cierra el canal de pedidos cuando la cocina esta saturada. */
+  domiciliosPausados: boolean
+  /** Franja en que se reciben pedidos, hh:mm:ss en la hora del restaurante. */
+  domiciliosDesde: string
+  domiciliosHasta: string
 }
 
 /** Elemento de la cola local de envios pendientes cuando no hay conexion. */

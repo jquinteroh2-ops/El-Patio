@@ -43,6 +43,18 @@ public class FilaCierreCaja {
   @Column(name = "ticket_promedio")
   private long ticketPromedio;
 
+  @Column(name = "total_salon")
+  private long totalSalon;
+
+  @Column(name = "total_domicilio")
+  private long totalDomicilio;
+
+  @Column(name = "total_llevar")
+  private long totalLlevar;
+
+  @Column(name = "total_envios")
+  private long totalEnvios;
+
   @Column(name = "cerrado_por")
   private String cerradoPor;
 
@@ -62,6 +74,10 @@ public class FilaCierreCaja {
     cierre.setIncTotal(incTotal);
     cierre.setOrdenesAtendidas(ordenesAtendidas);
     cierre.setTicketPromedio(ticketPromedio);
+    cierre.setTotalSalon(totalSalon);
+    cierre.setTotalDomicilio(totalDomicilio);
+    cierre.setTotalLlevar(totalLlevar);
+    cierre.setTotalEnvios(totalEnvios);
     cierre.setCerradoPor(cerradoPor);
     cierre.setFechaHora(fechaHora);
     return cierre;
@@ -80,6 +96,10 @@ public class FilaCierreCaja {
     fila.incTotal = cierre.getIncTotal();
     fila.ordenesAtendidas = cierre.getOrdenesAtendidas();
     fila.ticketPromedio = cierre.getTicketPromedio();
+    fila.totalSalon = cierre.getTotalSalon();
+    fila.totalDomicilio = cierre.getTotalDomicilio();
+    fila.totalLlevar = cierre.getTotalLlevar();
+    fila.totalEnvios = cierre.getTotalEnvios();
     fila.cerradoPor = cierre.getCerradoPor();
     fila.fechaHora = cierre.getFechaHora();
     return fila;

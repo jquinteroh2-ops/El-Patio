@@ -6,6 +6,7 @@ import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.puertos.Reloj;
 import co.elpatio.dominio.puertos.Repositorios;
@@ -20,6 +21,7 @@ import co.elpatio.infraestructura.persistencia.dao.DaoOrdenes;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
 import co.elpatio.infraestructura.persistencia.dao.DaoReservas;
 import co.elpatio.infraestructura.persistencia.dao.DaoUsuarios;
+import co.elpatio.infraestructura.persistencia.dao.DaoZonasDomicilio;
 import co.elpatio.infraestructura.persistencia.filas.FilaAjustes;
 import co.elpatio.infraestructura.persistencia.filas.FilaCategoria;
 import co.elpatio.infraestructura.persistencia.filas.FilaCierreCaja;
@@ -29,6 +31,7 @@ import co.elpatio.infraestructura.persistencia.filas.FilaOrden;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
 import co.elpatio.infraestructura.persistencia.filas.FilaReserva;
 import co.elpatio.infraestructura.persistencia.filas.FilaUsuario;
+import co.elpatio.infraestructura.persistencia.filas.FilaZonaDomicilio;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -261,6 +264,37 @@ public final class Adaptadores {
     @Override
     public Reserva guardar(Reserva reserva) {
       return dao.save(FilaReserva.deDominio(reserva)).aDominio();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class ZonasDomicilio implements Repositorios.DeZonasDomicilio {
+    private final DaoZonasDomicilio dao;
+
+    public ZonasDomicilio(DaoZonasDomicilio dao) {
+      this.dao = dao;
+    }
+
+    @Override
+    public List<ZonaDomicilio> listar() {
+      return dao.findAllByOrderByOrdenAsc().stream().map(FilaZonaDomicilio::aDominio).toList();
+    }
+
+    @Override
+    public Optional<ZonaDomicilio> porId(String id) {
+      return dao.findById(id).map(FilaZonaDomicilio::aDominio);
+    }
+
+    @Override
+    public ZonaDomicilio guardar(ZonaDomicilio zona) {
+      return dao.save(FilaZonaDomicilio.deDominio(zona)).aDominio();
+    }
+
+    @Override
+    public void eliminar(String id) {
+      dao.deleteById(id);
     }
   }
 

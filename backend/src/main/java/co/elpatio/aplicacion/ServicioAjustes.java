@@ -45,9 +45,20 @@ public class ServicioAjustes {
     if (cambios.simularSinConexion() != null) {
       actuales.setSimularSinConexion(cambios.simularSinConexion());
     }
+    if (cambios.domiciliosPausados() != null) {
+      actuales.setDomiciliosPausados(cambios.domiciliosPausados());
+    }
+    if (cambios.domiciliosDesde() != null) actuales.setDomiciliosDesde(cambios.domiciliosDesde());
+    if (cambios.domiciliosHasta() != null) actuales.setDomiciliosHasta(cambios.domiciliosHasta());
+
+    if (actuales.getDomiciliosDesde().isAfter(actuales.getDomiciliosHasta())) {
+      throw new ReglaDeNegocioError("La hora de apertura de domicilios va antes que la de cierre");
+    }
 
     Dtos.AjustesDto guardados = aDto(ajustes.guardar(actuales));
-    eventos.publicar(List.of("ajustes"));
+    // 'pedidos' tambien: pausar el canal tiene que apagar el boton del sitio
+    // publico en el momento, no cuando alguien recargue.
+    eventos.publicar(List.of("ajustes", "pedidos"));
     return guardados;
   }
 
@@ -56,6 +67,9 @@ public class ServicioAjustes {
         valor.getPorcentajeInc(),
         valor.isSimularSinConexion(),
         valor.getConsecutivoOrden(),
-        valor.getFechaConsecutivo());
+        valor.getFechaConsecutivo(),
+        valor.isDomiciliosPausados(),
+        valor.getDomiciliosDesde(),
+        valor.getDomiciliosHasta());
   }
 }

@@ -30,6 +30,9 @@ public class FilaPago {
   @Column(name = "cargos_adicionales")
   private long cargosAdicionales;
 
+  @Column(name = "costo_envio")
+  private long costoEnvio;
+
   private long total;
   private String metodo;
 
@@ -51,6 +54,7 @@ public class FilaPago {
     pago.setInc(inc);
     pago.setPropina(propina);
     pago.setCargosAdicionales(cargosAdicionales);
+    pago.setCostoEnvio(costoEnvio);
     pago.setTotal(total);
     pago.setMetodo(MetodoPago.de(metodo));
     pago.setDivisiones(divisiones == null ? new ArrayList<>() : new ArrayList<>(divisiones));
@@ -67,6 +71,7 @@ public class FilaPago {
     fila.inc = pago.getInc();
     fila.propina = pago.getPropina();
     fila.cargosAdicionales = pago.getCargosAdicionales();
+    fila.costoEnvio = pago.getCostoEnvio();
     fila.total = pago.getTotal();
     fila.metodo = pago.getMetodo().codigo();
     fila.divisiones = new ArrayList<>(pago.getDivisiones());

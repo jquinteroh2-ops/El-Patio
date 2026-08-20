@@ -16,6 +16,12 @@ public class CierreCaja {
   private long incTotal;
   private int ordenesAtendidas;
   private long ticketPromedio;
+  /** Venta por canal. La suma de los tres es `ventaTotal`. */
+  private long totalSalon;
+  private long totalDomicilio;
+  private long totalLlevar;
+  /** Lo cobrado por envios, ya incluido dentro de `totalDomicilio`. */
+  private long totalEnvios;
   private String cerradoPor;
   private Instant fechaHora;
 
@@ -43,6 +49,14 @@ public class CierreCaja {
   public void setOrdenesAtendidas(int ordenesAtendidas) { this.ordenesAtendidas = ordenesAtendidas; }
   public long getTicketPromedio() { return ticketPromedio; }
   public void setTicketPromedio(long ticketPromedio) { this.ticketPromedio = ticketPromedio; }
+  public long getTotalSalon() { return totalSalon; }
+  public void setTotalSalon(long totalSalon) { this.totalSalon = totalSalon; }
+  public long getTotalDomicilio() { return totalDomicilio; }
+  public void setTotalDomicilio(long totalDomicilio) { this.totalDomicilio = totalDomicilio; }
+  public long getTotalLlevar() { return totalLlevar; }
+  public void setTotalLlevar(long totalLlevar) { this.totalLlevar = totalLlevar; }
+  public long getTotalEnvios() { return totalEnvios; }
+  public void setTotalEnvios(long totalEnvios) { this.totalEnvios = totalEnvios; }
   public String getCerradoPor() { return cerradoPor; }
   public void setCerradoPor(String cerradoPor) { this.cerradoPor = cerradoPor; }
   public Instant getFechaHora() { return fechaHora; }
