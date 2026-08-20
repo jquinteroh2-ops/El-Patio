@@ -252,7 +252,7 @@ está aparte. Eso se traduce directo a las líneas del XML.
 
 Hoy solo hay datos de contacto, y **solo en domicilios**:
 
-```
+```text
 ordenes.cliente_nombre, cliente_telefono, cliente_direccion, cliente_barrio
 ```
 
@@ -392,7 +392,7 @@ trámite de habilitación ante la DIAN**, que va por fuera y toma semanas.
 
 Más, por fuera del desarrollo:
 
-| | |
+| Fuera del desarrollo | Cuánto |
 |---|---|
 | Trámite de habilitación ante la DIAN | Semanas. Lo hace el proveedor |
 | Definir el procedimiento de caja con el personal | 1–2 días de acompañamiento |
