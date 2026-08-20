@@ -8,6 +8,7 @@
     "healthcheckPath": "/salud",
     "healthcheckTimeout": 180,
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3
+    "restartPolicyMaxRetries": 3,
+    "startCommand": "java -XX:MaxRAMPercentage=75 -jar aplicacion.jar"
   }
 }
