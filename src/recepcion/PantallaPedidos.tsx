@@ -36,7 +36,7 @@ import { Contador } from '@/componentes/ui/Contador'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { useAvisos } from '@/componentes/ui/Avisos'
-import { IndicadorConexion } from '@/componentes/IndicadorConexion'
+import { BarraOperativa } from '@/componentes/BarraOperativa'
 import {
   PRECISION_ACEPTABLE_METROS,
   distanciaLegible,
@@ -193,18 +193,21 @@ export default function PantallaPedidos() {
 
   return (
     <div className="flex min-h-screen flex-col bg-noche-950">
-      {/* ---------- Encabezado ---------- */}
-      <header className="flex items-center justify-between gap-3 border-b border-noche-800 px-4 py-3">
-        <div>
-          <h1 className="font-titulo text-2xl font-light text-crema-100">Recepción</h1>
-          <p className="text-xs text-noche-400">
-            {pedidos.length === 0
-              ? 'Sin pedidos en curso'
-              : `${pedidos.length} ${pedidos.length === 1 ? 'pedido activo' : 'pedidos activos'}`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <IndicadorConexion />
+      {/*
+        El mismo encabezado que cocina, comandera y el panel. Recepcion tenia
+        uno propio y por eso era la unica pantalla sin boton de salir: quien
+        recibe domicilios se quedaba dentro de su usuario hasta cerrar el
+        navegador.
+      */}
+      <BarraOperativa
+        titulo="Recepción"
+        subtitulo={
+          pedidos.length === 0
+            ? 'Sin pedidos en curso'
+            : `${pedidos.length} ${pedidos.length === 1 ? 'pedido activo' : 'pedidos activos'}`
+        }
+        mostrarConexion
+        acciones={
           <Boton
             variante="fantasma"
             tamano="compacto"
@@ -220,8 +223,8 @@ export default function PantallaPedidos() {
           >
             {sonidoActivo ? '' : 'Activar sonido'}
           </Boton>
-        </div>
-      </header>
+        }
+      />
 
       {!sonidoActivo && (
         <p className="border-b border-noche-800 bg-noche-900 px-4 py-2 text-xs text-noche-400">
