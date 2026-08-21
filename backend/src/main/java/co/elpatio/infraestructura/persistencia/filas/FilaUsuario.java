@@ -35,8 +35,12 @@ public class FilaUsuario {
 
   private boolean activo;
 
+  private String correo;
+
   public Usuario aDominio() {
-    return new Usuario(id, nombre, Rol.de(rol), usuario, claveHash, activo);
+    Usuario dominio = new Usuario(id, nombre, Rol.de(rol), usuario, claveHash, activo);
+    dominio.setCorreo(correo);
+    return dominio;
   }
 
   public static FilaUsuario deDominio(Usuario usuario) {
@@ -47,6 +51,7 @@ public class FilaUsuario {
     fila.usuario = usuario.getUsuario();
     fila.claveHash = usuario.getClaveHash();
     fila.activo = usuario.isActivo();
+    fila.correo = usuario.getCorreo();
     return fila;
   }
 

@@ -1,10 +1,15 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, LogIn } from 'lucide-react'
 import { useSesion } from '@/compartido/auth'
 import { RESTAURANTE } from '@/compartido/config'
+import { NOMBRE_ROL } from '@/compartido/estados'
+import * as api from '@/compartido/mockApi'
+import type { CuentasDemostracion } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
 import { Campo } from '@/componentes/ui/Campo'
+
+const SIN_DEMOSTRACION: CuentasDemostracion = { activa: false, clave: '', cuentas: [] }
 
 export default function Acceso() {
   const { sesion, ingresar, rutaInicial } = useSesion()
@@ -15,6 +20,20 @@ export default function Acceso() {
   const [clave, setClave] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [demostracion, setDemostracion] = useState<CuentasDemostracion>(SIN_DEMOSTRACION)
+
+  // Lo decide el servidor, no el paquete compilado. Mientras la respuesta no
+  // llega la pantalla se ve como la de produccion, que es como debe verse si
+  // nunca llega.
+  useEffect(() => {
+    let vigente = true
+    void api.cuentasDeDemostracion().then((respuesta) => {
+      if (vigente) setDemostracion(respuesta)
+    })
+    return () => {
+      vigente = false
+    }
+  }, [])
 
   // Cada pestana tiene su propia sesion, asi que esto solo afecta a esta pestana.
   if (sesion) return <Navigate to={rutaInicial(sesion.rol)} replace />
@@ -32,6 +51,14 @@ export default function Acceso() {
       setEnviando(false)
     }
   }
+
+  const usarCuenta = (nombreDeUsuario: string) => {
+    setUsuario(nombreDeUsuario)
+    setClave(demostracion.clave)
+    setError(null)
+  }
+
+  const hayCuentas = demostracion.activa && demostracion.cuentas.length > 0
 
   return (
     <div className="flex min-h-screen flex-col bg-noche-950 px-4 py-8">
@@ -84,19 +111,52 @@ export default function Acceso() {
         </form>
 
         {/*
-          Aquí había una lista de credenciales de prueba con la clave escrita al
-          lado. Servía para la demostración, pero el sistema ya maneja el dinero
-          de la caja: una clave impresa en la pantalla de acceso es una clave
-          pública. Las claves ahora las genera el servidor al arrancar por
-          primera vez y se las entrega administración a cada persona.
+          La lista con la clave escrita al lado solo aparece si el backend tiene
+          encendido el modo demostracion. En un despliegue que cobra de verdad
+          el endpoint responde una lista vacia y aqui no se pinta nada: una
+          clave impresa en la pantalla de acceso es una clave publica, y eso solo
+          es aceptable mientras el sistema se este enseñando.
         */}
-        <div className="mt-10 rounded-2xl border border-noche-700 bg-noche-900 p-4">
-          <p className="text-xs leading-relaxed text-noche-500">
-            Cada pestaña del navegador mantiene su propia sesión: puedes tener al mesero en una y a
-            cocina en otra al mismo tiempo. Si olvidaste tu clave, pídele a administración que te la
-            cambie desde configuración.
-          </p>
-        </div>
+        {hayCuentas ? (
+          <div className="mt-10 rounded-2xl border border-noche-700 bg-noche-900 p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-ambar-400">
+              Cuentas de demostración
+            </p>
+            <ul className="space-y-2">
+              {demostracion.cuentas.map((cuenta) => (
+                <li key={cuenta.usuario}>
+                  <button
+                    type="button"
+                    onClick={() => usarCuenta(cuenta.usuario)}
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-noche-700 bg-noche-850 px-3 py-2.5 text-left transition hover:border-ambar-500/50 hover:bg-noche-800"
+                  >
+                    <span>
+                      <span className="block text-sm font-medium text-crema-100">
+                        {NOMBRE_ROL[cuenta.rol]}
+                      </span>
+                      <span className="block text-xs text-noche-400">{cuenta.destino}</span>
+                    </span>
+                    <span className="shrink-0 font-mono text-xs text-noche-300">
+                      {cuenta.usuario} / {demostracion.clave}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs leading-relaxed text-noche-500">
+              Toca una fila para llenar el formulario. Cada pestaña del navegador mantiene su propia
+              sesión: puedes tener al mesero en una y a cocina en otra al mismo tiempo.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-10 rounded-2xl border border-noche-700 bg-noche-900 p-4">
+            <p className="text-xs leading-relaxed text-noche-500">
+              Cada pestaña del navegador mantiene su propia sesión: puedes tener al mesero en una y a
+              cocina en otra al mismo tiempo. Si olvidaste tu clave, pídele a administración que te la
+              cambie desde configuración.
+            </p>
+          </div>
+        )}
       </div>
 
     </div>

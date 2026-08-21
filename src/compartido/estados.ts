@@ -1,5 +1,5 @@
 import { UMBRALES_COCINA } from './config'
-import type { EstadoItem, EstadoMesa, EstadoPedido, TipoPedido, Zona } from './tipos'
+import type { EstadoItem, EstadoMesa, EstadoPedido, Rol, TipoPedido, Zona } from './tipos'
 
 /**
  * Tokens de presentacion compartidos por la comandera, la cocina y el panel.
@@ -56,6 +56,15 @@ export const TONO_ITEM: Record<EstadoItem, 'neutro' | 'listo' | 'proceso' | 'dem
   listo: 'listo',
   servido: 'neutro',
   anulado: 'demorado',
+}
+
+/** Como se nombra cada rol delante de una persona. */
+export const NOMBRE_ROL: Record<Rol, string> = {
+  mesero: 'Mesero',
+  cocina: 'Cocina',
+  recepcion: 'Recepción',
+  cajero: 'Cajero',
+  administrador: 'Administrador',
 }
 
 export const NOMBRE_ZONA: Record<Zona, string> = {

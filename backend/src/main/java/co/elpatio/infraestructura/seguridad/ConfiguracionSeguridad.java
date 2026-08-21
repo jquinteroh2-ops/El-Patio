@@ -58,6 +58,10 @@ public class ConfiguracionSeguridad {
                 reglas
                     // Acceso y salud quedan abiertos: son la puerta y el pulso.
                     .requestMatchers("/api/acceso/ingresar", "/api/acceso/refrescar").permitAll()
+                    // La pantalla de acceso pregunta si hay cuentas de
+                    // demostracion antes de tener sesion. Con el modo apagado
+                    // la respuesta es una lista vacia.
+                    .requestMatchers(HttpMethod.GET, "/api/acceso/demostracion").permitAll()
                     .requestMatchers("/salud", "/salud/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

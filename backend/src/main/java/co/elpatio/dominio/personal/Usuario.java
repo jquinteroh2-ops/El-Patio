@@ -15,6 +15,14 @@ public class Usuario {
   private String claveHash;
   private boolean activo;
 
+  /**
+   * Correo de contacto, opcional.
+   *
+   * No se entra con el: la credencial es `usuario`. Este es por donde
+   * administracion avisa, y por eso puede faltar sin que nada se rompa.
+   */
+  private String correo;
+
   public Usuario() {}
 
   public Usuario(String id, String nombre, Rol rol, String usuario, String claveHash, boolean activo) {
@@ -38,4 +46,6 @@ public class Usuario {
   public void setClaveHash(String claveHash) { this.claveHash = claveHash; }
   public boolean isActivo() { return activo; }
   public void setActivo(boolean activo) { this.activo = activo; }
+  public String getCorreo() { return correo; }
+  public void setCorreo(String correo) { this.correo = correo; }
 }

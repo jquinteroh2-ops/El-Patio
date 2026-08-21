@@ -53,8 +53,9 @@ Queda escuchando en `http://localhost:8080`. El pulso está en `/salud`.
 
 ## Las claves del personal
 
-La primera vez que arranca contra una base vacía se crea el personal con claves
-**aleatorias**, y se imprimen una sola vez en la salida estándar:
+La primera vez que arranca contra una base vacía se crean **seis cuentas** —una
+por rol, con dos meseros— con claves **aleatorias**, y se imprimen una sola vez
+en la salida estándar:
 
 ```
 ===========================================================
@@ -71,6 +72,25 @@ vuelva a correr.
 
 Si ya hay usuarios, el sembrador no hace nada: el arranque es repetible y no
 pisa las claves que alguien ya cambió.
+
+### Modo demostración
+
+`ELPATIO_CLAVE_DEMO=loquesea` invierte esa regla: las seis cuentas quedan con
+esa clave conocida **en cada arranque**, existieran ya o no, y la pantalla de
+acceso las muestra escritas para poder saltar de un rol a otro delante de quien
+mira. Es lo que hace falta para enseñar el sistema y lo que no puede estar
+puesto cuando cobra de verdad.
+
+La lista vive en `ModoDemostracion.java` y la sirve `GET /api/acceso/demostracion`,
+que está abierto: con la variable vacía responde `{"activa": false, "cuentas": []}`,
+que es lo único que puede filtrarse de un despliegue de producción.
+
+### El correo
+
+`usuarios.correo` es opcional y **no es la credencial**: se entra con `usuario`,
+que es corto y se teclea de pie. El correo es por donde administración avisa un
+cambio de clave. Se edita desde `/admin/configuracion` → Personal, junto con el
+rol, el nombre y la clave.
 
 ## Pruebas
 

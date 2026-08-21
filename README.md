@@ -20,6 +20,7 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Cómo desplegar en Railway](#cómo-desplegar-en-railway)
 - [Variables de entorno](#variables-de-entorno)
 - [Cómo crear usuarios](#cómo-crear-usuarios)
+- [Modo demostración](#modo-demostración)
 - [Respaldos y restauración](#respaldos-y-restauración)
 - [Ubicación exacta de los domicilios](#ubicación-exacta-de-los-domicilios)
 - [Impresión en caja](#impresión-en-caja)
@@ -151,6 +152,7 @@ sus claves:
 | `ELPATIO_LONGITUD` | no | `-75.4136` | Longitud del local |
 | `ELPATIO_JWT_MINUTOS` | no | `20` | Vida del token de acceso |
 | `ELPATIO_JWT_DIAS_REFRESCO` | no | `30` | Vida del token de refresco |
+| `ELPATIO_CLAVE_DEMO` | no | *(vacía)* | Enciende el [modo demostración](#modo-demostración) |
 | `PORT` | no | `8080` | Lo inyecta Railway |
 
 ### Frontend
@@ -169,10 +171,15 @@ paquete compilado** y cualquiera puede leerlas.
 
 ### Desde la aplicación
 
-Entre como administrador a **`/admin/configuracion` → Personal**. Ahí se crean
-usuarios, se cambian claves y se desactivan personas que ya no trabajan.
+Entre como administrador a **`/admin/configuracion` → Personal**.
 
-Dos comportamientos que conviene conocer:
+- **«Nueva cuenta»** abre la ficha en blanco: nombre, usuario, correo, rol y
+  clave.
+- **Tocar un nombre** de la lista abre esa misma ficha para cambiarle cualquier
+  cosa, la clave incluida.
+- **El interruptor de la derecha** suspende o devuelve el acceso sin abrir nada.
+
+Cuatro comportamientos que conviene conocer:
 
 - **Cambiar la clave de alguien cierra todas sus sesiones abiertas.** Es a
   propósito: si se cambia porque la persona se fue, el token viejo no puede
@@ -181,6 +188,9 @@ Dos comportamientos que conviene conocer:
   que expire nada.
 - Al editar un usuario, **dejar la clave en blanco significa «no la cambie»**.
   La pantalla nunca recibe el hash, así que no puede reenviarlo.
+- **El correo es opcional y no sirve para entrar.** Se entra con el usuario, que
+  es corto y se teclea de pie y con prisa. El correo es por donde administración
+  avisa un cambio de clave o de turno.
 
 ### Los cinco roles
 
@@ -203,6 +213,57 @@ psql "$DATABASE_URL" -c "delete from sesiones_refresh; delete from usuarios;"
 
 > Esto **no** borra ventas ni comandas. Sí desasigna el mesero de las órdenes
 > abiertas, porque la referencia queda en nulo. Hágalo con el salón cerrado.
+
+---
+
+## Modo demostración
+
+Para enseñar el sistema hace falta lo contrario que para operarlo: seis cuentas
+con una clave que quepa en la cabeza y que esté escrita en la pantalla, para
+poder saltar de la comandera a la cocina y a la caja delante de quien mira.
+
+Eso se enciende con **una sola variable en el servicio del backend**:
+
+```
+ELPATIO_CLAVE_DEMO=elpatio2026
+```
+
+Al arrancar, el backend deja estas seis cuentas listas —todas con esa misma
+clave— y la pantalla de acceso las muestra en una lista donde se toca una fila
+y el formulario se llena solo:
+
+| Usuario | Rol | Lleva a |
+|---|---|---|
+| `mesero` | Mesero | Comandera |
+| `mesero2` | Mesero | Comandera |
+| `cocina` | Cocina | Pantalla de cocina |
+| `recepcion` | Recepción | Domicilios y para llevar |
+| `cajero` | Cajero | Caja y cierre |
+| `admin` | Administrador | Panel completo |
+
+Detalles que conviene saber antes de usarlo:
+
+- **Las claves se reescriben en cada arranque.** Es a propósito: así el modo
+  funciona igual sobre una base recién creada que sobre una que ya lleva
+  semanas de uso, y nunca hay que ir a buscar qué clave quedó.
+- **Pisa las cuentas que ya existan con esos nombres de acceso.** Si `admin` ya
+  tenía una clave real, pasa a tener la de demostración.
+- **No toca ningún otro dato.** Mesas, carta, ventas y comandas quedan igual.
+- **Con la variable vacía o ausente el modo no existe:** el sembrador vuelve a
+  generar claves al azar la primera vez, y `/api/acceso/demostracion` responde
+  una lista vacía. Un despliegue no puede caer en demostración por descuido.
+
+Para volver a producción: **quite la variable, redespliegue, y cámbiele la clave
+a cada persona** desde `/admin/configuracion` → Personal. Mientras la variable
+siga puesta, cualquiera que abra la pantalla de acceso ve las claves escritas.
+
+### Si el celular sigue mostrando una versión vieja
+
+La aplicación guarda su propio código para poder abrir sin WiFi. Cada
+compilación estrena caché y borra la anterior, así que un despliegue nuevo llega
+solo. Si un aparato quedó atascado en una versión anterior a este cambio, se
+suelta una única vez borrando los datos del sitio en el navegador de ese
+aparato, o abriéndolo en una pestaña de incógnito.
 
 ---
 

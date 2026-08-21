@@ -14,11 +14,38 @@ export interface Usuario {
   nombre: string
   rol: Rol
   usuario: string
+  /** Solo se escribe. El backend nunca devuelve el hash, asi que llega vacia. */
   clave: string
+  /**
+   * Correo de contacto, opcional. No es la credencial: se entra con `usuario`,
+   * que es corto y se escribe rapido en una tablet.
+   */
+  correo?: string
   activo: boolean
 }
 
 /** Lo que se guarda en sessionStorage: nunca incluye la clave. */
+/**
+ * Una cuenta que la pantalla de acceso ofrece durante una demostracion.
+ *
+ * La clave no viaja aqui sino una sola vez en `CuentasDemostracion`: las seis
+ * cuentas comparten la misma, que es justo lo que hace comoda una demostracion
+ * e inaceptable un turno de verdad.
+ */
+export interface CuentaDemostracion {
+  usuario: string
+  nombre: string
+  rol: Rol
+  /** A que pantalla lleva: se lee bajo el nombre del rol. */
+  destino: string
+}
+
+export interface CuentasDemostracion {
+  activa: boolean
+  clave: string
+  cuentas: CuentaDemostracion[]
+}
+
 export interface Sesion {
   usuarioId: string
   nombre: string

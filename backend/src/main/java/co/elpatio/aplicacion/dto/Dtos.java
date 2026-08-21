@@ -61,13 +61,39 @@ public final class Dtos {
    * `clave` siempre sale vacia: la pantalla solo la escribe para cambiarla y
    * jamas necesita leerla. El hash no sale del backend en ningun caso.
    */
-  public record UsuarioDto(String id, String nombre, Rol rol, String usuario, String clave, boolean activo) {
+  public record UsuarioDto(
+      String id,
+      String nombre,
+      Rol rol,
+      String usuario,
+      String clave,
+      String correo,
+      boolean activo) {
 
     public static UsuarioDto de(Usuario usuario) {
       return new UsuarioDto(
-          usuario.getId(), usuario.getNombre(), usuario.getRol(), usuario.getUsuario(), "", usuario.isActivo());
+          usuario.getId(),
+          usuario.getNombre(),
+          usuario.getRol(),
+          usuario.getUsuario(),
+          "",
+          usuario.getCorreo(),
+          usuario.isActivo());
     }
   }
+
+  /**
+   * Las cuentas que la pantalla de acceso ofrece durante una demostracion.
+   *
+   * Con el modo apagado —el caso normal, y el de cualquier despliegue que no
+   * haya puesto ELPATIO_CLAVE_DEMO— `activa` es false, `clave` va vacia y la
+   * lista tambien. El endpoint existe siempre; solo tiene algo que contar si
+   * alguien encendio el modo a proposito.
+   */
+  public record CuentasDemostracion(boolean activa, String clave, List<CuentaDemostracion> cuentas) {}
+
+  /** `destino` es la frase que se lee bajo el rol: a que pantalla lleva. */
+  public record CuentaDemostracion(String usuario, String nombre, Rol rol, String destino) {}
 
   // -------------------------------------------------------------------------
   // Ajustes

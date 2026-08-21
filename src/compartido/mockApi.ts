@@ -14,6 +14,7 @@ import type {
   CargoAdicional,
   CategoriaCarta,
   CierreCaja,
+  CuentasDemostracion,
   Destino,
   DivisionPago,
   EstadoItem,
@@ -118,6 +119,27 @@ export async function autenticar(usuario: string, clave: string): Promise<Sesion
     guardarCredenciales(respuesta.acceso, respuesta.refresco)
     return respuesta.sesion
   })
+}
+
+/**
+ * Que cuentas ensenar en la pantalla de acceso.
+ *
+ * Lo decide el servidor y no el paquete compilado: el mismo frontend sirve para
+ * la demostracion y para el restaurante, y lo que cambia entre los dos es una
+ * variable de entorno del backend. Si el servidor no contesta se responde que
+ * no hay ninguna, porque una pantalla de acceso sin lista sigue siendo usable
+ * y una que se queda cargando no.
+ */
+export async function cuentasDeDemostracion(): Promise<CuentasDemostracion> {
+  const vacio: CuentasDemostracion = { activa: false, clave: '', cuentas: [] }
+  try {
+    const respuesta = await pedir<CuentasDemostracion>('/api/acceso/demostracion', {
+      sinSesion: true,
+    })
+    return respuesta ?? vacio
+  } catch {
+    return vacio
+  }
 }
 
 /**

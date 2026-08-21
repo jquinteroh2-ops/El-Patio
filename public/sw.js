@@ -8,10 +8,23 @@
  * aplicacion y el mesero se queda mirando un error. Aqui se guarda el
  * "esqueleto" (HTML, JS y CSS) para que la comandera abra sin senal.
  *
- * Los datos no pasan por aqui: viven en localStorage, que ya funciona sin red.
+ * Los datos no pasan por aqui: los sirve el backend, y lo unico que se guarda
+ * es el codigo de la aplicacion.
  */
 
-const CACHE = 'elpatio-v1'
+/**
+ * El nombre de la cache lleva el sello de la compilacion, que llega en la URL
+ * con la que main.tsx registra este archivo: `/sw.js?v=xxxx`.
+ *
+ * Antes era una constante fija. Como este archivo tampoco cambia entre
+ * despliegues y el navegador decide si hay version nueva comparando el archivo,
+ * un aparato que ya lo tenia registrado no volvia a mirarlo: seguia abriendo el
+ * index.html guardado, y el mismo sistema se veia distinto en el computador y
+ * en el celular. Con el sello, cada despliegue estrena cache y el `activate` de
+ * abajo borra las anteriores.
+ */
+const VERSION = new URL(self.location.href).searchParams.get('v') || 'dev'
+const CACHE = `elpatio-${VERSION}`
 const RAIZ = '/index.html'
 
 self.addEventListener('install', (evento) => {

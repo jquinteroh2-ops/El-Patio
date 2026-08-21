@@ -20,3 +20,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+/** Sello de la compilacion, inyectado por vite.config.ts. */
+declare const __VERSION_APP__: string

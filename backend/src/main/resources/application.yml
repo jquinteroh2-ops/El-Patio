@@ -83,6 +83,14 @@ elpatio:
     # Lista separada por comas. Nunca `*`: el navegador envía el token.
     origenes: ${ELPATIO_CORS_ORIGENES:http://localhost:5173}
 
+  # Cuentas de demostración con clave conocida, para enseñar el sistema.
+  #
+  # Vacío es lo correcto en producción: sin esto el modo no existe. Con esto
+  # puesto, las seis cuentas quedan con esta misma clave en cada arranque y la
+  # pantalla de acceso las muestra escritas. Ver ModoDemostracion.java.
+  demostracion:
+    clave: ${ELPATIO_CLAVE_DEMO:}
+
 logging:
   level:
     root: ${LOG_NIVEL:INFO}

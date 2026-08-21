@@ -1,0 +1,13 @@
+-- Correo de contacto de cada persona del equipo.
+--
+-- No es la credencial: se sigue entrando con el nombre de acceso, que es corto
+-- y se escribe rapido en una tablet con las manos ocupadas. El correo es por
+-- donde administracion avisa un cambio de clave o un cambio de turno.
+--
+-- Opcional a proposito: en un restaurante hay personal que no usa correo, y
+-- exigirlo obligaria a inventarse uno para poder crear la cuenta.
+--
+-- Sin indice unico, tambien a proposito: dos hermanos que trabajan en el mismo
+-- salon comparten el correo de la casa mas veces de lo que parece, y ese choque
+-- aparecería al crear la cuenta, que es el peor momento para descubrirlo.
+ALTER TABLE usuarios ADD COLUMN correo TEXT;

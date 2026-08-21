@@ -1,24 +1,17 @@
 import { useState } from 'react'
-import { Percent, Users, Utensils } from 'lucide-react'
+import { Percent, UserPlus, Users, Utensils } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { MesaEnMapa } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
-import type { Ajustes, Rol, Usuario } from '@/compartido/tipos'
-import { NOMBRE_ZONA } from '@/compartido/estados'
+import type { Ajustes, Usuario } from '@/compartido/tipos'
+import { NOMBRE_ROL, NOMBRE_ZONA } from '@/compartido/estados'
 import { Boton } from '@/componentes/ui/Boton'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { Interruptor } from '@/componentes/ui/Interruptor'
 import { useAvisos } from '@/componentes/ui/Avisos'
+import { EditorUsuario } from './EditorUsuario'
 import { ZonasDomicilio } from './ZonasDomicilio'
-
-const NOMBRE_ROL: Record<Rol, string> = {
-  mesero: 'Mesero',
-  cocina: 'Cocina',
-  recepcion: 'Recepción',
-  cajero: 'Cajero',
-  administrador: 'Administrador',
-}
 
 const AJUSTES_VACIOS: Ajustes = {
   porcentajeInc: 8,
@@ -38,7 +31,7 @@ export default function Configuracion() {
     [],
     ['ajustes', 'todo'],
   )
-  const { datos: usuarios } = useSyncedState<Usuario[]>(
+  const { datos: usuarios, refrescar: refrescarUsuarios } = useSyncedState<Usuario[]>(
     () => api.listarUsuarios(),
     [],
     [],
@@ -53,6 +46,35 @@ export default function Configuracion() {
 
   const [inc, setInc] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
+
+  // `editando` en null con el editor abierto significa cuenta nueva.
+  const [editorAbierto, setEditorAbierto] = useState(false)
+  const [editando, setEditando] = useState<Usuario | null>(null)
+  const [guardandoUsuario, setGuardandoUsuario] = useState(false)
+
+  const abrirEditor = (usuario: Usuario | null) => {
+    setEditando(usuario)
+    setEditorAbierto(true)
+  }
+
+  const guardarUsuario = async (borrador: Usuario) => {
+    setGuardandoUsuario(true)
+    try {
+      await api.guardarUsuario(borrador)
+      setEditorAbierto(false)
+      refrescarUsuarios()
+      mostrar(
+        borrador.id ? `${borrador.nombre}: cuenta actualizada` : `${borrador.nombre} ya puede entrar`,
+        'exito',
+      )
+    } catch (error) {
+      // El aviso se queda en la hoja abierta a proposito: el borrador no se
+      // pierde y se corrige lo que el servidor rechazo sin volver a escribirlo.
+      mostrar(error instanceof Error ? error.message : 'No se pudo guardar la cuenta', 'error')
+    } finally {
+      setGuardandoUsuario(false)
+    }
+  }
 
   const valorInc = inc ?? String(ajustes.porcentajeInc)
 
@@ -131,22 +153,44 @@ export default function Configuracion() {
 
       {/* ---------- Usuarios ---------- */}
       <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-crema-100">
-          <Users className="h-4 w-4" aria-hidden />
-          Personal
-        </h2>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-crema-100">
+            <Users className="h-4 w-4" aria-hidden />
+            Personal
+          </h2>
+          <Boton
+            variante="secundario"
+            icono={<UserPlus className="h-4 w-4" aria-hidden />}
+            onClick={() => abrirEditor(null)}
+          >
+            Nueva cuenta
+          </Boton>
+        </div>
         <ul className="space-y-1.5">
           {usuarios.map((usuario) => (
             <li
               key={usuario.id}
               className="flex items-center justify-between gap-3 rounded-xl border border-noche-800 bg-noche-850 px-3 py-2.5"
             >
-              <div className="min-w-0">
+              {/*
+                El nombre es el boton de editar. Va aparte del interruptor y no
+                envolviendolo, porque un boton dentro de otro deja de anunciarse
+                bien y con el pulgar se termina suspendiendo a alguien sin
+                querer al intentar abrir su ficha.
+              */}
+              <button
+                type="button"
+                onClick={() => abrirEditor(usuario)}
+                className="min-w-0 flex-1 rounded-lg text-left transition hover:opacity-80"
+              >
                 <p className="truncate text-sm text-crema-100">{usuario.nombre}</p>
-                <p className="text-xs text-noche-500">
+                <p className="truncate text-xs text-noche-500">
                   usuario: <span className="text-noche-400">{usuario.usuario}</span>
+                  {usuario.correo && (
+                    <> · <span className="text-noche-400">{usuario.correo}</span></>
+                  )}
                 </p>
-              </div>
+              </button>
               <div className="flex shrink-0 items-center gap-2">
                 <Insignia tono={usuario.activo ? 'neutro' : 'demorado'}>
                   {NOMBRE_ROL[usuario.rol]}
@@ -167,10 +211,18 @@ export default function Configuracion() {
           ))}
         </ul>
         <p className="mt-3 text-xs text-noche-500">
-          Al suspender a alguien, deja de poder iniciar sesión. Las sesiones ya abiertas terminan al
-          cerrar la pestaña.
+          Toca un nombre para cambiarle el rol, el correo o la clave. Al suspender a alguien, deja de
+          poder iniciar sesión y las sesiones que tuviera abiertas terminan de inmediato.
         </p>
       </section>
+
+      <EditorUsuario
+        abierto={editorAbierto}
+        usuario={editando}
+        guardando={guardandoUsuario}
+        onCerrar={() => setEditorAbierto(false)}
+        onGuardar={guardarUsuario}
+      />
 
       {/* ---------- Mesas ---------- */}
       <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">

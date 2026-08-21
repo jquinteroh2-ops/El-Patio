@@ -13,6 +13,7 @@ import co.elpatio.infraestructura.persistencia.filas.FilaSesionRefresh;
 import co.elpatio.infraestructura.seguridad.ServicioTokens;
 import java.time.Instant;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 /** Ingreso, renovacion de sesion y administracion del personal. */
 @Service
 public class ServicioAcceso {
+
+  /**
+   * Validacion del correo, deliberadamente floja: algo, una arroba, algo con
+   * un punto. Las expresiones que persiguen el RFC al pie de la letra rechazan
+   * correos que existen y aceptan otros que no, y lo unico que hace falta aqui
+   * es atajar el dedo que escribio el nombre en la casilla equivocada. Quien
+   * confirma que un correo existe es el correo que llega, no una expresion.
+   */
+  private static final Pattern CORREO = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
 
   private final Repositorios.DeUsuarios usuarios;
   private final DaoSesionesRefresh sesiones;
@@ -184,9 +194,17 @@ public class ServicioAcceso {
               throw new ReglaDeNegocioError("Ya hay alguien con el usuario «" + nombreDeUsuario + "»");
             });
 
+    String correo = entrada.correo() == null ? "" : entrada.correo().trim();
+    if (!correo.isEmpty() && !CORREO.matcher(correo).matches()) {
+      throw new ReglaDeNegocioError("«" + correo + "» no parece un correo");
+    }
+
     usuario.setNombre(entrada.nombre().trim());
     usuario.setRol(entrada.rol());
     usuario.setUsuario(nombreDeUsuario);
+    // Vacio se guarda como nulo: asi «sin correo» es un solo valor en la base y
+    // no dos que hay que recordar comparar por separado.
+    usuario.setCorreo(correo.isEmpty() ? null : correo);
     usuario.setActivo(entrada.activo());
 
     if (!usuario.isActivo()) sesiones.revocarTodasDe(usuario.getId());
