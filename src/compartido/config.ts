@@ -130,24 +130,130 @@ export const MOTIVOS_RECHAZO = [
 // ---------------------------------------------------------------------------
 
 /**
- * Datos del establecimiento que van en el comprobante.
+ * Datos del establecimiento que van en todo documento que salga impreso.
  *
- * `resolucion` y `prefijo` estan vacios a proposito: este documento NO es una
- * factura electronica ante la DIAN, es un comprobante interno de venta. El
- * espacio queda previsto para cuando el restaurante se habilite; hasta que la
- * DIAN entregue una resolucion real, aqui no puede aparecer un numero.
+ * TODOS SALEN DEL RUT, no de lo que se lea mejor. La razon social es la que
+ * esta inscrita, el NIT es el inscrito y las responsabilidades son las de la
+ * casilla 53. Escribir aqui algo que el RUT no dice es declarar algo falso.
+ *
+ * Los valores actuales son DE EJEMPLO y hay que reemplazarlos con los reales
+ * antes de emitir nada, incluso en pruebas.
  */
 export const DATOS_FISCALES = {
   razonSocial: 'Restaurante El Patio S.A.S.',
-  nit: '901.234.567-8',
+  /** Sin puntos ni digito de verificacion: asi entra al XML y al CUFE. */
+  nit: '901234567',
+  /** El digito de verificacion va en su propio campo. */
+  digitoVerificacion: '8',
+  /** El mismo NIT como se lee en el papel. */
+  nitCompleto: '901.234.567-8',
+  direccion: 'Calle 26 #31-2',
+  municipio: 'Turbaco',
+  departamento: 'Bolívar',
+  /** Codigo DANE del municipio. Turbaco, Bolivar es 13836. */
+  codigoMunicipio: '13836',
+  correo: 'facturacion@elpatio.com.co',
   regimen: 'Responsable de impuesto al consumo',
   responsabilidad: 'No responsable de IVA',
-  /** Lo entrega la DIAN al habilitarse. Nunca se inventa. */
-  resolucion: '',
-  prefijo: '',
+  /** Codigos de la casilla 53 del RUT. Se copian, no se escogen. */
+  responsabilidades: ['R-99-PN'] as string[],
+  /*
+   * LA RESOLUCION NO VA AQUI. Vive en `NUMERACION_DIAN`, y en un solo sitio a
+   * proposito: mientras hubo dos, llenar el equivocado hacia que el comprobante
+   * interno imprimiera un numero de resolucion que el documento fiscal ni
+   * siquiera miraba. Un papel que se declara comprobante interno y a la vez
+   * exhibe una resolucion de la DIAN no es ninguna de las dos cosas.
+   */
   /** Texto que la ley exige mientras no haya facturacion electronica. */
   leyenda: 'Este documento no es una factura electrónica de venta. Comprobante interno.',
 } as const
+
+// ---------------------------------------------------------------------------
+// Facturacion electronica
+// ---------------------------------------------------------------------------
+
+/**
+ * La resolucion de numeracion que autoriza la DIAN.
+ *
+ * Esta VACIA a proposito y el sistema depende de que lo siga estando hasta que
+ * el restaurante quede habilitado: mientras `resolucion` o `claveTecnicaPuesta`
+ * esten en blanco, todo documento que salga se imprime marcado como prueba y
+ * sin valor fiscal. Llenar esto con numeros inventados no hace que el sistema
+ * facture: hace que imprima documentos falsos.
+ *
+ * Lo entrega el contador o el proveedor tecnologico cuando termine el tramite.
+ */
+export const NUMERACION_DIAN = {
+  /** Numero de la resolucion. Ej: '18764000001234'. */
+  resolucion: '',
+  /** aaaa-mm-dd */
+  fechaResolucion: '',
+  /** Ej: 'FE'. Puede ir vacio si la DIAN autoriza sin prefijo. */
+  prefijo: '',
+  desde: 0,
+  hasta: 0,
+  /** aaaa-mm-dd. Vencida, el rango deja de servir aunque sobren numeros. */
+  vigenteHasta: '',
+  /**
+   * LA CLAVE TECNICA NO VA AQUI.
+   *
+   * Entra en el calculo del CUFE y es un secreto: cualquier cosa que este en
+   * este archivo viaja al navegador de todos los que abran la pagina. Vive en
+   * el servidor, en una variable de entorno, y el documento se firma alla.
+   * Este campo solo dice si ya fue configurada, para saber si se puede emitir.
+   */
+  claveTecnicaPuesta: false,
+} as const
+
+/**
+ * Contra que ambiente de la DIAN se emite.
+ *
+ * 'pruebas' es habilitacion: los documentos existen y se consultan, pero no
+ * tienen efecto fiscal. Pasar a 'produccion' es una decision del dueno y del
+ * contador, nunca del desarrollo, y no se hace hasta que el tramite termine.
+ */
+export const AMBIENTE_DIAN: 'pruebas' | 'produccion' = 'pruebas'
+
+/**
+ * Que documento se emite en cada venta.
+ *
+ * 'factura' siempre es la opcion segura: emitir factura donde bastaba un
+ * tiquete nunca es un incumplimiento, al reves si. Ademas evita mantener dos
+ * numeraciones y dos formatos. El costo es que el proveedor cobra por documento
+ * y la factura suele ser mas cara que el tiquete.
+ *
+ * DECISION PENDIENTE con el contador. Cambiar este valor cambia el documento
+ * completo sin tocar ninguna pantalla.
+ */
+export const TIPO_DOCUMENTO_VENTA: 'factura' | 'tiquete_pos' = 'factura'
+
+/** Quien transmite a la DIAN. Se imprime al pie, como exige la norma. */
+export const PROVEEDOR_TECNOLOGICO = {
+  nombre: '',
+  nit: '',
+} as const
+
+/**
+ * Si lo que sale por la impresora es un documento fiscal de verdad.
+ *
+ * Un solo lugar decide esto, y decide en contra por defecto. Mientras falte
+ * cualquier pieza del tramite, el papel sale con la banda de prueba.
+ *
+ * El ambiente cuenta como una pieza mas, y no es un detalle: un documento
+ * emitido contra habilitacion NO tiene efecto fiscal aunque la resolucion este
+ * completa y aunque el QR se vea igual. Sin esta condicion, llenar los datos de
+ * la resolucion antes de pasar a produccion —que es el orden natural del
+ * tramite— haria que la banda de prueba desapareciera de un papel que sigue sin
+ * valer, y el QR llevaria al cliente al portal donde su factura no existe.
+ */
+export function facturacionHabilitada(): boolean {
+  return (
+    AMBIENTE_DIAN === 'produccion' &&
+    NUMERACION_DIAN.resolucion !== '' &&
+    NUMERACION_DIAN.claveTecnicaPuesta &&
+    NUMERACION_DIAN.hasta > 0
+  )
+}
 
 /** Ancho del rollo de la impresora termica, en milimetros. */
 export const ANCHO_TICKET_MM = 80

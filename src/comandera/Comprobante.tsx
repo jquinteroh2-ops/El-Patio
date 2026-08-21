@@ -2,6 +2,8 @@ import { precioItem } from '@/compartido/calculos'
 import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
 import { formatoCOP, formatoFechaHora } from '@/compartido/formato'
 import type { Orden, Pago } from '@/compartido/tipos'
+import { DENOMINACION } from '@/facturacion/catalogos'
+import type { DocumentoElectronico } from '@/facturacion/tipos'
 
 const NOMBRE_METODO: Record<Pago['metodo'], string> = {
   efectivo: 'Efectivo',
@@ -15,6 +17,14 @@ interface Props {
   orden: Orden
   mesaEtiqueta: string
   meseroNombre: string
+  /**
+   * El documento ante la DIAN, si salió.
+   *
+   * En nulo significa que el cobro quedó registrado y el documento no: eso el
+   * cajero tiene que verlo en la pantalla, no solo en un aviso que se va solo a
+   * los pocos segundos, porque es él quien lo tiene que resolver después.
+   */
+  documento?: DocumentoElectronico | null
 }
 
 /**
@@ -24,7 +34,7 @@ interface Props {
  * herramienta de trabajo. La propina figura como linea aparte y marcada como
  * voluntaria, y cada cargo adicional aparece con su nombre.
  */
-export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre }: Props) {
+export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento }: Props) {
   const vigentes = orden.items.filter((i) => i.estado !== 'anulado')
 
   return (
@@ -124,9 +134,32 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre }: Props) 
         <p className="text-xs text-bosque-950/70">
           La propina es voluntaria. Si no está de acuerdo con ella, puede solicitar su retiro.
         </p>
-        <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/50">
-          {DATOS_FISCALES.leyenda}
-        </p>
+
+        {/* Qué es este papel, dicho sin rodeos y según lo que realmente pasó.
+            Son tres situaciones distintas y ninguna se puede describir con el
+            texto de otra: hay documento fiscal, hay documento de prueba, o no
+            hay documento. */}
+        {documento && !documento.esPrueba && (
+          <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/70">
+            {DENOMINACION[documento.tipo]} N.º {documento.numeroCompleto}
+            <br />
+            Consúltela en el portal de la DIAN con el código impreso.
+          </p>
+        )}
+
+        {documento?.esPrueba && (
+          <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/50">
+            Documento de prueba N.º {documento.numeroCompleto} · sin valor fiscal.
+            <br />
+            {DATOS_FISCALES.leyenda}
+          </p>
+        )}
+
+        {!documento && (
+          <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/50">
+            {DATOS_FISCALES.leyenda}
+          </p>
+        )}
       </footer>
     </article>
   )

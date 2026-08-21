@@ -106,7 +106,7 @@ export default function LayoutPublico() {
         <div className="border-t border-crema-100/10">
           <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-5 py-5 text-center sm:flex-row sm:justify-between">
             <span className="text-xs text-crema-100/35">
-              {RESTAURANTE.nombreCompleto} · NIT {DATOS_FISCALES.nit}
+              {RESTAURANTE.nombreCompleto} · NIT {DATOS_FISCALES.nitCompleto}
             </span>
             {/* Acceso del personal: existe, pero no compite con la carta ni la reserva. */}
             <Link

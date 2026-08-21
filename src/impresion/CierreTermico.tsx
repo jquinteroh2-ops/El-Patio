@@ -27,7 +27,7 @@ export function CierreTermico({ resumen, cerradoPor }: Props) {
     <div className="ticket">
       <div className="ticket-centro">
         <p className="ticket-grande">{RESTAURANTE.nombre}</p>
-        <p>NIT {DATOS_FISCALES.nit}</p>
+        <p>NIT {DATOS_FISCALES.nitCompleto}</p>
       </div>
 
       <hr className="ticket-separador" />

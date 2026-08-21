@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
+  AlertTriangle,
   ArrowLeft,
   CheckCircle2,
   Printer,
@@ -26,12 +27,24 @@ import { HojaPago, type PartePago } from './HojaPago'
 import { Comprobante } from './Comprobante'
 import { imprimir } from '@/impresion/impresora'
 import { ComprobanteTermico } from '@/impresion/ComprobanteTermico'
+import { FacturaTermica } from '@/impresion/FacturaTermica'
+import { emisor } from '@/facturacion/emisor'
+import { NOMBRE_MEDIO_PAGO } from '@/facturacion/catalogos'
+import type { DocumentoElectronico } from '@/facturacion/tipos'
 
 interface Cobrado {
   pago: Pago
   orden: Orden
   mesaEtiqueta: string
   meseroNombre: string
+  /**
+   * El documento ante la DIAN.
+   *
+   * Puede venir en nulo, y esa posibilidad es deliberada: si la emisión falla,
+   * el cobro ya ocurrió y no se deshace. La caja tiene que poder entregar un
+   * papel igual, aunque sea el comprobante interno, y el documento sale después.
+   */
+  documento: DocumentoElectronico | null
 }
 
 export default function CuentaMesa() {
@@ -93,6 +106,40 @@ export default function CuentaMesa() {
     const cuentaFinal = calcularCuenta(cobrado.orden, porcentajeInc, 0, cobrado.pago.propina)
     const divisiones = cobrado.pago.divisiones ?? []
 
+    // El documento fiscal es UNO por venta, aunque la cuenta se haya repartido
+    // entre cuatro personas: la comida es una sola y se consumió en una mesa.
+    // Sale primero.
+    //
+    // PENDIENTE CON EL CONTADOR: si los comensales necesitan cada uno su
+    // factura a su nombre —el caso del almuerzo de negocios que cada quien
+    // deduce—, lo correcto es emitir un documento por parte, con sus propias
+    // líneas. Eso cambia el reparto del impuesto y no se decide desde aquí.
+    if (cobrado.documento) {
+      imprimir(
+        <FacturaTermica
+          documento={cobrado.documento}
+          etiqueta={cobrado.mesaEtiqueta}
+          atendidoPor={cobrado.meseroNombre}
+          medioPagoLegible={NOMBRE_MEDIO_PAGO[cobrado.pago.metodo]}
+        />,
+      )
+    } else {
+      // Sin documento emitido no se imprime algo que parezca uno. Sale el
+      // comprobante interno, que dice lo que es.
+      imprimir(
+        <ComprobanteTermico
+          orden={cobrado.orden}
+          cuenta={cuentaFinal}
+          etiqueta={cobrado.mesaEtiqueta}
+          atendidoPor={cobrado.meseroNombre}
+          metodo={cobrado.pago.metodo}
+        />,
+      )
+    }
+
+    // Y detrás, un papel por comensal con lo que le tocó pagar. Estos NO son
+    // documentos fiscales y no lo dicen a medias: son el comprobante interno,
+    // que ya se titula como tal.
     if (divisiones.length > 1) {
       for (const parte of divisiones) {
         imprimir(
@@ -105,18 +152,7 @@ export default function CuentaMesa() {
           />,
         )
       }
-      return
     }
-
-    imprimir(
-      <ComprobanteTermico
-        orden={cobrado.orden}
-        cuenta={cuentaFinal}
-        etiqueta={cobrado.mesaEtiqueta}
-        atendidoPor={cobrado.meseroNombre}
-        metodo={cobrado.pago.metodo}
-      />,
-    )
   }
 
   // ---- Comprobante, despues de cobrar ----
@@ -130,6 +166,19 @@ export default function CuentaMesa() {
           </p>
         </div>
 
+        {/* El cobro salió; el documento no. Se queda escrito en la pantalla y no
+            en un aviso pasajero, porque es una tarea pendiente de la caja: esa
+            venta tiene que quedar documentada antes del cierre del día. */}
+        {!cobrado.documento && (
+          <div className="mx-auto mb-4 flex w-full max-w-md items-start gap-2 rounded-xl border border-estado-demorado/40 bg-estado-demorado-suave px-3 py-2 text-sm text-estado-demorado">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            <p>
+              El documento electrónico de esta venta quedó pendiente. El pago sí
+              quedó registrado; avise en caja para emitirlo antes del cierre.
+            </p>
+          </div>
+        )}
+
         <Comprobante {...cobrado} />
 
         <div className="mx-auto mt-5 flex w-full max-w-md flex-col gap-2">
@@ -140,7 +189,7 @@ export default function CuentaMesa() {
             icono={<Printer className="h-5 w-5" aria-hidden />}
             onClick={() => imprimirComprobanteFinal()}
           >
-            Imprimir comprobante
+            {cobrado.documento ? 'Imprimir documento' : 'Imprimir comprobante'}
           </Boton>
           <Boton
             variante="principal"
@@ -175,6 +224,35 @@ export default function CuentaMesa() {
   const etiquetaMesa = detalle.mesa.nombre ?? `Mesa ${detalle.mesa.numero}`
   const vigentes = orden.items.filter((i) => i.estado !== 'anulado')
 
+  /**
+   * Emite el documento electrónico de la venta ya cobrada.
+   *
+   * Nunca tumba el cobro. Si algo falla —no hay red, el proveedor no responde,
+   * el documento no cuadra— se avisa en pantalla y se sigue: el pago está hecho
+   * y la mesa tiene que quedar libre. El documento pendiente es un problema de
+   * la caja, no del cliente que ya pagó y quiere irse.
+   *
+   * Hoy el emisor de pruebas no transmite nada. Cuando entre el proveedor real,
+   * aquí mismo es donde el documento se encola para reintentar.
+   */
+  const emitirDocumento = async (pago: Pago): Promise<DocumentoElectronico | null> => {
+    if (!orden) return null
+    try {
+      // La cuenta se recalcula con la propina REAL que quedó en el pago, no con
+      // la que estaba en pantalla: entre una y otra el cajero pudo cambiarla.
+      const cuentaFinal = calcularCuenta(orden, porcentajeInc, 0, pago.propina)
+      return await emisor.emitir({ orden, cuenta: cuentaFinal, metodo: pago.metodo })
+    } catch (e) {
+      mostrar(
+        e instanceof Error
+          ? `Cobro registrado, pero el documento quedó pendiente: ${e.message}`
+          : 'Cobro registrado, pero el documento electrónico quedó pendiente',
+        'error',
+      )
+      return null
+    }
+  }
+
   const cobrar = async () => {
     setCobrando(true)
     try {
@@ -192,11 +270,19 @@ export default function CuentaMesa() {
       })
 
       setHojaPago(false)
+
+      // El documento electrónico se emite DESPUÉS de que el cobro quedó
+      // registrado, nunca antes. Si se hiciera al revés, un fallo de la DIAN o
+      // del proveedor dejaría al restaurante sin poder cobrar una mesa, y esa
+      // no puede ser la respuesta un sábado a las nueve de la noche.
+      const documento = await emitirDocumento(pago)
+
       setCobrado({
         pago,
         orden,
         mesaEtiqueta: etiquetaMesa,
         meseroNombre: detalle.meseroNombre,
+        documento,
       })
     } catch (e) {
       mostrar(e instanceof Error ? e.message : 'No se pudo registrar el pago', 'error')

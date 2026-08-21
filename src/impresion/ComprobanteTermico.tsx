@@ -57,7 +57,7 @@ export function ComprobanteTermico({
       <div className="ticket-centro">
         <p className="ticket-grande">{RESTAURANTE.nombre}</p>
         <p>{DATOS_FISCALES.razonSocial}</p>
-        <p>NIT {DATOS_FISCALES.nit}</p>
+        <p>NIT {DATOS_FISCALES.nitCompleto}</p>
         <p>
           {RESTAURANTE.direccion}
           <br />
@@ -201,15 +201,10 @@ export function ComprobanteTermico({
         <p>{DATOS_FISCALES.regimen}</p>
         <p>{DATOS_FISCALES.responsabilidad}</p>
 
-        {/* Espacio previsto para cuando el restaurante quede habilitado ante la
-            DIAN. Mientras `resolucion` esté vacío no se imprime nada: un número
-            inventado en un documento fiscal es una falsedad. */}
-        {DATOS_FISCALES.resolucion && (
-          <p className="ticket-resolucion">
-            {DATOS_FISCALES.resolucion}
-            {DATOS_FISCALES.prefijo && ` · Prefijo ${DATOS_FISCALES.prefijo}`}
-          </p>
-        )}
+        {/* Aquí no va —ni va a ir— una resolución de la DIAN. Este papel es el
+            comprobante interno, el que sale cuando no hay documento electrónico
+            o cuando se reparte la cuenta entre comensales. El que lleva
+            resolución, código único y QR es `FacturaTermica`. */}
 
         <p className="ticket-negrita">{DATOS_FISCALES.leyenda}</p>
 
