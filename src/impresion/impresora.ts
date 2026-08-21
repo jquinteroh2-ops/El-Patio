@@ -22,6 +22,9 @@ export interface Impresora {
 
 const ID_CONTENEDOR = 'contenedor-impresion'
 
+/** Lo que se espera a que React pinte antes de mandar el papel de todos modos. */
+const ESPERA_MAXIMA_PINTADO_MS = 1500
+
 /**
  * Impresora del navegador.
  *
@@ -34,7 +37,28 @@ const ID_CONTENEDOR = 'contenedor-impresion'
 export class ImpresoraNavegador implements Impresora {
   private raiz: Root | null = null
 
-  async imprimir(documento: ReactNode): Promise<void> {
+  /**
+   * La cola de impresion.
+   *
+   * Todos los tiquetes comparten un mismo contenedor, asi que dos impresiones
+   * a la vez se pisan: la segunda monta su documento encima del de la primera
+   * antes de que esta llegue a `print()`. Eso es exactamente lo que pasaba al
+   * cobrar una cuenta dividida —un tiquete por comensal, en un bucle— y por eso
+   * salia uno con la parte equivocada y los demas en blanco.
+   *
+   * Encadenar los documentos en una promesa los pone en fila: cada uno se monta,
+   * se imprime y se desmonta antes de que empiece el siguiente.
+   */
+  private cola: Promise<void> = Promise.resolve()
+
+  imprimir(documento: ReactNode): Promise<void> {
+    // El `catch` va antes de encadenar para que un tiquete que fallo no deje la
+    // cola rota: los que vienen detras tienen que salir igual.
+    this.cola = this.cola.catch(() => undefined).then(() => this.imprimirAhora(documento))
+    return this.cola
+  }
+
+  private async imprimirAhora(documento: ReactNode): Promise<void> {
     if (typeof document === 'undefined') return
 
     const contenedor = this.contenedor()
@@ -43,8 +67,20 @@ export class ImpresoraNavegador implements Impresora {
 
     // React pinta de forma asincrona: sin esta espera, `print()` puede salir
     // con el contenedor todavia vacio y sacar una hoja en blanco.
+    //
+    // El temporizador es la red de seguridad. Una pestana en segundo plano no
+    // recibe cuadros de animacion, asi que sin el la espera no terminaria nunca:
+    // el documento se quedaria montado y, peor, con la cola detenida detras.
+    // Mas vale imprimir tarde que dejar la caja sin poder sacar un papel.
     await new Promise<void>((resolver) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => resolver()))
+      let resuelto = false
+      const seguir = () => {
+        if (resuelto) return
+        resuelto = true
+        resolver()
+      }
+      requestAnimationFrame(() => requestAnimationFrame(seguir))
+      setTimeout(seguir, ESPERA_MAXIMA_PINTADO_MS)
     })
 
     try {
@@ -53,6 +89,19 @@ export class ImpresoraNavegador implements Impresora {
       // Se limpia siempre, incluso si el usuario cancelo el dialogo: dejar el
       // ticket montado haria que la siguiente impresion sacara los dos.
       this.raiz?.render(null)
+      // Y se le da a React el respiro de un cuadro para desmontarlo, porque el
+      // siguiente de la cola monta sobre este mismo contenedor. Con la misma red
+      // por debajo, para que la cola no dependa de que la pestana este a la vista.
+      await new Promise<void>((resolver) => {
+        let resuelto = false
+        const seguir = () => {
+          if (resuelto) return
+          resuelto = true
+          resolver()
+        }
+        requestAnimationFrame(seguir)
+        setTimeout(seguir, ESPERA_MAXIMA_PINTADO_MS)
+      })
     }
   }
 
