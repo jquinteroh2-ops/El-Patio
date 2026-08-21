@@ -15,6 +15,7 @@ import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.pedido.ClienteExterno;
 import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
+import co.elpatio.dominio.pedido.UbicacionEntrega;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Rol;
 import co.elpatio.dominio.personal.Usuario;
@@ -110,6 +111,28 @@ public class SembradorDatosDemo implements ApplicationRunner {
           "Calle 26 #31-19",
           "Diagonal 5 #12-77",
           "Carrera 9 #27-63");
+
+  /**
+   * Puntos repartidos por Turbaco, para las ubicaciones que «comparte» el
+   * cliente.
+   *
+   * Van pegados a la lista de direcciones, uno por cada una, porque el punto y
+   * la direccion tienen que contar la misma historia: un mapa que cae a tres
+   * cuadras del texto no enseña la funcion, enseña un error.
+   *
+   * Ninguno es la casa de nadie: son coordenadas alrededor del local, tomadas
+   * para que el mapa de la demostracion caiga en calles reales del pueblo.
+   */
+  private static final List<double[]> PUNTOS =
+      List.of(
+          new double[] {10.341207, -75.419834},
+          new double[] {10.336412, -75.421088},
+          new double[] {10.343015, -75.424900},
+          new double[] {10.335918, -75.425712},
+          new double[] {10.340120, -75.427301},
+          new double[] {10.337560, -75.417950},
+          new double[] {10.344210, -75.420515},
+          new double[] {10.333980, -75.423145});
 
   private static final List<String> NOTAS_COCINA =
       List.of("Sin cebolla", "Sin picante", "Para compartir", "Sin sal", "Alergia: mariscos");
@@ -568,12 +591,18 @@ public class SembradorDatosDemo implements ApplicationRunner {
 
   /** Un pedido en cada casilla del tablero de recepcion. */
   private int ponerPedidosEnRecepcion(List<ItemCarta> platos, List<ZonaDomicilio> activas) {
+    // Tres en la calle a la vez, que es una noche normal de viernes y es lo que
+    // hace que la pantalla del repartidor se entienda: con una sola tarjeta no
+    // se ve que es una ruta, se ve un caso suelto.
     EstadoPedido[] casillas = {
       EstadoPedido.NUEVO,
       EstadoPedido.NUEVO,
       EstadoPedido.ACEPTADO,
       EstadoPedido.EN_PREPARACION,
       EstadoPedido.LISTO,
+      EstadoPedido.LISTO,
+      EstadoPedido.DESPACHADO,
+      EstadoPedido.DESPACHADO,
       EstadoPedido.DESPACHADO
     };
 
@@ -588,7 +617,7 @@ public class SembradorDatosDemo implements ApplicationRunner {
       TipoPedido tipo =
           casilla == EstadoPedido.DESPACHADO
               ? TipoPedido.DOMICILIO
-              : i % 3 == 2 ? TipoPedido.LLEVAR : TipoPedido.DOMICILIO;
+              : i % 4 == 2 ? TipoPedido.LLEVAR : TipoPedido.DOMICILIO;
       Instant entrada = ahora.minusSeconds(60L * (3 + i * 7 + azar.nextInt(6)));
 
       Orden orden = new Orden();
@@ -646,10 +675,28 @@ public class SembradorDatosDemo implements ApplicationRunner {
 
     if (tipo == TipoPedido.DOMICILIO && !activas.isEmpty()) {
       ZonaDomicilio zona = uno(activas);
-      orden.setCliente(new ClienteExterno(nombre, telefono, uno(DIRECCIONES), zona.getNombre()));
+      int cual = azar.nextInt(DIRECCIONES.size());
+      orden.setCliente(
+          new ClienteExterno(nombre, telefono, DIRECCIONES.get(cual), zona.getNombre()));
       orden.setZonaDomicilioId(zona.getId());
       orden.setCostoEnvio(zona.getTarifa());
       orden.setMinutosEstimados(zona.getMinutosEstimados());
+
+      // Dos de cada tres comparten la ubicacion, y uno no. La proporcion es a
+      // proposito: quien mira la demostracion tiene que ver las dos cosas, el
+      // punto exacto y el mapa armado con la direccion escrita, porque las dos
+      // van a pasar en la calle. La precision tambien varia, para que aparezca
+      // el aviso de «ubicacion aproximada» que recepcion necesita entender.
+      if (cual % 3 != 0) {
+        double[] punto = PUNTOS.get(cual % PUNTOS.size());
+        // Uno de los puntos sale con mala precision a proposito, para que la
+        // advertencia de «ubicacion aproximada» tambien aparezca en la
+        // demostracion: es la que evita que alguien salga confiado detras de un
+        // punto que en realidad cubre media manzana. Va atado a la direccion y
+        // no al azar, para que la demostracion sea la misma cada vez.
+        int precision = cual == 4 ? 220 : 9 + cual * 3;
+        orden.setUbicacion(new UbicacionEntrega(punto[0], punto[1], precision));
+      }
     } else {
       orden.setCliente(new ClienteExterno(nombre, telefono, null, null));
     }
