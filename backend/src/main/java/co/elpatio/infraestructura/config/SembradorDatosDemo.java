@@ -178,7 +178,18 @@ public class SembradorDatosDemo implements ApplicationRunner {
     }
 
     azar = new Random(SEMILLA);
-    sembrar();
+    try {
+      sembrar();
+    } catch (RuntimeException error) {
+      // Los datos de demostracion son un adorno; el sistema no lo es. Si algo
+      // falla al sembrar se anota y se arranca igual: un restaurante sin
+      // pantallas por culpa de unos datos de prueba es un problema mayor que
+      // una demostracion a medias.
+      registro.error(
+          "No se pudieron sembrar los datos de demostración; el sistema arranca igual: {}",
+          error.toString(),
+          error);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -288,6 +299,9 @@ public class SembradorDatosDemo implements ApplicationRunner {
     if (esHoy && limite.isBefore(LocalTime.of(12, 30))) return ventas;
 
     int cuantas = ventasEsperadas(dia);
+    // Los numeros de un dia pasado arrancan despues de los que ya haya: si
+    // alguien uso el sistema de verdad ese dia, su comanda ya ocupo el 1.
+    int base = esHoy ? 0 : primerNumeroLibre(dia);
     for (int i = 0; i < cuantas; i++) {
       LocalTime hora = horaDeServicio(limite);
       Instant cobro = reloj.inicioDelDia(dia).plusSeconds(hora.toSecondOfDay());
@@ -300,7 +314,7 @@ public class SembradorDatosDemo implements ApplicationRunner {
       orden.setId(id);
       orden.setTipo(tipo);
       orden.setAbiertaEn(apertura);
-      orden.setNumero(consecutivo(dia, i));
+      orden.setNumero(consecutivo(dia, base, i));
 
       if (tipo == TipoPedido.MESA) {
         Mesa mesa = uno(salon);
@@ -326,12 +340,30 @@ public class SembradorDatosDemo implements ApplicationRunner {
   }
 
   /**
-   * El consecutivo de hoy sale del contador de verdad y no de un numero
-   * inventado: si el mesero abre una mesa en plena demostracion, su comanda no
-   * puede chocar contra una sembrada que ya ocupo ese numero del dia.
+   * Que numero le toca a una comanda sembrada.
+   *
+   * El de hoy sale del contador de verdad y no de un numero inventado: si el
+   * mesero abre una mesa en plena demostracion, su comanda no puede chocar
+   * contra una sembrada que ya ocupo ese numero del dia.
+   *
+   * Los de dias pasados arrancan despues del ultimo que ya exista en la base.
+   * Antes empezaban en 1 siempre, y eso funcionaba solo mientras nadie hubiera
+   * usado el sistema de verdad: en cuanto un dia tenia una comanda propia con
+   * el numero 1, la llave (dia, numero) rechazaba la sembrada y el arranque
+   * entero se caia. Un dato de prueba no puede dejar el restaurante sin sistema.
    */
-  private int consecutivo(LocalDate dia, int indice) {
-    return dia.equals(reloj.hoy()) ? ajustes.siguienteConsecutivo() : indice + 1;
+  private int consecutivo(LocalDate dia, int base, int indice) {
+    return dia.equals(reloj.hoy()) ? ajustes.siguienteConsecutivo() : base + indice;
+  }
+
+  /** El primer numero que nadie ha usado ese dia. */
+  private int primerNumeroLibre(LocalDate dia) {
+    Integer maximo =
+        jdbc.queryForObject(
+            "select coalesce(max(numero), 0) from ordenes where dia_operativo = ?",
+            Integer.class,
+            dia);
+    return (maximo == null ? 0 : maximo) + 1;
   }
 
   /** Viernes y sabado llenos, martes flojo: la grafica tiene que tener relieve. */
