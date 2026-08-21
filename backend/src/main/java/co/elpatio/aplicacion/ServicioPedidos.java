@@ -309,6 +309,23 @@ public class ServicioPedidos {
     return guardada;
   }
 
+  /**
+   * Corrige el tiempo prometido de un pedido que ya esta en cocina.
+   *
+   * No mueve el pedido de casilla ni vuelve a mandar nada a la plancha: lo unico
+   * que cambia es la promesa. El aviso al cliente lo manda quien esta en
+   * recepcion por WhatsApp, con el texto a la vista, igual que todo lo demas que
+   * sale a nombre de la casa.
+   */
+  @Transactional
+  public Orden cambiarTiempo(String ordenId, int minutosEstimados) {
+    Orden orden = exigirPedido(ordenId);
+    orden.cambiarTiempoEstimado(minutosEstimados);
+    Orden guardada = ordenes.guardar(orden);
+    eventos.publicar(List.of("pedidos", "ordenes"));
+    return guardada;
+  }
+
   @Transactional
   public Orden rechazar(String ordenId, String motivo) {
     Orden orden = exigirPedido(ordenId);

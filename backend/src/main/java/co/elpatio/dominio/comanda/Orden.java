@@ -407,6 +407,32 @@ public class Orden {
     minutosEstimados = minutos;
   }
 
+  /**
+   * Corrige el tiempo que ya se le prometio al cliente.
+   *
+   * La cocina se atrasa: entra un grupo de veinte, se cae una plancha, el
+   * domiciliario todavia no ha vuelto. Cuando eso pasa, los treinta minutos que
+   * se prometieron al aceptar dejan de ser verdad, y el cliente se entera
+   * esperando en la puerta. Poder corregir la promesa y avisar es lo que un
+   * restaurante hace por telefono desde siempre; aqui solo se le da el boton.
+   *
+   * Solo mientras el pedido siga en el local. Una vez despachado, el tiempo lo
+   * decide el trafico y ya no hay nada que prometer desde una pantalla.
+   */
+  public void cambiarTiempoEstimado(int minutos) {
+    exigirExterno();
+    if (minutos <= 0) {
+      throw new ReglaDeNegocioError("El tiempo estimado tiene que ser mayor que cero");
+    }
+    if (estadoPedido != EstadoPedido.ACEPTADO
+        && estadoPedido != EstadoPedido.EN_PREPARACION
+        && estadoPedido != EstadoPedido.LISTO) {
+      throw new ReglaDeNegocioError(
+          "El tiempo solo se cambia mientras el pedido sigue en el local");
+    }
+    minutosEstimados = minutos;
+  }
+
   /** Rechaza el pedido dejando escrito el porque: el cliente merece una razon. */
   public void rechazar(String motivo) {
     exigirExterno();

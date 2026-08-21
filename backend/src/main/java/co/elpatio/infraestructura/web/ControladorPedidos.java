@@ -99,6 +99,19 @@ public class ControladorPedidos {
     return servicio.cambiarEstado(ordenId, peticion.estado());
   }
 
+  /**
+   * Corrige el tiempo prometido cuando la cocina se atrasa.
+   *
+   * Va aparte de aceptar porque no es la misma decision: aceptar mete el pedido
+   * a la plancha, esto solo cambia lo que se le dijo al cliente.
+   */
+  @PatchMapping("/{ordenId}/tiempo")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
+  public Orden cambiarTiempo(
+      @PathVariable String ordenId, @RequestBody Dtos.PeticionTiempo peticion) {
+    return servicio.cambiarTiempo(ordenId, peticion.minutosEstimados());
+  }
+
   @PostMapping("/{ordenId}/despachar")
   @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public Orden despachar(@PathVariable String ordenId, @RequestBody Dtos.PeticionDespacho peticion) {

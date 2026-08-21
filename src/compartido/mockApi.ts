@@ -604,6 +604,25 @@ export async function aceptarPedido(ordenId: string, minutosEstimados: number): 
   )
 }
 
+/**
+ * Corrige el tiempo prometido de un pedido que ya se acepto.
+ *
+ * No mueve el pedido de columna ni vuelve a mandar nada a cocina: lo unico que
+ * cambia es lo que se le dijo al cliente. El aviso se manda aparte, por
+ * WhatsApp, con el texto a la vista de quien lo envia.
+ */
+export async function cambiarTiempoPedido(
+  ordenId: string,
+  minutosEstimados: number,
+): Promise<Orden> {
+  return contra(() =>
+    pedir<Orden>(`/api/pedidos/${ordenId}/tiempo`, {
+      metodo: 'PATCH',
+      cuerpo: { minutosEstimados },
+    }),
+  )
+}
+
 export async function rechazarPedido(ordenId: string, motivo: string): Promise<Orden> {
   return contra(() =>
     pedir<Orden>(`/api/pedidos/${ordenId}/rechazar`, { metodo: 'POST', cuerpo: { motivo } }),

@@ -4,6 +4,7 @@ import {
   BellOff,
   Bike,
   Check,
+  Clock,
   Crosshair,
   MapPin,
   MapPinned,
@@ -25,6 +26,7 @@ import {
   mensajePedidoConfirmado,
   mensajePedidoEnCamino,
   mensajePedidoListoParaRecoger,
+  mensajePedidoNuevoTiempo,
   mensajePedidoRechazado,
 } from '@/compartido/whatsapp'
 import type { EstadoPedido } from '@/compartido/tipos'
@@ -87,6 +89,8 @@ export default function PantallaPedidos() {
   const [motivo, setMotivo] = useState('')
   const [despachando, setDespachando] = useState<PedidoEnRecepcion | null>(null)
   const [repartidor, setRepartidor] = useState('')
+  const [cambiandoTiempo, setCambiandoTiempo] = useState<PedidoEnRecepcion | null>(null)
+  const [minutosNuevos, setMinutosNuevos] = useState(30)
   const [trabajando, setTrabajando] = useState(false)
 
   const porEstado = useMemo(() => {
@@ -161,6 +165,20 @@ export default function PantallaPedidos() {
       setDespachando(null)
       setRepartidor('')
     }
+  }
+
+  const abrirCambioTiempo = (pedido: PedidoEnRecepcion) => {
+    setMinutosNuevos(pedido.orden.minutosEstimados ?? 30)
+    setCambiandoTiempo(pedido)
+  }
+
+  const confirmarCambioTiempo = async () => {
+    if (!cambiandoTiempo) return
+    const ok = await conError(
+      () => api.cambiarTiempoPedido(cambiandoTiempo.orden.id, minutosNuevos),
+      `Pedido n.º ${cambiandoTiempo.orden.numero}: ahora en ${minutosNuevos} min`,
+    )
+    if (ok) setCambiandoTiempo(null)
   }
 
   const avanzar = (pedido: PedidoEnRecepcion, estado: EstadoPedido) =>
@@ -278,6 +296,7 @@ export default function PantallaPedidos() {
                           setRepartidor(pedido.orden.repartidor ?? '')
                           setDespachando(pedido)
                         }}
+                        onCambiarTiempo={() => abrirCambioTiempo(pedido)}
                         onEntregar={() => void entregar(pedido)}
                         onImprimir={() => imprimirComprobante(pedido)}
                       />
@@ -436,6 +455,56 @@ export default function PantallaPedidos() {
           )}
         </div>
       </HojaInferior>
+
+      {/* ---------- Cambiar el tiempo ---------- */}
+      <HojaInferior
+        abierta={cambiandoTiempo !== null}
+        titulo={cambiandoTiempo ? `Tiempo del pedido n.º ${cambiandoTiempo.orden.numero}` : ''}
+        descripcion="Corrige lo que se le prometió al cliente. El pedido no se mueve de columna."
+        onCerrar={() => setCambiandoTiempo(null)}
+        pie={
+          <Boton
+            variante="principal"
+            tamano="grande"
+            bloque
+            cargando={trabajando}
+            onClick={confirmarCambioTiempo}
+            icono={<Clock className="h-5 w-5" aria-hidden />}
+          >
+            Guardar el tiempo
+          </Boton>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <p className="mb-2 text-sm text-noche-300">
+              ¿En cuántos minutos lo tenemos, contados desde ahora?
+            </p>
+            <Contador valor={minutosNuevos} onCambiar={setMinutosNuevos} minimo={5} maximo={180} />
+            {cambiandoTiempo && (
+              <p className="mt-2 text-xs text-noche-500">
+                {cambiandoTiempo.orden.minutosEstimados !== undefined &&
+                  `Se le habían prometido ${cambiandoTiempo.orden.minutosEstimados} min. `}
+                Lleva esperando{' '}
+                {minutosDesde(cambiandoTiempo.orden.recibidoEn ?? cambiandoTiempo.orden.abiertaEn)}{' '}
+                min.
+              </p>
+            )}
+          </div>
+
+          {/*
+            Cambiar el numero en la pantalla no le sirve de nada al cliente si
+            nadie le avisa: por eso el mensaje sale aqui mismo, escrito y listo
+            para enviar, como en todas las demas decisiones de esta pantalla.
+          */}
+          {cambiandoTiempo && (
+            <EnlacesCliente
+              pedido={cambiandoTiempo}
+              mensaje={mensajePedidoNuevoTiempo(cambiandoTiempo.orden, minutosNuevos)}
+            />
+          )}
+        </div>
+      </HojaInferior>
     </div>
   )
 }
@@ -452,6 +521,7 @@ interface PropsTarjeta {
   onRechazar: () => void
   onAvanzar: (estado: EstadoPedido) => void
   onDespachar: () => void
+  onCambiarTiempo: () => void
   onEntregar: () => void
   onImprimir: () => void
 }
@@ -464,6 +534,7 @@ function TarjetaPedido({
   onRechazar,
   onAvanzar,
   onDespachar,
+  onCambiarTiempo,
   onEntregar,
   onImprimir,
 }: PropsTarjeta) {
@@ -508,6 +579,21 @@ function TarjetaPedido({
       {espera >= UMBRAL_ALERTA_PEDIDO && estado === 'nuevo' && (
         <p className="mb-2 rounded-lg bg-estado-demorado/10 px-2 py-1 text-xs font-medium text-estado-demorado">
           Lleva {espera} min sin respuesta
+        </p>
+      )}
+
+      {/*
+        Lo que se le prometio al cliente, al lado del reloj que corre. Sin esto
+        el numero grande no dice nada: veinte minutos son pocos si se prometio
+        media hora y son un problema si se prometio un cuarto.
+      */}
+      {orden.minutosEstimados !== undefined && estado !== 'nuevo' && (
+        <p className="mb-2 flex items-center gap-1.5 text-xs text-noche-400">
+          <Clock className="h-3.5 w-3.5 shrink-0 text-noche-500" aria-hidden />
+          Prometido en {orden.minutosEstimados} min
+          {espera > orden.minutosEstimados && estado !== 'entregado' && (
+            <span className="font-medium text-estado-demorado">· ya se pasó</span>
+          )}
         </p>
       )}
 
@@ -712,6 +798,23 @@ function TarjetaPedido({
         {estado === 'despachado' && (
           <Boton variante="exito" tamano="compacto" onClick={onEntregar} disabled={trabajando}>
             Confirmar entrega
+          </Boton>
+        )}
+
+        {/*
+          El tiempo prometido deja de ser verdad en cuanto la cocina se atrasa.
+          Corregirlo desde la misma tarjeta es lo que evita que el cliente se
+          entere esperando en la puerta.
+        */}
+        {(estado === 'aceptado' || estado === 'en_preparacion' || estado === 'listo') && (
+          <Boton
+            variante="fantasma"
+            tamano="compacto"
+            onClick={onCambiarTiempo}
+            disabled={trabajando}
+            icono={<Clock className="h-3.5 w-3.5" aria-hidden />}
+          >
+            Cambiar el tiempo
           </Boton>
         )}
 

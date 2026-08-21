@@ -87,6 +87,38 @@ export function mensajePedidoConfirmado(orden: Orden, total: number): string {
   return sinPuntoDoble(`${saludo}\n\n${cuerpo}${tiempo}\n\n${cierre}`)
 }
 
+/**
+ * El tiempo cambió después de confirmarlo.
+ *
+ * Tres textos y no uno, porque las tres situaciones se le dicen distinto a la
+ * persona que está esperando: si se demora, se pide disculpas, que es lo mínimo
+ * cuando alguien ya organizó su hora alrededor de lo prometido; si sale antes
+ * hay que avisar igual —en un para llevar la persona puede salir ya— y ahí una
+ * disculpa sobra; y si el tiempo no cambió, el mensaje es solo para tranquilizar
+ * al que llamó a preguntar, sin inventar una demora que no hubo.
+ */
+export function mensajePedidoNuevoTiempo(orden: Orden, minutos: number): string {
+  const anterior = orden.minutosEstimados
+  const seDemora = anterior === undefined || minutos > anterior
+  const seAdelanta = anterior !== undefined && minutos < anterior
+
+  const saludo = `Hola ${nombreDelCliente(orden)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`
+  const cuerpo = seDemora
+    ? `Su pedido n.º ${orden.numero} se nos está demorando un poco más de lo que le dijimos.`
+    : seAdelanta
+      ? `Su pedido n.º ${orden.numero} va a estar antes de lo que le dijimos.`
+      : `Le contamos cómo va su pedido n.º ${orden.numero}.`
+  const tiempo =
+    orden.tipo === 'domicilio'
+      ? ` Se lo estamos llevando en unos ${minutos} minutos.`
+      : ` Puede pasar a recogerlo en unos ${minutos} minutos.`
+  const cierre = seDemora
+    ? 'Le pedimos disculpas por la espera. Cualquier cosa, respóndanos por aquí.'
+    : 'Cualquier cosa, respóndanos por aquí.'
+
+  return sinPuntoDoble(`${saludo}\n\n${cuerpo}${tiempo}\n\n${cierre}`)
+}
+
 /** El domicilio ya salio del local. */
 export function mensajePedidoEnCamino(orden: Orden): string {
   const saludo = `Hola ${nombreDelCliente(orden)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`

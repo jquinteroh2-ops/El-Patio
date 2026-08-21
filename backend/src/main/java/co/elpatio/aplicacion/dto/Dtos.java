@@ -273,6 +273,9 @@ public final class Dtos {
 
   public record PeticionAceptar(int minutosEstimados) {}
 
+  /** Solo el tiempo: se usa cuando el pedido ya fue aceptado y la cocina se atraso. */
+  public record PeticionTiempo(int minutosEstimados) {}
+
   public record PeticionDespacho(String repartidor) {}
 
   public record PeticionEstadoPedido(EstadoPedido estado) {}
