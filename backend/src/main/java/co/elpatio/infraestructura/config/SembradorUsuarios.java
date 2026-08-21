@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
  * las claves, en cada arranque y a proposito.
  */
 @Component
+@Order(10) // Antes que SembradorDatosDemo: las comandas necesitan mesero y cajero.
 public class SembradorUsuarios implements ApplicationRunner {
 
   private static final Logger registro = LoggerFactory.getLogger(SembradorUsuarios.class);

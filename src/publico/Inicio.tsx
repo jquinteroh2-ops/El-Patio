@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
-import { Clock, Flame, MapPin, MessageCircle, Sparkles, Wine } from 'lucide-react'
+import { Clock, Flame, MapPin, MessageCircle, Navigation, Sparkles, Wine } from 'lucide-react'
 import { RESTAURANTE } from '@/compartido/config'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
+import { enlaceMapaEmbebido, enlaceRutaHacia } from './ubicacion'
 import { Filete, Ornamento } from './Ornamento'
 
 const SALUDO = `Hola, quisiera reservar una mesa en ${RESTAURANTE.nombreCompleto}.`
@@ -143,17 +144,37 @@ export default function Inicio() {
               <br />
               {RESTAURANTE.ciudad}
             </p>
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                `${RESTAURANTE.nombreCompleto}, ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}`,
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-5 inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em] text-ambar-300 transition hover:text-ambar-400"
-            >
-              <MapPin className="h-4 w-4" aria-hidden />
-              Abrir en el mapa
-            </a>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {/*
+                Dos acciones y no una: quien esta en el sofa quiere ver donde
+                queda, y quien ya salio quiere que el telefono lo lleve. El
+                segundo enlace abre la aplicacion nativa con la ruta empezada
+                desde donde este, sin escribir el origen.
+              */}
+              <a
+                href={enlaceRutaHacia(
+                  RESTAURANTE.coordenadas.latitud,
+                  RESTAURANTE.coordenadas.longitud,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-toque items-center gap-2 rounded-full bg-ambar-500 px-6 text-sm font-semibold uppercase tracking-[0.16em] text-noche-950 transition hover:bg-ambar-400"
+              >
+                <Navigation className="h-4 w-4" aria-hidden />
+                Poner la ruta
+              </a>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  `${RESTAURANTE.nombreCompleto}, ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-toque items-center gap-2 rounded-full border border-crema-100/20 px-6 text-sm uppercase tracking-[0.16em] text-ambar-300 transition hover:border-ambar-400/60 hover:text-ambar-400"
+              >
+                <MapPin className="h-4 w-4" aria-hidden />
+                Abrir en Google Maps
+              </a>
+            </div>
           </div>
 
           <div>
@@ -174,6 +195,25 @@ export default function Inicio() {
               ))}
             </dl>
           </div>
+        </div>
+
+        {/*
+          El mapa va embebido sin llave de API: una llave en el paquete
+          compilado es una llave publica, y aqui solo hay que enseñar un punto
+          que nunca se mueve. `loading="lazy"` para que la portada no espere por
+          el a pintarse.
+        */}
+        <div className="mt-14 overflow-hidden rounded-3xl border border-crema-100/10">
+          <iframe
+            title={`Ubicación de ${RESTAURANTE.nombreCompleto} en ${RESTAURANTE.ciudad}`}
+            src={enlaceMapaEmbebido(
+              RESTAURANTE.coordenadas.latitud,
+              RESTAURANTE.coordenadas.longitud,
+            )}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="h-[320px] w-full border-0 sm:h-[420px]"
+          />
         </div>
       </section>
 

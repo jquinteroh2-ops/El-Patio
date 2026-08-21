@@ -21,6 +21,7 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Variables de entorno](#variables-de-entorno)
 - [Cómo crear usuarios](#cómo-crear-usuarios)
 - [Modo demostración](#modo-demostración)
+- [Aparecer en Google](#aparecer-en-google)
 - [Respaldos y restauración](#respaldos-y-restauración)
 - [Ubicación exacta de los domicilios](#ubicación-exacta-de-los-domicilios)
 - [Impresión en caja](#impresión-en-caja)
@@ -148,8 +149,8 @@ sus claves:
 | `ELPATIO_CORS_ORIGENES` | sí | `http://localhost:5173` | Dominios autorizados, separados por coma |
 | `ELPATIO_PERFIL` | no | `desarrollo` | `produccion` cambia los registros a JSON |
 | `ELPATIO_ZONA` | no | `America/Bogota` | Zona del día operativo y del turno |
-| `ELPATIO_LATITUD` | no | `10.3403` | Latitud del local, para medir distancias |
-| `ELPATIO_LONGITUD` | no | `-75.4136` | Longitud del local |
+| `ELPATIO_LATITUD` | no | `10.3390034` | Latitud del local, para medir distancias |
+| `ELPATIO_LONGITUD` | no | `-75.4225372` | Longitud del local |
 | `ELPATIO_JWT_MINUTOS` | no | `20` | Vida del token de acceso |
 | `ELPATIO_JWT_DIAS_REFRESCO` | no | `30` | Vida del token de refresco |
 | `ELPATIO_CLAVE_DEMO` | no | *(vacía)* | Enciende el [modo demostración](#modo-demostración) |
@@ -241,6 +242,30 @@ y el formulario se llena solo:
 | `cajero` | Cajero | Caja y cierre |
 | `admin` | Administrador | Panel completo |
 
+### Los datos de prueba
+
+La misma variable siembra un mes de servicio: ventas cerradas día por día,
+mesas abiertas con platos en distintos momentos, pedidos esperando en
+recepción, reservas y cierres de caja. Es lo que hace que el mapa, la pantalla
+de cocina y los reportes tengan algo que enseñar en vez de estar en cero.
+
+Cada fila sembrada lleva el identificador marcado con `demo_`, y de ahí sale la
+propiedad que importa: **al quitar la variable y redesplegar, esas filas se
+borran solas**. Lo que se haya creado durante la demostración —una comanda de
+verdad, un pedido real— no lleva la marca y no se toca.
+
+> Si la base ya traía pedidos de prueba de antes (los que se crearon probando
+> el sitio a mano), esos **no** llevan la marca y se quedan. Se ven como mesas
+> ocupadas hace horas y alertas de demora absurdas. Para dejar la base en
+> blanco antes de la demostración, con el salón cerrado:
+>
+> ```bash
+> psql "$DATABASE_URL" -c "delete from pagos; delete from ordenes; delete from reservas; delete from cierres_caja; update mesas set estado='libre', mesero_id=null, orden_activa_id=null;"
+> ```
+>
+> Esto sí borra ventas: úselo solo mientras el sistema no esté operando de
+> verdad.
+
 Detalles que conviene saber antes de usarlo:
 
 - **Las claves se reescriben en cada arranque.** Es a propósito: así el modo
@@ -264,6 +289,54 @@ compilación estrena caché y borra la anterior, así que un despliegue nuevo ll
 solo. Si un aparato quedó atascado en una versión anterior a este cambio, se
 suelta una única vez borrando los datos del sitio en el navegador de ese
 aparato, o abriéndolo en una pestaña de incógnito.
+
+---
+
+## Aparecer en Google
+
+Lo que trae el sitio de fábrica:
+
+| Qué | Dónde |
+|---|---|
+| Título y descripción por página | `src/compartido/seo.tsx` |
+| Ficha del negocio para Google (JSON-LD `Restaurant`) | `index.html` |
+| Dirección, coordenadas, teléfono y horario | `index.html` y `src/compartido/config.ts` |
+| Vista previa al pegar el enlace en WhatsApp (Open Graph) | `index.html` |
+| `robots.txt` | `public/robots.txt` |
+| Ícono del navegador | `public/favicon.svg` |
+
+Dos decisiones que conviene conocer:
+
+- **Las pantallas del personal no se indexan.** `/acceso`, `/comandera`,
+  `/cocina`, `/recepcion` y `/admin` salen con `noindex` y bloqueadas en
+  `robots.txt`. No es solo que no le sirvan a nadie desde un buscador: llevan
+  nombres de clientes, teléfonos y movimientos de caja.
+- **La URL canónica se arma con el dominio desde el que se abre el sitio.** Así
+  no hay un dominio escrito a mano que apunte al despliegue equivocado cuando se
+  cambie de dirección.
+
+### Lo que falta, y no es código
+
+Nada de lo anterior mete el restaurante en el mapa. Para eso hacen falta tres
+cosas que se hacen fuera del repositorio, y en este orden:
+
+1. **Reclamar la ficha de Google Business.** Es la que pone el local en el mapa
+   y en el recuadro lateral, y es de lejos lo que más pesa para «restaurante en
+   Turbaco». La ficha del local ya existe en Maps; hay que reclamarla desde
+   [business.google.com](https://business.google.com) con la dirección,
+   `+57 304 403 2936`, el horario y fotos del sitio.
+2. **Registrar el sitio en Google Search Console** y pedir la indexación de la
+   portada. Sin esto, Google llega solo, pero tarda semanas.
+3. **Un dominio propio.** Un `.up.railway.app` posiciona mal y se ve provisional
+   cuando alguien lo lee en un resultado. Un `.com.co` cuesta poco y se apunta a
+   Railway desde *Settings → Networking → Custom domain*.
+
+Cuando haya dominio, descomente la línea `Sitemap:` de `public/robots.txt` con
+la dirección real.
+
+> **Falta la imagen de vista previa.** Al pegar el enlace en WhatsApp aparece el
+> título y la descripción, pero sin foto: no hay `og:image`. Con una foto del
+> local en `public/` y dos líneas en `index.html` queda completo.
 
 ---
 
@@ -365,11 +438,11 @@ Recepción ve dos advertencias cuando corresponde:
   significa que el cliente estaba en otro sitio —el trabajo, por ejemplo— y la
   coordenada no es la de la entrega.
 
-> **Ponga las coordenadas reales del local.** `ELPATIO_LATITUD` y
-> `ELPATIO_LONGITUD` traen por defecto el centro de Turbaco, no la puerta del
-> restaurante. Sirven para que la cuenta de distancia no falle, no para navegar.
-> Se sacan abriendo Google Maps sobre el local y copiando el par de números que
-> aparece en la URL.
+> Las coordenadas del local ya son las reales: `10.3390034, -75.4225372`,
+> tomadas de la ficha del restaurante en Google Maps. Son el mismo par que usa
+> el mapa del sitio público (`RESTAURANTE.coordenadas` en `config.ts`). Si el
+> restaurante se muda, hay que cambiar los dos sitios: `ELPATIO_LATITUD` y
+> `ELPATIO_LONGITUD` en el backend, y `config.ts` en el frontend.
 
 La ubicación es dato personal preciso. Solo se captura con un toque explícito
 del cliente, solo se guarda en domicilios, y solo la ve quien despacha —que ya

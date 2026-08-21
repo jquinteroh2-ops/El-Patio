@@ -92,6 +92,29 @@ export function enlaceWaze(ubicacion: UbicacionEntrega): string {
 }
 
 /**
+ * La ruta desde donde esté quien lo abre.
+ *
+ * `dir/?api=1` es el esquema oficial de Google para indicaciones: en un celular
+ * abre la aplicación nativa y arranca la navegación con el origen puesto en la
+ * ubicación actual, sin que el cliente tenga que escribir de dónde sale.
+ */
+export function enlaceRutaHacia(latitud: number, longitud: number): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${latitud},${longitud}`
+}
+
+/**
+ * Mapa embebido, sin llave de API.
+ *
+ * `output=embed` es la forma de Google de servir un mapa dentro de un iframe
+ * sin credenciales. Se prefiere a montar la API de mapas porque una llave en el
+ * paquete compilado es una llave publica, y aqui solo hace falta enseñar un
+ * punto fijo que nunca cambia.
+ */
+export function enlaceMapaEmbebido(latitud: number, longitud: number): string {
+  return `https://www.google.com/maps?q=${latitud},${longitud}&z=17&hl=es&output=embed`
+}
+
+/**
  * Respaldo cuando no hay coordenadas: buscar la dirección escrita.
  *
  * Es notablemente menos preciso —depende de que la calle esté bien mapeada—,

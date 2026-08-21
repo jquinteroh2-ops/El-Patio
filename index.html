@@ -1,20 +1,118 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CO">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0C2317" />
+
+    <!--
+      Lo que se lee en el resultado de Google.
+
+      El titulo lleva la ciudad a proposito: nadie busca "El Patio" a secas, se
+      busca "restaurante en Turbaco". La descripcion cabe en los ~155 caracteres
+      que Google alcanza a mostrar antes de cortarla.
+    -->
+    <title>Restaurante El Patio · Cocina de fusión en Turbaco, Bolívar</title>
     <meta
       name="description"
-      content="Restaurante El Patio, Turbaco. Cocina de fusion, coctelería de autor y ambiente para ocasiones especiales."
+      content="Cocina de fusión y coctelería de autor en Turbaco, Bolívar. Reserve su mesa, vea la carta o pida a domicilio. Abierto de martes a domingo."
     />
-    <title>Restaurante El Patio · Turbaco</title>
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="author" content="Restaurante El Patio" />
+
+    <!-- Lo que se ve al pegar el enlace en WhatsApp, que es por donde de verdad
+         circula un restaurante en la Costa. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Restaurante El Patio" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content="Restaurante El Patio · Turbaco, Bolívar" />
+    <meta
+      property="og:description"
+      content="Cocina de fusión y coctelería de autor. Reserve su mesa, vea la carta o pida a domicilio."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Restaurante El Patio · Turbaco, Bolívar" />
+    <meta
+      name="twitter:description"
+      content="Cocina de fusión y coctelería de autor. Reserve su mesa, vea la carta o pida a domicilio."
+    />
+
+    <!-- Señales de local: viejas, pero varios buscadores y directorios todavía
+         las leen, y no estorban. -->
+    <meta name="geo.region" content="CO-BOL" />
+    <meta name="geo.placename" content="Turbaco, Bolívar" />
+    <meta name="geo.position" content="10.3390034;-75.4225372" />
+    <meta name="ICBM" content="10.3390034, -75.4225372" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      Ficha del negocio en el lenguaje que Google entiende sin adivinar.
+
+      Es lo que alimenta el recuadro lateral y el resultado con horario y
+      dirección. Va escrita aquí y no generada por la aplicación porque un robot
+      que no ejecuta JavaScript tiene que poder leerla igual.
+
+      Nota: esto no reemplaza el perfil de Google Business. Para aparecer en el
+      mapa hay que reclamar la ficha del local; esto la respalda.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Restaurant",
+        "name": "Restaurante El Patio",
+        "description": "Cocina de fusión y coctelería de autor en Turbaco, Bolívar.",
+        "servesCuisine": ["Cocina de fusión", "Cocina caribeña", "Coctelería de autor"],
+        "priceRange": "$$$",
+        "currenciesAccepted": "COP",
+        "paymentAccepted": "Efectivo, Tarjeta, Transferencia",
+        "telephone": "+573044032936",
+        "acceptsReservations": true,
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Calle 26 #31-2",
+          "addressLocality": "Turbaco",
+          "addressRegion": "Bolívar",
+          "postalCode": "131001",
+          "addressCountry": "CO"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 10.3390034,
+          "longitude": -75.4225372
+        },
+        "hasMap": "https://maps.app.goo.gl/k1YkwefhygcJTupKA",
+        "sameAs": ["https://www.instagram.com/elpatiorestaurante_turbaco"],
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Tuesday", "Wednesday", "Thursday"],
+            "opens": "12:00",
+            "closes": "22:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Friday", "Saturday"],
+            "opens": "12:00",
+            "closes": "23:59"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Sunday",
+            "opens": "12:00",
+            "closes": "21:00"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

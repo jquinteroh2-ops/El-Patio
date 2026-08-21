@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProveedorSesion } from '@/compartido/auth'
 import * as api from '@/compartido/mockApi'
+import { MetaDeRuta } from '@/compartido/seo'
 import { Cargando } from '@/componentes/ui/Cargando'
 import { GuardaRuta } from '@/componentes/GuardaRuta'
 
@@ -41,6 +42,8 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      {/* Ajusta titulo, descripcion y canonica segun la ruta. No pinta nada. */}
+      <MetaDeRuta />
       <ProveedorSesion>
         <ProveedorAvisos>
           <Routes>

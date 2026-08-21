@@ -8,11 +8,20 @@ export const RESTAURANTE = {
   descripcionCorta: 'Cocina de fusion y coctelería de autor',
   direccion: 'Calle 26 #31-2',
   ciudad: 'Turbaco, Bolívar',
-  /** Numero de contacto del restaurante. Cambiar por el real antes de publicar. */
-  telefono: '+57 300 000 0000',
-  /** Formato internacional sin signos, como lo exige wa.me */
-  whatsapp: '573000000000',
+  /** Numero de contacto del restaurante. */
+  telefono: '+57 304 403 2936',
+  /** El mismo numero en el formato que exige wa.me: sin signos ni espacios. */
+  whatsapp: '573044032936',
   instagram: 'elpatiorestaurante_turbaco',
+  /**
+   * La puerta del local, no el centro del pueblo.
+   *
+   * Sale de la ficha del restaurante en Google Maps. Se guarda aqui y no solo
+   * como texto porque una direccion escrita en Turbaco no siempre cae donde
+   * debe: el mapa y la ruta salen de estas coordenadas, que no dependen de que
+   * la calle este bien numerada.
+   */
+  coordenadas: { latitud: 10.3390034, longitud: -75.4225372 },
   horario: [
     { dias: 'Martes a Jueves', horas: '12:00 m. – 10:00 p. m.' },
     { dias: 'Viernes y Sábado', horas: '12:00 m. – 12:00 a. m.' },

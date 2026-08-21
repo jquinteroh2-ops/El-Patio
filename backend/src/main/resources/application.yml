@@ -65,13 +65,12 @@ elpatio:
 
   # Dónde queda el local, para medir qué tan lejos pidió el cliente.
   #
-  # Los valores por defecto son el centro de Turbaco, NO la puerta del
-  # restaurante: sirven para que la cuenta no falle, no para navegar. Ponga las
-  # coordenadas reales antes de salir a producción; se sacan abriendo Google
-  # Maps sobre el local y copiando el par que aparece en la URL.
+  # Es la puerta del restaurante, tomada de su ficha en Google Maps, y el mismo
+  # par que usa el mapa del sitio público en config.ts. Sigue siendo
+  # configurable por si el sistema se instala en otra sede.
   local:
-    latitud: ${ELPATIO_LATITUD:10.3403}
-    longitud: ${ELPATIO_LONGITUD:-75.4136}
+    latitud: ${ELPATIO_LATITUD:10.3390034}
+    longitud: ${ELPATIO_LONGITUD:-75.4225372}
 
   jwt:
     # Sin valor por defecto a propósito: si falta, el backend no arranca. Un
