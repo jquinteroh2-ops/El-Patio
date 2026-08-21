@@ -115,6 +115,19 @@ export function enlaceMapaEmbebido(latitud: number, longitud: number): string {
 }
 
 /**
+ * Mapa embebido de la dirección escrita, cuando no hay coordenada.
+ *
+ * Es el mismo `output=embed` de arriba pero con una búsqueda por texto en vez
+ * de un punto: enseña el sector, no la casa. Si la calle no está bien mapeada
+ * Google cae en el centro del pueblo, así que quien lo mire tiene que saber
+ * que es aproximado; el mapa que lo usa lo advierte al pie.
+ */
+export function enlaceMapaEmbebidoPorDireccion(direccion: string, barrio?: string): string {
+  const consulta = [direccion, barrio, RESTAURANTE.ciudad].filter(Boolean).join(', ')
+  return `https://www.google.com/maps?q=${encodeURIComponent(consulta)}&z=16&hl=es&output=embed`
+}
+
+/**
  * Respaldo cuando no hay coordenadas: buscar la dirección escrita.
  *
  * Es notablemente menos preciso —depende de que la calle esté bien mapeada—,

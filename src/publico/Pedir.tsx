@@ -13,6 +13,7 @@ import type {
   UbicacionEntrega,
   ZonaDomicilio,
 } from '@/compartido/tipos'
+import { MapaEntrega } from '@/componentes/MapaEntrega'
 import { useCarrito, precioLinea } from './carrito'
 import { PRECISION_ACEPTABLE_METROS, pedirUbicacion } from './ubicacion'
 import { Filete } from './Ornamento'
@@ -463,6 +464,23 @@ export default function Pedir() {
                         </span>
                       )}
                     </span>
+                  </p>
+
+                  {/*
+                    El mapa no es adorno. El GPS de un celular a veces cae en la
+                    casa de al lado o en la esquina, y el único que puede darse
+                    cuenta es el cliente, que sabe dónde vive. Que lo vea antes
+                    de enviar ahorra la llamada de después.
+                  */}
+                  <MapaEntrega
+                    ubicacion={ubicacion}
+                    titulo="El punto que va a compartir con el restaurante"
+                    alto="h-56"
+                    className="mt-3 rounded-sm border border-crema-100/10"
+                  />
+                  <p className="mt-2 text-xs leading-relaxed text-crema-100/50">
+                    ¿El punto cae donde va a recibir el pedido? Si no, tóquelo otra vez desde el
+                    lugar de entrega con «Volver a tomarla».
                   </p>
                   <div className="mt-3 flex gap-2">
                     <button

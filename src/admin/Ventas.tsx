@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Receipt } from 'lucide-react'
+import { MapPin, Receipt } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { VentaHistorica } from '@/compartido/mockApi'
 import { claveDia, formatoCOP, formatoFecha, formatoHora } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type { MetodoPago, Usuario } from '@/compartido/tipos'
+import { MapaEntrega } from '@/componentes/MapaEntrega'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { Vacio } from '@/componentes/ui/Vacio'
@@ -189,12 +190,45 @@ export default function Ventas() {
         onCerrar={() => setDetalle(null)}
       >
         {detalle && (
-          <Comprobante
-            pago={detalle.pago}
-            orden={detalle.orden}
-            mesaEtiqueta={detalle.mesaEtiqueta}
-            meseroNombre={detalle.meseroNombre}
-          />
+          <>
+            {/*
+              Un domicilio ya cobrado no dice a dónde fue: la dirección queda
+              guardada en la orden y quien revisa el día no la ve. Con el mapa
+              aquí, un «no me llegó» o una zona que salió cara se resuelven
+              mirando, sin ir a preguntarle a recepción.
+            */}
+            {detalle.orden.tipo === 'domicilio' && (
+              <div className="mb-3 rounded-2xl border border-noche-800 bg-noche-950 p-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-noche-400">
+                  Dónde se entregó
+                </p>
+                <p className="flex items-start gap-1.5 text-sm text-crema-100">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-noche-500" aria-hidden />
+                  <span>
+                    {detalle.orden.cliente?.direccion ?? 'Sin dirección anotada'}
+                    {detalle.orden.cliente?.barrio && (
+                      <span className="text-noche-400"> · {detalle.orden.cliente.barrio}</span>
+                    )}
+                  </span>
+                </p>
+                <MapaEntrega
+                  ubicacion={detalle.orden.ubicacion}
+                  direccion={detalle.orden.cliente?.direccion}
+                  barrio={detalle.orden.cliente?.barrio}
+                  alto="h-52"
+                  titulo={`Dónde se entregó el pedido n.º ${detalle.orden.numero}`}
+                  className="mt-2 rounded-xl border border-noche-800"
+                />
+              </div>
+            )}
+
+            <Comprobante
+              pago={detalle.pago}
+              orden={detalle.orden}
+              mesaEtiqueta={detalle.mesaEtiqueta}
+              meseroNombre={detalle.meseroNombre}
+            />
+          </>
         )}
       </HojaInferior>
     </div>

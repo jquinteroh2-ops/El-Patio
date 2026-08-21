@@ -6,6 +6,7 @@ import {
   Check,
   Crosshair,
   MapPin,
+  MapPinned,
   MessageCircle,
   Navigation,
   Phone,
@@ -37,11 +38,13 @@ import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
+import { MapaEntrega } from '@/componentes/MapaEntrega'
 import {
   PRECISION_ACEPTABLE_METROS,
   distanciaLegible,
   enlaceMapa,
   enlaceMapaPorDireccion,
+  enlaceRutaHacia,
   enlaceWaze,
 } from '@/publico/ubicacion'
 
@@ -406,13 +409,20 @@ export default function PantallaPedidos() {
         }
       >
         <div className="space-y-3">
+          {/*
+            Primero a dónde va, después quién sale: se mira el mapa para saber
+            si uno se sabe llegar y solo entonces se anota el nombre.
+          */}
           {despachando?.orden.tipo === 'domicilio' && (
-            <Campo
-              etiqueta="¿Quién lo lleva?"
-              value={repartidor}
-              onChange={(e) => setRepartidor(e.target.value)}
-              placeholder="Nombre del domiciliario"
-            />
+            <>
+              <EntregaDelDomicilio pedido={despachando} />
+              <Campo
+                etiqueta="¿Quién lo lleva?"
+                value={repartidor}
+                onChange={(e) => setRepartidor(e.target.value)}
+                placeholder="Nombre del domiciliario"
+              />
+            </>
           )}
           {despachando && (
             <EnlacesCliente
@@ -461,6 +471,10 @@ function TarjetaPedido({
   // El reloj corre desde que el cliente pidio, no desde que alguien lo miro.
   const espera = minutosDesde(orden.recibidoEn ?? orden.abiertaEn)
   const estado = orden.estadoPedido as EstadoPedido
+  // El mapa arranca abierto: es lo que se mira antes de mandar a alguien a la
+  // calle. Se puede plegar porque en una noche con la columna llena, diez mapas
+  // vivos a la vez pesan más de lo que ayudan.
+  const [mapaAbierto, setMapaAbierto] = useState(true)
 
   return (
     <article
@@ -510,11 +524,12 @@ function TarjetaPedido({
 
           {/*
             La dirección escrita manda; la coordenada es la ayuda. Si el cliente
-            la compartió se ofrece navegación directa, y si no, un enlace de
-            búsqueda armado con la dirección, que es menos preciso pero mejor
-            que salir a adivinar.
+            la compartió se ofrece navegación directa, y en cualquier caso el
+            mapa de abajo enseña dónde queda: con el punto exacto si lo hay, y
+            si no con la dirección escrita, que es menos preciso pero mejor que
+            salir a adivinar.
           */}
-          {orden.ubicacion ? (
+          {orden.ubicacion && (
             <div className="mt-1.5">
               <div className="flex gap-1.5">
                 <a
@@ -556,18 +571,35 @@ function TarjetaPedido({
                 </p>
               )}
             </div>
-          ) : (
-            orden.cliente?.direccion && (
-              <a
-                href={enlaceMapaPorDireccion(orden.cliente.direccion, orden.cliente.barrio)}
-                target="_blank"
-                rel="noreferrer"
+          )}
+
+          {/*
+            El mapa a la vista y no detrás de un enlace: en el mostrador se
+            confirma el sector de un vistazo, sin salirse de la pantalla ni
+            perder de vista el resto de los pedidos.
+          */}
+          {(orden.ubicacion || orden.cliente?.direccion) && (
+            <>
+              {mapaAbierto && (
+                <MapaEntrega
+                  ubicacion={orden.ubicacion}
+                  direccion={orden.cliente?.direccion}
+                  barrio={orden.cliente?.barrio}
+                  alto="h-40"
+                  titulo={`Dónde entregar el pedido n.º ${orden.numero}`}
+                  className="mt-2 rounded-xl border border-noche-700"
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => setMapaAbierto((abierto) => !abierto)}
+                aria-expanded={mapaAbierto}
                 className="mt-1.5 inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-noche-300 transition hover:border-ambar-500/50"
               >
-                <MapPin className="h-3 w-3" aria-hidden />
-                Buscar la dirección en el mapa
-              </a>
-            )
+                <MapPinned className="h-3 w-3" aria-hidden />
+                {mapaAbierto ? 'Ocultar el mapa' : 'Ver el mapa'}
+              </button>
+            </>
           )}
         </div>
       )}
@@ -744,6 +776,81 @@ function EnlacesCliente({ pedido, mensaje }: { pedido: PedidoEnRecepcion; mensaj
           <Phone className="h-4 w-4" aria-hidden />
           Llamar
         </a>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Lo que ve quien sale a repartir
+// ---------------------------------------------------------------------------
+
+/**
+ * A dónde va el domicilio, en mapa y con la navegación a un toque.
+ *
+ * Se enseña al despachar porque es el último momento en que alguien puede
+ * notar que la dirección no cuadra con el mapa, cuando la comida todavía está
+ * en el local y no dando vueltas por el barrio. Los botones abren Waze o
+ * Google Maps en el teléfono de quien sale, sin copiar direcciones a mano.
+ */
+function EntregaDelDomicilio({ pedido }: { pedido: PedidoEnRecepcion }) {
+  const { orden, zonaNombre } = pedido
+  const chip =
+    'inline-flex items-center gap-1.5 rounded-xl border border-noche-700 px-3 py-2 text-sm text-crema-100 transition hover:border-ambar-500/50'
+
+  return (
+    <div className="rounded-2xl border border-noche-700 bg-noche-850 p-3">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ambar-400">
+        Para quien lo lleva
+      </p>
+
+      <p className="flex items-start gap-1.5 text-sm text-crema-100">
+        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-noche-400" aria-hidden />
+        <span>
+          {orden.cliente?.direccion ?? 'Sin dirección anotada'}
+          {zonaNombre && <span className="text-noche-400"> · {zonaNombre}</span>}
+        </span>
+      </p>
+
+      <MapaEntrega
+        ubicacion={orden.ubicacion}
+        direccion={orden.cliente?.direccion}
+        barrio={orden.cliente?.barrio}
+        alto="h-52"
+        titulo={`Dónde entregar el pedido n.º ${orden.numero}`}
+        className="mt-2 rounded-xl border border-noche-700"
+      />
+
+      <div className="mt-2 flex flex-wrap gap-2">
+        {orden.ubicacion ? (
+          <>
+            <a href={enlaceWaze(orden.ubicacion)} target="_blank" rel="noreferrer" className={chip}>
+              <Navigation className="h-4 w-4" aria-hidden />
+              Abrir en Waze
+            </a>
+            <a
+              href={enlaceRutaHacia(orden.ubicacion.latitud, orden.ubicacion.longitud)}
+              target="_blank"
+              rel="noreferrer"
+              className={chip}
+            >
+              <Crosshair className="h-4 w-4" aria-hidden />
+              Cómo llegar
+            </a>
+          </>
+        ) : (
+          orden.cliente?.direccion && (
+            <a
+              href={enlaceMapaPorDireccion(orden.cliente.direccion, orden.cliente.barrio)}
+              target="_blank"
+              rel="noreferrer"
+              className={chip}
+            >
+              <MapPin className="h-4 w-4" aria-hidden />
+              Buscar la dirección en el mapa
+            </a>
+          )
+        )}
       </div>
     </div>
   )
