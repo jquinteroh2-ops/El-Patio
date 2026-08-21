@@ -1,0 +1,788 @@
+{
+  "fuente": "El Patio Menu 2026.pdf",
+  "nota": "Precios en pesos colombianos, tomados del PDF donde figuran en miles ($ 55 = 55000). `tiempoPreparacionMin` es un estimado por categoria y lo tiene que confirmar la cocina. `modificadores` va vacio: los platos que dicen «acompanante a su eleccion» necesitan que el restaurante defina la lista de acompanantes antes de cargarlos.",
+  "categorias": [
+    {
+      "id": "entradas",
+      "nombre": "Entradas",
+      "orden": 1
+    },
+    {
+      "id": "carnes",
+      "nombre": "Carnes",
+      "orden": 2
+    },
+    {
+      "id": "pescados-y-mariscos",
+      "nombre": "Pescados y mariscos",
+      "orden": 3
+    },
+    {
+      "id": "pastas-artesanales",
+      "nombre": "Pastas artesanales",
+      "orden": 4
+    },
+    {
+      "id": "aves",
+      "nombre": "Aves",
+      "orden": 5
+    },
+    {
+      "id": "arroces",
+      "nombre": "Arroces",
+      "orden": 6
+    },
+    {
+      "id": "picada",
+      "nombre": "Picada",
+      "orden": 7
+    },
+    {
+      "id": "express",
+      "nombre": "Express",
+      "orden": 8
+    },
+    {
+      "id": "infantil",
+      "nombre": "Infantil",
+      "orden": 9
+    },
+    {
+      "id": "postre",
+      "nombre": "Postre",
+      "orden": 10
+    }
+  ],
+  "items": [
+    {
+      "id": "entradas-trilogia-de-tacos",
+      "categoriaId": "entradas",
+      "nombre": "Trilogía de tacos",
+      "descripcion": "- Tortilla de maíz frita rellena de camarones en salsa de mayonesa asiática y limón criollo. - Tortilla de maíz frita rellena de dados de chicharrón al barril en salsa verde mexicana. - Tortilla de maíz frita rellena de morrillo en cocción lenta desmechado y salteado con vegetales, salsa de la casa, salsa de ajo, salsa soya y cilantro. *Acompañados de topping de encurtidos.",
+      "precio": 33000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "entradas-guindadera",
+      "categoriaId": "entradas",
+      "nombre": "Guindadera",
+      "descripcion": "Trilogía de empanada de maíz con tinta de calamar pulpo, amarrilla con ropa vieja y blanca con camarones acompañada de suero y picante de la casa.",
+      "precio": 27000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "entradas-barichara",
+      "categoriaId": "entradas",
+      "nombre": "Barichara",
+      "descripcion": "Arepa de maíz viche con queso parmesano, crema de leche, leche de coco y…. láminas de queso costeño acompañado de chicharrón al horno y queso crema con topping de papaya biche.",
+      "precio": 34000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "entradas-mafufo",
+      "categoriaId": "entradas",
+      "nombre": "Mafufo",
+      "descripcion": "Croquetas apanadas, elaboradas con plátano de los montes de maría… con salsa de bisque cremoso y topping de camarones con eneldo.",
+      "precio": 33000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "entradas-tiradito-de-pescado-blanco",
+      "categoriaId": "entradas",
+      "nombre": "Tiradito de pescado blanco",
+      "descripcion": "Pesca blanca marinada con sal y limón; cortada en laminas finas sobre un espejo de leche de tigre cremoso con plumas de cebolla roja, aguacate, ají amarillo, cilantro y tajín.",
+      "precio": 29000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "entradas-ceviche-el-patio",
+      "categoriaId": "entradas",
+      "nombre": "Ceviche el patio",
+      "descripcion": "Camarones y langostinos marinados con limón y ají-no-moto; sobre un espejo de leche de coco con notas de jengibre y topping de mango y manzana verde acompañados de chips morados de plátano.",
+      "precio": 36000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "entradas-trilogia-campesina",
+      "categoriaId": "entradas",
+      "nombre": "Trilogía campesina",
+      "descripcion": "Trilogía de envueltos hechos por manos campesinas entre los cuales tenemos bollo de maíz fresco, bollo de yuca con anís y bollo maíz blanco con coco acompañados, chorizo artesanal, chicharon, suero artesanal, guiso criollo y queso costeño",
+      "precio": 28000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "entradas-carimanola",
+      "categoriaId": "entradas",
+      "nombre": "Carimañola",
+      "descripcion": "Croquetas de yuca rellenas de queso costeño, suero, lomo fino salteado y topping de cebolla y cilantro.",
+      "precio": 28000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-lomo-silvestre",
+      "categoriaId": "carnes",
+      "nombre": "Lomo silvestre",
+      "descripcion": "Lomo marinado con sal gruesa y polvo de ají de los montes de maría; bañado en salsa de vino tinto con notas de mostaza antigua y ajo rostizado. Acompañado de risotto con hongos silvestres y quesos parmesanos.",
+      "precio": 67000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-lomo-rustico-angus",
+      "categoriaId": "carnes",
+      "nombre": "Lomo rústico (angus)",
+      "descripcion": "Lomo de res marinado con sal gruesa, ajo rostizado y adobo ahumado; con pure de tomate seco, queso crema y chimichurri acompañado de polenta con queso.",
+      "precio": 82000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-cowboy",
+      "categoriaId": "carnes",
+      "nombre": "Cowboy",
+      "descripcion": "Lomo de res con hueso corto. Marinado con sal gruesa, paprika, vino tinto, pasta de ajo cubierto con pure rústico de espinaca y queso parmesano; acompañado de papas crocantes con sal de queso.",
+      "precio": 96000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-costilla-de-cerdo",
+      "categoriaId": "carnes",
+      "nombre": "Costilla de cerdo",
+      "descripcion": "Costilla de cerdo marinada con finas hierbas, salsa hoisin y ostras preparadas en cocción lenta por más de 3 horas; acompañado de pure de maíz fresco y albahaca gratinado.",
+      "precio": 65000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-solomito-de-cerdo",
+      "categoriaId": "carnes",
+      "nombre": "Solomito de cerdo",
+      "descripcion": "Solomito de cerdo al horno con glaseado de maracuyá, acompañado de pure de papa fino con notas de nuez moscada y salsa del día.",
+      "precio": 57000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-tomahawk-de-cerdo-700g",
+      "categoriaId": "carnes",
+      "nombre": "Tomahawk de cerdo 700g",
+      "descripcion": "Lomo ancho de cerdo con hueso marinado con sal gruesa, paprika, vino tinto, pasta de ajo cubierto con pure rústico de espinaca y queso parmesano; acompañante de su elección.",
+      "precio": 71000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": [
+        {
+          "id": "mod_acompanante",
+          "nombre": "Acompañante",
+          "tipo": "seleccion_unica",
+          "obligatorio": true,
+          "opciones": [
+            {
+              "nombre": "Papa francesa",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Puré",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Ensalada",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Patacón",
+              "precioAdicional": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "carnes-filet-mignon",
+      "categoriaId": "carnes",
+      "nombre": "Filet mignon",
+      "descripcion": "Lomo fino marinado con sal gruesa y pasta de ajo albordado con tocineta crocante y preparado al horno acompañado de pure de papa fino con notas de nuez moscada bañado con salsa de chocolate avellanado y notas de ron y ensalada del día.",
+      "precio": 69000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-entrecot-angus-400g",
+      "categoriaId": "carnes",
+      "nombre": "Entrecot (angus) 400g",
+      "descripcion": "Corte de res grueso marinado con sal parrilla y adobo ahumado; preparado al horno; acompañante de su elección.",
+      "precio": 99000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": [
+        {
+          "id": "mod_acompanante",
+          "nombre": "Acompañante",
+          "tipo": "seleccion_unica",
+          "obligatorio": true,
+          "opciones": [
+            {
+              "nombre": "Papa francesa",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Puré",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Ensalada",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Patacón",
+              "precioAdicional": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "carnes-punta-gorda-350g",
+      "categoriaId": "carnes",
+      "nombre": "Punta gorda 350g",
+      "descripcion": "Brocheta res marinada con sal parrilla y pasta de ajo rostizado, acompañado con papas confitadas con cebolla caramelizada y ensalada césar.",
+      "precio": 55000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-pave-de-res-gratinado-280g",
+      "categoriaId": "carnes",
+      "nombre": "Pave de res gratinado 280g",
+      "descripcion": "Lomo fino de res a la parrilla marinado con sal gruesa y ajo, fundido en queso con salsa fileto acompañado de polenta.",
+      "precio": 69000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-churrasco-5-quesos-madurado-300g",
+      "categoriaId": "carnes",
+      "nombre": "Churrasco 5 quesos madurado 300g",
+      "descripcion": "Corte de lomo ancho de res, marinado con sal gruesa y pasta de ajo, bañado en una salsa de 5 quesos y gratinado, con un acompañante a su elección.",
+      "precio": 68000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": [
+        {
+          "id": "mod_acompanante",
+          "nombre": "Acompañante",
+          "tipo": "seleccion_unica",
+          "obligatorio": true,
+          "opciones": [
+            {
+              "nombre": "Papa francesa",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Puré",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Ensalada",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Patacón",
+              "precioAdicional": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "carnes-t-bone-steak-angus-600g",
+      "categoriaId": "carnes",
+      "nombre": "T-bone steak angus 600g",
+      "descripcion": "Corte de res de muy alta calidad, marinado con sal gruesa y pasta de ajo, asado a la parrilla, y con un acompañante a su elección.",
+      "precio": 130000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": [
+        {
+          "id": "mod_acompanante",
+          "nombre": "Acompañante",
+          "tipo": "seleccion_unica",
+          "obligatorio": true,
+          "opciones": [
+            {
+              "nombre": "Papa francesa",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Puré",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Ensalada",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Patacón",
+              "precioAdicional": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "carnes-posta-negra",
+      "categoriaId": "carnes",
+      "nombre": "Posta negra",
+      "descripcion": "Morrillo de res, preparado en una cocción lenta por 72 horas en melao de panela y Coca-Cola, servido sobre un risotto de coco acompañado con plátano en reducción de Kola.",
+      "precio": 55000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "carnes-lomo-patio-280g",
+      "categoriaId": "carnes",
+      "nombre": "Lomo patio 280g",
+      "descripcion": "Lomo fino, marinado con mostaza antigua, sal gruesa y semillas de amapola, servido con un topping de vegetales acevichado y tocineta crocante, y con un acompañante a su elección.",
+      "precio": 64000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": [
+        {
+          "id": "mod_acompanante",
+          "nombre": "Acompañante",
+          "tipo": "seleccion_unica",
+          "obligatorio": true,
+          "opciones": [
+            {
+              "nombre": "Papa francesa",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Puré",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Ensalada",
+              "precioAdicional": 0
+            },
+            {
+              "nombre": "Patacón",
+              "precioAdicional": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pescados-y-mariscos-pescado-encocado",
+      "categoriaId": "pescados-y-mariscos",
+      "nombre": "Pescado encocado",
+      "descripcion": "Pescado marinado con cítricos, frito en tempura de ahuyama acompañado de risotto de titote, crema de leche y topping criollo peruano y polvo de hoja de yuca.",
+      "precio": 57000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pescados-y-mariscos-langostinos-5-queso",
+      "categoriaId": "pescados-y-mariscos",
+      "nombre": "Langostinos 5 queso",
+      "descripcion": "Langostinos marinados con mostaza antigua, vino blanco, jengibre y sal; cocidos al horno con queso azul, tilsit ahumado, parmesano, camembert y brie acompañado de tostada de pan con hierbas y topping de frutos rojos silvestre.",
+      "precio": 77000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pescados-y-mariscos-pez-leon-a-la-marinera",
+      "categoriaId": "pescados-y-mariscos",
+      "nombre": "Pez león a la marinera",
+      "descripcion": "NO RECOMENDADO PARA MUJERES EMBARAZADAS Y NIÑOS. Pez león deshuesado marinado con sal, ajo rostizado y hierbas frescas. Cocido al vacío bañado con salsa de marisco cremoso con polvo de hoja de yuca; acompañado de patacones crocante.",
+      "precio": 74000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pescados-y-mariscos-caldereta",
+      "categoriaId": "pescados-y-mariscos",
+      "nombre": "Caldereta",
+      "descripcion": "Muelas de cangrejo, langosta, langostinos tigre, pescado del pacifico y anillos de calamar frito, bañados con reducción de bisque y brandy, acompañado patacones crocantes y aguacate.",
+      "precio": 82000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pescados-y-mariscos-trilogia-de-mariscos",
+      "categoriaId": "pescados-y-mariscos",
+      "nombre": "Trilogía de mariscos",
+      "descripcion": "- Langostinos con polenta. - Langosta con puré de papa trufado. - Muelas con arepa de yuca con queso.",
+      "precio": 82000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pescados-y-mariscos-salmon-campesino",
+      "categoriaId": "pescados-y-mariscos",
+      "nombre": "Salmón Campesino",
+      "descripcion": "Filete de salmón, servido con queso campesino asado a la parrilla, acompañado con papa confitada con cebolla caramelizada y salsa de eneldo cítrica.",
+      "precio": 68000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pastas-artesanales-pastas-jardinera",
+      "categoriaId": "pastas-artesanales",
+      "nombre": "Pastas jardinera",
+      "descripcion": "Pastas artesanales elaborada en casa. Cocidas con hierbas frescas y bañadas con salsa de albahaca y camarones acompañada de pan focaccia.",
+      "precio": 46000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pastas-artesanales-lomo-enredado",
+      "categoriaId": "pastas-artesanales",
+      "nombre": "Lomo enredado",
+      "descripcion": "Pasta pappardelle artesanales elaboradas en casa; bañadas en salsa de mariscos blanca trufada y lomo fino marinado con finas hierbas y paprika con chimichurri ahumado y cebolla puerro.",
+      "precio": 67000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pastas-artesanales-enredadera-de-marisco",
+      "categoriaId": "pastas-artesanales",
+      "nombre": "Enredadera de marisco",
+      "descripcion": "Pasta fetuccini artesanal elaborada en casa bañada en salsa de mariscos de vino blanco trufado con ajo rostizado y jengibre acompañado con focaccia de hierbas",
+      "precio": 58000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pastas-artesanales-pastas-fileto",
+      "categoriaId": "pastas-artesanales",
+      "nombre": "Pastas fileto",
+      "descripcion": "Pastas artesanales bañadas con salsa fileto con albahaca, milanesa de pollo y queso frito acompañado de pan focaccia de hierbas",
+      "precio": 47000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "pastas-artesanales-pastas-veloute-de-mariscos",
+      "categoriaId": "pastas-artesanales",
+      "nombre": "Pastas veloute de mariscos",
+      "descripcion": "Pasta artesanal elaborada en casa bañada con bisques y leche de coco, mariscos frescos marinados con pasta de ajo, jengibre y vino blanco acompañado con focaccia de hierbas.",
+      "precio": 58000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "aves-pollo-relleno",
+      "categoriaId": "aves",
+      "nombre": "Pollo relleno",
+      "descripcion": "Pechuga rellena de espinaca, queso crema, queso mozzarella y almendra acompañado de pure de ñame de los montes de maría, pure de berenjena del huerto y salsa criolla de la abuela bañada en salsa pesto rojo.",
+      "precio": 52000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "aves-pierna-pernil",
+      "categoriaId": "aves",
+      "nombre": "Pierna pernil",
+      "descripcion": "Pierna pernil de pollo deshuesado, marinado con sal gruesa, paprika y finas hierbas acompañada de papas criollas al limón en salsa de chimichurri de ahumada.",
+      "precio": 47000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "aves-suprema-al-horno",
+      "categoriaId": "aves",
+      "nombre": "Suprema al horno",
+      "descripcion": "Pechuga en corte mariposa marinada con pasta de ajo, finas hierbas preparada al horno acompañada de papa francesa con sal de queso",
+      "precio": 45000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "aves-medalla-de-pollo",
+      "categoriaId": "aves",
+      "nombre": "Medalla de pollo",
+      "descripcion": "Medallones de pollo marinados con sal y ajo rostizado con salsa fileto y topping de queso frito acompañado de papa crocante con sal de queso",
+      "precio": 54000,
+      "disponible": true,
+      "tiempoPreparacionMin": 20,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "arroces-arroz-caldoso-con-lomo",
+      "categoriaId": "arroces",
+      "nombre": "Arroz caldoso con lomo",
+      "descripcion": "Arroz preparado con pasta de ají amarrilo peruano, mariscos marinados con salsa soya, jengibre; salteado con maíz, arvejas, pimentones y cilantro acompañado de lomo fino frito.",
+      "precio": 66000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "arroces-arroz-costeno",
+      "categoriaId": "arroces",
+      "nombre": "Arroz costeño",
+      "descripcion": "Arroz titote salteado con aceite sésamo, pollo, lomo de res, camarones, chicharrón y queso frito costeño.",
+      "precio": 59000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "arroces-risotto-de-hongo",
+      "categoriaId": "arroces",
+      "nombre": "Risotto de hongo",
+      "descripcion": "Arroz risotto preparado con reducción de vino blanco salteado con hongos silvestre y velouté de champiñones a, queso costeño deshidratado, tocineta crocante y polvo de hoja de yuca.",
+      "precio": 47000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "arroces-risotto-marinera",
+      "categoriaId": "arroces",
+      "nombre": "Risotto marinera",
+      "descripcion": "Arroz risotto, con mix de mariscos marinados con pasta de ajo, salteados al wok con vino blanco, bisque, leche de coco y salsa fileto con polvo de queso costeño y limón.",
+      "precio": 58000,
+      "disponible": true,
+      "tiempoPreparacionMin": 25,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "picada-picada-mar-y-tierra-para-4-pax",
+      "categoriaId": "picada",
+      "nombre": "Picada mar y tierra para 4 pax",
+      "descripcion": "Camarones apanados, chicharrón de filete de tilapia calamares apanados marinados con mostaza antigua, vino blanco, pasta de ajo y zumo de jengibre, brochetas de pollo lomo fino y lomo de cerdo, marinados con pasta de ajo y adobo ahumado; costilla san Luis junior preparada en cocción lenta con salsa pasión, filete de pechuga, chorizo artesanal, acompañado de queso frito, trilogía de bollos, arepa de maíz biche, papa casco artesanal, empanadas, palitos de yuca con salsa de pepinillo, patacones",
+      "precio": 220000,
+      "disponible": true,
+      "tiempoPreparacionMin": 35,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "picada-picada-al-horno",
+      "categoriaId": "picada",
+      "nombre": "Picada al horno",
+      "descripcion": "Chuleton de cerdo, chorizo artesanal, bombon de pollo con bbq, acompañada de arepa de yuca rellena.",
+      "precio": 78000,
+      "disponible": true,
+      "tiempoPreparacionMin": 35,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "picada-mix-de-brochetas",
+      "categoriaId": "picada",
+      "nombre": "Mix de brochetas",
+      "descripcion": "Brocheta de lomo de res, filete de pechuga, lomo de cerdo y vegetales asado a la parrilla, acompañada de variedad de bollos, butifatta de la casa y salsa de ajo rostizado.",
+      "precio": 60000,
+      "disponible": true,
+      "tiempoPreparacionMin": 35,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "express-hamburguesa-de-res-y-espinaca",
+      "categoriaId": "express",
+      "nombre": "Hamburguesa de res y espinaca",
+      "descripcion": "Carne de res a la parrilla fundida con queso emmental, cebolla con panela, pure de espinaca, tomate verde en rodaja, salsa de pepinillo y pan artesanal de orégano acompañada de papas a la francesa crocante",
+      "precio": 36000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "express-hamburguesa-de-res-y-cebolla-caramelizada",
+      "categoriaId": "express",
+      "nombre": "Hamburguesa de res y cebolla caramelizada",
+      "descripcion": "Carne de res a la parrilla bañada de queso doble crema, cebolla caramelizada con corozo salsa de pepinillo con pan artesanal de la casa y salsa de pepinillo",
+      "precio": 34000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "infantil-dedos-de-pollo-rellenos-con-queso",
+      "categoriaId": "infantil",
+      "nombre": "Dedos de pollo rellenos con queso",
+      "descripcion": "Dedos de pollo rellenos de queso mozzarella acompañado de francesa crocante, salsa de tomate y pepinillos.",
+      "precio": 25000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "infantil-baby-beef-junior-180g",
+      "categoriaId": "infantil",
+      "nombre": "Baby beef junior 180g",
+      "descripcion": "Lomo fino a la plancha acompañado de papa crocante.",
+      "precio": 30000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "infantil-queso-mozzarella-apanados",
+      "categoriaId": "infantil",
+      "nombre": "Queso mozzarella apanados",
+      "descripcion": "Dedos de queso mozzarella apanados, acompañados de papas a la francesa crocante y salsa de la casa.",
+      "precio": 26000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "infantil-pechuguita-junior-180g",
+      "categoriaId": "infantil",
+      "nombre": "Pechuguita Junior 180g",
+      "descripcion": "Filete de pechuga a la plancha acompañado de papas a la francesa",
+      "precio": 27000,
+      "disponible": true,
+      "tiempoPreparacionMin": 15,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "postre-volcan-de-chocolate",
+      "categoriaId": "postre",
+      "nombre": "Volcán de chocolate",
+      "descripcion": "Postre horneado relleno con chocolate, acompañado con helado y salsa de frutos rojos y notas de ron.",
+      "precio": 29000,
+      "disponible": true,
+      "tiempoPreparacionMin": 10,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "postre-dulce-recuerdo",
+      "categoriaId": "postre",
+      "nombre": "Dulce recuerdo",
+      "descripcion": "Inspirado en la niñez, es un postre con arroz con leche, crema de leche, leche condensada, leche en polvo, bañado con frutos amarillos, merengue suizo flameado a la mesa.",
+      "precio": 27000,
+      "disponible": true,
+      "tiempoPreparacionMin": 10,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "postre-banana-caliente",
+      "categoriaId": "postre",
+      "nombre": "Banana caliente",
+      "descripcion": "Banano asado a la parrilla, bañado con salsa de Kola y leche, acompañado de helado de vainilla.",
+      "precio": 25000,
+      "disponible": true,
+      "tiempoPreparacionMin": 10,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "postre-brownie-de-red-velvet",
+      "categoriaId": "postre",
+      "nombre": "Brownie de red velvet",
+      "descripcion": "100% chocolate horneado con cheesecake y servido con helado de vainilla.",
+      "precio": 28000,
+      "disponible": true,
+      "tiempoPreparacionMin": 10,
+      "destino": "cocina",
+      "modificadores": []
+    },
+    {
+      "id": "postre-tartaleta-el-patio",
+      "categoriaId": "postre",
+      "nombre": "Tartaleta el patio",
+      "descripcion": "Tartaleta rellena con mousse de chocolate blanco y coco, acompañado de frutos amarillos y coco caramelizado.",
+      "precio": 30000,
+      "disponible": true,
+      "tiempoPreparacionMin": 10,
+      "destino": "cocina",
+      "modificadores": []
+    }
+  ]
+}
