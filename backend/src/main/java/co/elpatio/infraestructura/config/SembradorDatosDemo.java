@@ -582,7 +582,13 @@ public class SembradorDatosDemo implements ApplicationRunner {
 
     for (int i = 0; i < casillas.length; i++) {
       EstadoPedido casilla = casillas[i];
-      TipoPedido tipo = i % 3 == 2 ? TipoPedido.LLEVAR : TipoPedido.DOMICILIO;
+      // El despachado es siempre un domicilio: un para llevar no sale del local
+      // en una moto, se entrega en el mostrador. De paso es el que le da algo
+      // que enseñar a la pantalla del repartidor.
+      TipoPedido tipo =
+          casilla == EstadoPedido.DESPACHADO
+              ? TipoPedido.DOMICILIO
+              : i % 3 == 2 ? TipoPedido.LLEVAR : TipoPedido.DOMICILIO;
       Instant entrada = ahora.minusSeconds(60L * (3 + i * 7 + azar.nextInt(6)));
 
       Orden orden = new Orden();
@@ -606,7 +612,18 @@ public class SembradorDatosDemo implements ApplicationRunner {
         for (ItemOrden item : orden.getItems()) item.setEstado(itemSegunPedido(casilla));
         orden.sincronizarEstado();
       }
-      if (casilla == EstadoPedido.DESPACHADO) orden.setRepartidor(uno(REPARTIDORES));
+      // El despachado se le asigna al repartidor de demostracion cuando existe:
+      // asi su pantalla tiene algo que enseñar, que es de lo que se trata todo
+      // esto. Si no hay cuenta de reparto, queda un nombre suelto como antes.
+      if (casilla == EstadoPedido.DESPACHADO && tipo == TipoPedido.DOMICILIO) {
+        Usuario quienLoLleva = unoDeRol(Rol.REPARTIDOR);
+        if (quienLoLleva == null) {
+          orden.setRepartidor(uno(REPARTIDORES));
+        } else {
+          orden.setRepartidor(quienLoLleva.getNombre());
+          orden.setRepartidorId(quienLoLleva.getId());
+        }
+      }
 
       orden.setEstadoPedido(casilla);
       ordenes.guardar(orden);

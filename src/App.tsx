@@ -20,6 +20,7 @@ import SelectorProductos from '@/comandera/SelectorProductos'
 import CuentaMesa from '@/comandera/CuentaMesa'
 import PantallaCocina from '@/cocina/PantallaCocina'
 import PantallaPedidos from '@/recepcion/PantallaPedidos'
+import PantallaRepartidor from '@/repartidor/PantallaRepartidor'
 import LayoutAdmin from '@/admin/LayoutAdmin'
 import InicioAdmin from '@/admin/InicioAdmin'
 import Reservas from '@/admin/Reservas'
@@ -114,6 +115,16 @@ export default function App() {
               element={
                 <GuardaRuta roles={['recepcion', 'cajero', 'administrador']}>
                   <PantallaPedidos />
+                </GuardaRuta>
+              }
+            />
+
+            {/* ---------- La calle ---------- */}
+            <Route
+              path="/reparto"
+              element={
+                <GuardaRuta roles={['repartidor', 'administrador']}>
+                  <PantallaRepartidor />
                 </GuardaRuta>
               }
             />

@@ -16,7 +16,7 @@ import {
   X,
 } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
-import type { PedidoEnRecepcion } from '@/compartido/mockApi'
+import type { PedidoEnRecepcion, RepartidorDisponible } from '@/compartido/mockApi'
 import { ESTADOS_PEDIDO, MOTIVOS_RECHAZO, UMBRAL_ALERTA_PEDIDO } from '@/compartido/config'
 import { ETIQUETA_PEDIDO, TONO_PEDIDO, fondoEspera } from '@/compartido/estados'
 import { formatoCOP, formatoTelefono, minutosDesde, tiempoTranscurrido } from '@/compartido/formato'
@@ -76,6 +76,15 @@ export default function PantallaPedidos() {
   // Mantiene vivos los cronometros sin un intervalo por tarjeta.
   useReloj(15000)
 
+  // Quienes pueden llevarlo. Se escogen de una lista y no se escriben: un
+  // nombre tecleado con una letra de mas no le aparece a nadie en su pantalla.
+  const { datos: repartidores } = useSyncedState<RepartidorDisponible[]>(
+    () => api.listarRepartidores(),
+    [],
+    [],
+    ['usuarios', 'todo'],
+  )
+
   // Mismo aviso que cocina: reutilizado, no reescrito.
   const clavesNuevas = useMemo(
     () => pedidos.filter((p) => p.orden.estadoPedido === 'nuevo').map((p) => p.orden.id),
@@ -89,6 +98,7 @@ export default function PantallaPedidos() {
   const [motivo, setMotivo] = useState('')
   const [despachando, setDespachando] = useState<PedidoEnRecepcion | null>(null)
   const [repartidor, setRepartidor] = useState('')
+  const [repartidorId, setRepartidorId] = useState('')
   const [cambiandoTiempo, setCambiandoTiempo] = useState<PedidoEnRecepcion | null>(null)
   const [minutosNuevos, setMinutosNuevos] = useState(30)
   const [trabajando, setTrabajando] = useState(false)
@@ -158,12 +168,13 @@ export default function PantallaPedidos() {
   const confirmarDespacho = async () => {
     if (!despachando) return
     const ok = await conError(
-      () => api.despacharPedido(despachando.orden.id, repartidor.trim()),
+      () => api.despacharPedido(despachando.orden.id, repartidor.trim(), repartidorId || undefined),
       `Pedido n.º ${despachando.orden.numero} despachado`,
     )
     if (ok) {
       setDespachando(null)
       setRepartidor('')
+      setRepartidorId('')
     }
   }
 
@@ -294,6 +305,7 @@ export default function PantallaPedidos() {
                         onAvanzar={(estado) => void avanzar(pedido, estado)}
                         onDespachar={() => {
                           setRepartidor(pedido.orden.repartidor ?? '')
+                          setRepartidorId(pedido.orden.repartidorId ?? '')
                           setDespachando(pedido)
                         }}
                         onCambiarTiempo={() => abrirCambioTiempo(pedido)}
@@ -435,12 +447,63 @@ export default function PantallaPedidos() {
           {despachando?.orden.tipo === 'domicilio' && (
             <>
               <EntregaDelDomicilio pedido={despachando} />
-              <Campo
-                etiqueta="¿Quién lo lleva?"
-                value={repartidor}
-                onChange={(e) => setRepartidor(e.target.value)}
-                placeholder="Nombre del domiciliario"
-              />
+
+              {repartidores.length > 0 && (
+                <div>
+                  <p className="mb-2 text-sm text-noche-300">¿Quién lo lleva?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {repartidores.map((quien) => (
+                      <button
+                        key={quien.id}
+                        type="button"
+                        onClick={() => {
+                          setRepartidorId(quien.id)
+                          setRepartidor(quien.nombre)
+                        }}
+                        className={`min-h-toque rounded-xl border px-4 text-sm transition ${
+                          repartidorId === quien.id
+                            ? 'border-ambar-500 bg-ambar-500/10 text-ambar-300'
+                            : 'border-noche-700 bg-noche-850 text-crema-100 hover:border-noche-600'
+                        }`}
+                      >
+                        {quien.nombre}
+                      </button>
+                    ))}
+                    {/* El que no tiene cuenta tiene que poder llevar un pedido
+                        igual: el hijo del dueño, un motorizado de turno. */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRepartidorId('')
+                        setRepartidor('')
+                      }}
+                      className={`min-h-toque rounded-xl border px-4 text-sm transition ${
+                        repartidorId === ''
+                          ? 'border-ambar-500 bg-ambar-500/10 text-ambar-300'
+                          : 'border-noche-700 bg-noche-850 text-noche-300 hover:border-noche-600'
+                      }`}
+                    >
+                      Otra persona
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {repartidorId === '' && (
+                <Campo
+                  etiqueta={repartidores.length > 0 ? 'Nombre de quien lo lleva' : '¿Quién lo lleva?'}
+                  value={repartidor}
+                  onChange={(e) => setRepartidor(e.target.value)}
+                  placeholder="Nombre del domiciliario"
+                />
+              )}
+
+              {repartidorId !== '' && (
+                <p className="text-xs text-noche-500">
+                  {repartidor} lo ve en su pantalla apenas se despache, y confirma la entrega desde
+                  la puerta.
+                </p>
+              )}
             </>
           )}
           {despachando && (

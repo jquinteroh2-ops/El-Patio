@@ -38,6 +38,7 @@ const RUTA_POR_ROL: Record<Rol, string> = {
   mesero: '/comandera',
   cocina: '/cocina',
   recepcion: '/recepcion',
+  repartidor: '/reparto',
   cajero: '/admin',
   administrador: '/admin',
 }

@@ -14,13 +14,14 @@ interface Props {
   onGuardar: (usuario: Usuario) => void
 }
 
-const ROLES: Rol[] = ['mesero', 'cocina', 'recepcion', 'cajero', 'administrador']
+const ROLES: Rol[] = ['mesero', 'cocina', 'recepcion', 'repartidor', 'cajero', 'administrador']
 
 /** A donde entra cada rol. Se lee bajo el selector, para no elegir a ciegas. */
 const ALCANCE: Record<Rol, string> = {
   mesero: 'Comandera: abre mesas, toma y envía comandas.',
   cocina: 'Pantalla de cocina y barra: ve y despacha lo que está en producción.',
   recepcion: 'Recepción: domicilios y pedidos para llevar.',
+  repartidor: 'Sus entregas: los domicilios que salieron a su nombre, con mapa y confirmación.',
   cajero: 'Caja, cierre de turno y recepción.',
   administrador: 'Todo, y además carta, reportes, personal y anulaciones.',
 }

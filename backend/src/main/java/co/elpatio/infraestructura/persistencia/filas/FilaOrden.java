@@ -112,6 +112,9 @@ public class FilaOrden {
 
   private String repartidor;
 
+  @Column(name = "repartidor_id")
+  private String repartidorId;
+
   @Column(name = "motivo_rechazo")
   private String motivoRechazo;
 
@@ -166,6 +169,7 @@ public class FilaOrden {
         metodoPagoPrevisto == null ? null : MetodoPago.de(metodoPagoPrevisto));
     orden.setMinutosEstimados(minutosEstimados);
     orden.setRepartidor(repartidor);
+    orden.setRepartidorId(repartidorId);
     orden.setMotivoRechazo(motivoRechazo);
     orden.setRecibidoEn(recibidoEn);
     orden.setItems(new ArrayList<>(items.stream().map(FilaItemOrden::aDominio).toList()));
@@ -211,6 +215,7 @@ public class FilaOrden {
         orden.getMetodoPagoPrevisto() == null ? null : orden.getMetodoPagoPrevisto().codigo();
     this.minutosEstimados = orden.getMinutosEstimados();
     this.repartidor = orden.getRepartidor();
+    this.repartidorId = orden.getRepartidorId();
     this.motivoRechazo = orden.getMotivoRechazo();
     this.recibidoEn = orden.getRecibidoEn();
 

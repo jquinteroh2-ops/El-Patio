@@ -4,14 +4,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Los cuatro roles de la casa. El codigo en minuscula es el mismo literal que
- * usa el frontend en tipos.ts: si aqui cambia, alla deja de compilar.
+ * Los roles de la casa. El codigo en minuscula es el mismo literal que usa el
+ * frontend en tipos.ts: si aqui cambia, alla deja de compilar.
  */
 public enum Rol {
   MESERO,
   COCINA,
   /** Recibe y gestiona lo que entra por domicilio y para llevar. */
   RECEPCION,
+  /** Sale a la calle con el pedido y confirma la entrega desde su telefono. */
+  REPARTIDOR,
   CAJERO,
   ADMINISTRADOR;
 

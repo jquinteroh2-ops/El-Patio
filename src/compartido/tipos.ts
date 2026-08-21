@@ -7,7 +7,14 @@
 // Personal
 // ---------------------------------------------------------------------------
 
-export type Rol = 'mesero' | 'cocina' | 'recepcion' | 'cajero' | 'administrador'
+export type Rol =
+  | 'mesero'
+  | 'cocina'
+  | 'recepcion'
+  /** Sale a la calle con el pedido y confirma la entrega desde su telefono. */
+  | 'repartidor'
+  | 'cajero'
+  | 'administrador'
 
 export interface Usuario {
   id: string
@@ -273,6 +280,8 @@ export interface Orden {
   metodoPagoPrevisto?: MetodoPago
   minutosEstimados?: number
   repartidor?: string
+  /** Solo si quien lo lleva tiene cuenta: es lo que le muestra sus entregas. */
+  repartidorId?: string
   motivoRechazo?: string
   /** Cuando entro el pedido. El cronometro de recepcion cuenta desde aqui. */
   recibidoEn?: string

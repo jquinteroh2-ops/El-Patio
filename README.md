@@ -194,13 +194,14 @@ Cuatro comportamientos que conviene conocer:
   es corto y se teclea de pie y con prisa. El correo es por donde administración
   avisa un cambio de clave o de turno.
 
-### Los cinco roles
+### Los seis roles
 
 | Rol | Entra a | Para qué |
 |---|---|---|
 | `mesero` | `/comandera` | Abrir mesas, tomar y enviar comandas |
 | `cocina` | `/cocina` y `/cocina/bar` | Ver y despachar lo que está en producción |
 | `recepcion` | `/recepcion` | Recibir domicilios y para llevar |
+| `repartidor` | `/reparto` | Ver los domicilios que salieron a su nombre y confirmar la entrega |
 | `cajero` | `/admin`, `/recepcion`, cobrar | Caja, cierre y recepción |
 | `administrador` | todo | Además: carta, reportes, configuración, anulaciones |
 
@@ -240,6 +241,7 @@ y el formulario se llena solo:
 | `mesero2` | Mesero | Comandera |
 | `cocina` | Cocina | Pantalla de cocina |
 | `recepcion` | Recepción | Domicilios y para llevar |
+| `repartidor` | Repartidor | Sus entregas en la calle |
 | `cajero` | Cajero | Caja y cierre |
 | `admin` | Administrador | Panel completo |
 

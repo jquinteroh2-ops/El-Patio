@@ -641,11 +641,52 @@ export async function cambiarEstadoPedido(ordenId: string, estado: EstadoPedido)
   )
 }
 
-/** En domicilio se exige quien lo lleva: el cliente puede llamar a preguntar. */
-export async function despacharPedido(ordenId: string, repartidor: string): Promise<Orden> {
+/**
+ * En domicilio se exige quien lo lleva: el cliente puede llamar a preguntar.
+ *
+ * `repartidorId` solo viaja cuando quien lo lleva tiene cuenta en el sistema, y
+ * es lo que hace que el pedido le aparezca a el en su pantalla. Sin el, el
+ * nombre sigue saliendo en el papel y en el mensaje al cliente igual que antes:
+ * un motorizado de turno no deja de poder llevar un pedido por no tener usuario.
+ */
+export async function despacharPedido(
+  ordenId: string,
+  repartidor: string,
+  repartidorId?: string,
+): Promise<Orden> {
   return contra(() =>
-    pedir<Orden>(`/api/pedidos/${ordenId}/despachar`, { metodo: 'POST', cuerpo: { repartidor } }),
+    pedir<Orden>(`/api/pedidos/${ordenId}/despachar`, {
+      metodo: 'POST',
+      cuerpo: { repartidor, repartidorId },
+    }),
   )
+}
+
+/** Quienes pueden llevar un domicilio: las cuentas con rol de repartidor. */
+export async function listarRepartidores(): Promise<RepartidorDisponible[]> {
+  return contra(() => pedir<RepartidorDisponible[]>('/api/pedidos/repartidores'))
+}
+
+export interface RepartidorDisponible {
+  id: string
+  nombre: string
+}
+
+// --- La calle: lo que ve quien reparte -------------------------------------
+
+/**
+ * Los pedidos que este repartidor lleva encima ahora mismo.
+ *
+ * Quien pregunta sale del token y no de un parametro: son direcciones y
+ * telefonos de clientes, y cada quien ve los de las puertas a las que va.
+ */
+export async function listarMisEntregas(): Promise<PedidoEnRecepcion[]> {
+  return contra(() => pedir<PedidoEnRecepcion[]>('/api/pedidos/mios'))
+}
+
+/** El repartidor cierra la entrega en la puerta, y solo la suya. */
+export async function entregarMiPedido(ordenId: string): Promise<Orden> {
+  return contra(() => pedir<Orden>(`/api/pedidos/mios/${ordenId}/entregar`, { metodo: 'POST' }))
 }
 
 export async function entregarPedido(ordenId: string): Promise<Orden> {

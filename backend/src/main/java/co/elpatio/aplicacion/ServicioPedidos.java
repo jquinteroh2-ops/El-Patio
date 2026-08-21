@@ -14,6 +14,8 @@ import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
 import co.elpatio.dominio.pedido.UbicacionEntrega;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
+import co.elpatio.dominio.personal.Rol;
+import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Reloj;
@@ -43,6 +45,7 @@ public class ServicioPedidos {
   private final Repositorios.DeCarta carta;
   private final Repositorios.DeZonasDomicilio zonas;
   private final Repositorios.DeAjustes ajustes;
+  private final Repositorios.DeUsuarios usuarios;
   private final GeneradorIds ids;
   private final Reloj reloj;
   private final PublicadorEventos eventos;
@@ -56,6 +59,7 @@ public class ServicioPedidos {
       Repositorios.DeCarta carta,
       Repositorios.DeZonasDomicilio zonas,
       Repositorios.DeAjustes ajustes,
+      Repositorios.DeUsuarios usuarios,
       GeneradorIds ids,
       Reloj reloj,
       PublicadorEventos eventos,
@@ -67,6 +71,7 @@ public class ServicioPedidos {
     this.carta = carta;
     this.zonas = zonas;
     this.ajustes = ajustes;
+    this.usuarios = usuarios;
     this.ids = ids;
     this.reloj = reloj;
     this.eventos = eventos;
@@ -263,26 +268,75 @@ public class ServicioPedidos {
       if (!orden.esExterno()) continue;
       if (!incluirCerrados && orden.getEstadoPedido().esFinal()) continue;
 
-      String nombreZona =
-          todasLasZonas.stream()
-              .filter(z -> z.getId().equals(orden.getZonaDomicilioId()))
-              .map(ZonaDomicilio::getNombre)
-              .findFirst()
-              .orElse(null);
-
-      lista.add(
-          new Dtos.PedidoEnRecepcion(
-              orden,
-              orden.etiquetaCanal(),
-              nombreZona,
-              CalculadoraCuenta.calcular(orden, porcentajeInc),
-              orden.getUbicacion() == null
-                  ? null
-                  : orden.getUbicacion().metrosHasta(latitudLocal, longitudLocal)));
+      lista.add(comoPedido(orden, todasLasZonas, porcentajeInc));
     }
 
     lista.sort(Comparator.comparing(p -> p.orden().inicioDeEspera()));
     return lista;
+  }
+
+  /** Un pedido con todo lo que hace falta para pintarlo: zona, cuenta y distancia. */
+  private Dtos.PedidoEnRecepcion comoPedido(
+      Orden orden, List<ZonaDomicilio> todasLasZonas, int porcentajeInc) {
+    String nombreZona =
+        todasLasZonas.stream()
+            .filter(z -> z.getId().equals(orden.getZonaDomicilioId()))
+            .map(ZonaDomicilio::getNombre)
+            .findFirst()
+            .orElse(null);
+
+    return new Dtos.PedidoEnRecepcion(
+        orden,
+        orden.etiquetaCanal(),
+        nombreZona,
+        CalculadoraCuenta.calcular(orden, porcentajeInc),
+        orden.getUbicacion() == null
+            ? null
+            : orden.getUbicacion().metrosHasta(latitudLocal, longitudLocal));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reparto
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lo que ese repartidor lleva encima ahora mismo.
+   *
+   * Solo lo suyo y solo lo que sigue en la calle: en su telefono no tiene nada
+   * que hacer el pedido de otro ni el que ya entrego. Son datos de contacto de
+   * clientes, y cada uno ve los de las puertas a las que va a tocar.
+   */
+  @Transactional(readOnly = true)
+  public List<Dtos.PedidoEnRecepcion> misEntregas(String usuarioId) {
+    int porcentajeInc = ajustes.leer().getPorcentajeInc();
+    List<ZonaDomicilio> todasLasZonas = zonas.listar();
+
+    List<Dtos.PedidoEnRecepcion> lista = new ArrayList<>();
+    for (Orden orden : ordenes.activas()) {
+      if (!orden.esExterno()) continue;
+      if (orden.getEstadoPedido() != EstadoPedido.DESPACHADO) continue;
+      if (!orden.loLleva(usuarioId)) continue;
+      lista.add(comoPedido(orden, todasLasZonas, porcentajeInc));
+    }
+
+    lista.sort(Comparator.comparing(p -> p.orden().inicioDeEspera()));
+    return lista;
+  }
+
+  /**
+   * A quien se le puede entregar un pedido para que lo lleve.
+   *
+   * Solo el identificador y el nombre: recepcion necesita escoger a alguien de
+   * una lista, no conocer su correo ni su rol. Los inactivos no salen porque no
+   * estan trabajando.
+   */
+  @Transactional(readOnly = true)
+  public List<Dtos.RepartidorDisponible> repartidores() {
+    return usuarios.listar().stream()
+        .filter(u -> u.getRol() == Rol.REPARTIDOR && u.isActivo())
+        .map(u -> new Dtos.RepartidorDisponible(u.getId(), u.getNombre()))
+        .sorted(Comparator.comparing(Dtos.RepartidorDisponible::nombre))
+        .toList();
   }
 
   /**
@@ -353,13 +407,50 @@ public class ServicioPedidos {
     return guardada;
   }
 
+  /**
+   * El pedido sale del local.
+   *
+   * `repartidorId` es opcional porque a veces lo lleva alguien que no tiene
+   * cuenta. Cuando si la tiene, se comprueba que exista antes de anotarla: un
+   * identificador que no corresponde a nadie dejaria el pedido asignado a un
+   * fantasma y no aparecería en la pantalla de nadie. El nombre que sale en el
+   * papel y en el WhatsApp del cliente es el de la cuenta, para que los dos
+   * lados digan lo mismo.
+   */
   @Transactional
-  public Orden despachar(String ordenId, String repartidor) {
+  public Orden despachar(String ordenId, String repartidor, String repartidorId) {
     Orden orden = exigirPedido(ordenId);
-    orden.despachar(repartidor);
+
+    String nombre = repartidor;
+    if (repartidorId != null && !repartidorId.isBlank()) {
+      Usuario quien =
+          usuarios
+              .porId(repartidorId.trim())
+              .orElseThrow(() -> new NoEncontradoError("Ese repartidor ya no existe"));
+      nombre = quien.getNombre();
+    }
+
+    orden.despachar(nombre, repartidorId);
     Orden guardada = ordenes.guardar(orden);
     eventos.publicar(List.of("pedidos", "ordenes"));
     return guardada;
+  }
+
+  /**
+   * El repartidor confirma en la puerta.
+   *
+   * Es la misma operacion que hace recepcion, con una comprobacion mas: que el
+   * pedido sea suyo. Sin ella, cualquiera con la cuenta de reparto podria cerrar
+   * la entrega de otro desde su telefono, y el pedido quedaria dado por entregado
+   * sin que nadie haya tocado esa puerta.
+   */
+  @Transactional
+  public Orden entregarComoRepartidor(String ordenId, String usuarioId) {
+    Orden orden = exigirPedido(ordenId);
+    if (!orden.loLleva(usuarioId)) {
+      throw new ReglaDeNegocioError("Ese pedido no está a su nombre");
+    }
+    return entregar(ordenId);
   }
 
   /**

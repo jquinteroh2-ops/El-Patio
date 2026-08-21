@@ -63,6 +63,7 @@ export const NOMBRE_ROL: Record<Rol, string> = {
   mesero: 'Mesero',
   cocina: 'Cocina',
   recepcion: 'Recepción',
+  repartidor: 'Repartidor',
   cajero: 'Cajero',
   administrador: 'Administrador',
 }

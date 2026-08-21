@@ -37,8 +37,8 @@ public class ModoDemostracion {
   public record Cuenta(String usuario, String nombre, Rol rol, String destino) {}
 
   /**
-   * Los cinco roles de la casa, con dos meseros porque pasarse una mesa de uno
-   * a otro es justo lo que hay que poder enseñar.
+   * Los seis roles de la casa, con dos meseros porque pasarse una mesa de uno a
+   * otro es justo lo que hay que poder enseñar.
    */
   private static final List<Cuenta> CUENTAS =
       List.of(
@@ -46,6 +46,7 @@ public class ModoDemostracion {
           new Cuenta("mesero2", "Deivis Cabarcas", Rol.MESERO, "Comandera"),
           new Cuenta("cocina", "Jhon Alexis Padilla", Rol.COCINA, "Pantalla de cocina"),
           new Cuenta("recepcion", "Yuranis Mercado", Rol.RECEPCION, "Domicilios y para llevar"),
+          new Cuenta("repartidor", "Wilfrido Baena", Rol.REPARTIDOR, "Sus entregas en la calle"),
           new Cuenta("cajero", "Katherine Villalba", Rol.CAJERO, "Caja y cierre"),
           new Cuenta("admin", "Álvaro Restrepo Díaz", Rol.ADMINISTRADOR, "Panel completo"));
 

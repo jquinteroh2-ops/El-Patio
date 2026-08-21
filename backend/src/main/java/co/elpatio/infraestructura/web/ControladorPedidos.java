@@ -115,7 +115,41 @@ public class ControladorPedidos {
   @PostMapping("/{ordenId}/despachar")
   @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public Orden despachar(@PathVariable String ordenId, @RequestBody Dtos.PeticionDespacho peticion) {
-    return servicio.despachar(ordenId, peticion.repartidor());
+    return servicio.despachar(ordenId, peticion.repartidor(), peticion.repartidorId());
+  }
+
+  /** Para llenar la lista de «¿quién lo lleva?» sin exponer el resto del personal. */
+  @GetMapping("/repartidores")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
+  public List<Dtos.RepartidorDisponible> repartidores() {
+    return servicio.repartidores();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reparto
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lo que el repartidor lleva encima ahora mismo.
+   *
+   * Sale del token y no de un parametro: si el identificador viajara en la URL,
+   * cualquiera podria pedir la lista de otro, y son direcciones y telefonos de
+   * clientes.
+   */
+  @GetMapping("/mios")
+  @PreAuthorize("hasAnyRole('REPARTIDOR', 'ADMINISTRADOR')")
+  public List<Dtos.PedidoEnRecepcion> misEntregas(
+      @AuthenticationPrincipal ServicioTokens.Credencial credencial) {
+    return servicio.misEntregas(credencial.usuarioId());
+  }
+
+  /** El repartidor cierra la entrega en la puerta, y solo la suya. */
+  @PostMapping("/mios/{ordenId}/entregar")
+  @PreAuthorize("hasAnyRole('REPARTIDOR', 'ADMINISTRADOR')")
+  public Orden entregarLoMio(
+      @PathVariable String ordenId,
+      @AuthenticationPrincipal ServicioTokens.Credencial credencial) {
+    return servicio.entregarComoRepartidor(ordenId, credencial.usuarioId());
   }
 
   @PostMapping("/{ordenId}/entregar")

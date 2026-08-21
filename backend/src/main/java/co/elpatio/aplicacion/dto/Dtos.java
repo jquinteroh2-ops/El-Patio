@@ -276,7 +276,14 @@ public final class Dtos {
   /** Solo el tiempo: se usa cuando el pedido ya fue aceptado y la cocina se atraso. */
   public record PeticionTiempo(int minutosEstimados) {}
 
-  public record PeticionDespacho(String repartidor) {}
+  /**
+   * Quien lleva el pedido. El nombre siempre; el identificador solo cuando esa
+   * persona tiene cuenta, que es lo que hace que el pedido le aparezca a ella.
+   */
+  public record PeticionDespacho(String repartidor, String repartidorId) {}
+
+  /** Alguien a quien se le puede dar un domicilio para que lo lleve. */
+  public record RepartidorDisponible(String id, String nombre) {}
 
   public record PeticionEstadoPedido(EstadoPedido estado) {}
 

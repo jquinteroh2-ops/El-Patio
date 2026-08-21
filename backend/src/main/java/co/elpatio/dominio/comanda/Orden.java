@@ -80,6 +80,16 @@ public class Orden {
 
   private Integer minutosEstimados;
   private String repartidor;
+
+  /**
+   * Quien lo lleva, cuando es una cuenta del sistema.
+   *
+   * Opcional a proposito: el nombre de arriba es el que sale en el papel y en
+   * el mensaje al cliente, y a veces lo lleva alguien que no tiene usuario. El
+   * identificador solo aparece cuando si lo tiene, y es lo que deja que su
+   * pantalla filtre por el sin adivinar por el nombre.
+   */
+  private String repartidorId;
   private String motivoRechazo;
 
   /**
@@ -458,13 +468,20 @@ public class Orden {
    * Sale del local. En domicilio se exige quien lo lleva: si el cliente llama
    * porque no le ha llegado, alguien tiene que poder decir con quien salio.
    */
-  public void despachar(String quienLoLleva) {
+  public void despachar(String quienLoLleva, String idDeQuienLoLleva) {
     exigirExterno();
     if (tipo == TipoPedido.DOMICILIO && (quienLoLleva == null || quienLoLleva.isBlank())) {
       throw new ReglaDeNegocioError("Anote quién lleva el domicilio antes de despacharlo");
     }
     cambiarEstadoPedido(EstadoPedido.DESPACHADO);
     repartidor = quienLoLleva == null || quienLoLleva.isBlank() ? null : quienLoLleva.trim();
+    repartidorId =
+        idDeQuienLoLleva == null || idDeQuienLoLleva.isBlank() ? null : idDeQuienLoLleva.trim();
+  }
+
+  /** Si este pedido lo lleva esa persona. Un pedido sin dueño no es de nadie. */
+  public boolean loLleva(String usuarioId) {
+    return repartidorId != null && repartidorId.equals(usuarioId);
   }
 
   /** Minutos que lleva esperando el cliente desde que hizo el pedido. */
@@ -521,6 +538,8 @@ public class Orden {
   public void setMinutosEstimados(Integer minutosEstimados) { this.minutosEstimados = minutosEstimados; }
   public String getRepartidor() { return repartidor; }
   public void setRepartidor(String repartidor) { this.repartidor = repartidor; }
+  public String getRepartidorId() { return repartidorId; }
+  public void setRepartidorId(String repartidorId) { this.repartidorId = repartidorId; }
   public String getMotivoRechazo() { return motivoRechazo; }
   public void setMotivoRechazo(String motivoRechazo) { this.motivoRechazo = motivoRechazo; }
   public Instant getRecibidoEn() { return recibidoEn; }
