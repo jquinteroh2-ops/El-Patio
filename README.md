@@ -22,6 +22,7 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Cómo crear usuarios](#cómo-crear-usuarios)
 - [Modo demostración](#modo-demostración)
 - [Aparecer en Google](#aparecer-en-google)
+- [Por qué las pantallas no hay que recargarlas](#por-qué-las-pantallas-no-hay-que-recargarlas)
 - [Respaldos y restauración](#respaldos-y-restauración)
 - [Ubicación exacta de los domicilios](#ubicación-exacta-de-los-domicilios)
 - [Impresión en caja](#impresión-en-caja)
@@ -337,6 +338,36 @@ la dirección real.
 > **Falta la imagen de vista previa.** Al pegar el enlace en WhatsApp aparece el
 > título y la descripción, pero sin foto: no hay `og:image`. Con una foto del
 > local en `public/` y dos líneas en `index.html` queda completo.
+
+---
+
+## Por qué las pantallas no hay que recargarlas
+
+El backend avisa por WebSocket cada vez que algo cambia, y la pantalla que
+escucha ese aviso vuelve a pedir los datos. Por el canal no viaja nada del
+negocio: solo el aviso de que hubo un movimiento y en qué área.
+
+Ese canal es lo primero que se cae en un restaurante. Un punto de acceso que se
+reinicia, un proxy que corta lo que lleva rato callado, un celular que suspende
+la pestaña al bloquear la pantalla: el socket se muere sin avisar y **la
+pantalla se queda congelada en la foto que tenía al abrirse**, sin ninguna señal
+de que ya no es la verdad. La única salida era recargar a mano.
+
+Por eso hay una red de seguridad debajo, en `useSyncedState`:
+
+| Situación | Qué pasa |
+|---|---|
+| El canal está vivo | El aviso llega al instante. Además se revisa cada 60 s por si se perdió alguno |
+| El canal está caído | Se vuelve a consultar cada 12 s |
+| Se vuelve a la pestaña, o el aparato recupera el WiFi | Se consulta de inmediato |
+
+En la práctica: **nunca hace falta recargar**, ni siquiera con el canal muerto.
+Lo peor que puede pasar es que el cambio tarde unos segundos más en verse.
+
+Si el canal no levanta, la consola del navegador lo dice: `se cayó el canal de
+tiempo real`. Cuando eso pase en un despliegue, lo que hay que revisar es que
+`ELPATIO_CORS_ORIGENES` traiga el dominio exacto del frontend —con `https://` y
+sin barra final—, porque el mismo valor autoriza el WebSocket.
 
 ---
 

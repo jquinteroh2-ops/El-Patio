@@ -1,5 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { suscribir, type EventoSync } from './almacen'
+import { canalConectado, suscribir, type EventoSync } from './almacen'
+
+/**
+ * Red de seguridad: cada cuanto se vuelve a preguntar por si acaso.
+ *
+ * El canal de tiempo real es quien avisa, y mientras esta vivo esto casi nunca
+ * dispara nada. Existe porque un socket puede morirse sin avisar —un punto de
+ * acceso que se reinicia, un proxy que corta lo que lleva rato callado, un
+ * celular que suspende la pestana al bloquear la pantalla— y hasta ahora eso
+ * dejaba la pantalla congelada en la foto que tenia al abrirse, sin ninguna
+ * senal de que ya no era la verdad. La unica salida era recargar a mano.
+ */
+const REVISION_CON_CANAL_MS = 60000
+const REVISION_SIN_CANAL_MS = 12000
+
+/** Margen para que despertar la pantalla no dispare tres consultas seguidas. */
+const MARGEN_DESPERTAR_MS = 3000
 
 interface Resultado<T> {
   datos: T
@@ -36,12 +52,15 @@ export function useSyncedState<T>(
 
   // Evita que una respuesta lenta pise a una mas reciente.
   const peticion = useRef(0)
+  /** Cuando se consulto por ultima vez, para no repetir de mas al despertar. */
+  const ultimaConsulta = useRef(0)
   const montado = useRef(true)
   const consultarRef = useRef(consultar)
   consultarRef.current = consultar
 
   const ejecutar = useCallback(async () => {
     const id = ++peticion.current
+    ultimaConsulta.current = Date.now()
     try {
       const resultado = await consultarRef.current()
       if (!montado.current || id !== peticion.current) return
@@ -78,6 +97,43 @@ export function useSyncedState<T>(
     return cancelar
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ejecutar, observar ? observar.join('|') : ''])
+
+  // La red de seguridad. Todo lo de aqui abajo es lo que hace que la pantalla
+  // este al dia sin que nadie la recargue, tambien cuando el canal fallo.
+  useEffect(() => {
+    const revisar = () => {
+      const espera = canalConectado() ? REVISION_CON_CANAL_MS : REVISION_SIN_CANAL_MS
+      if (Date.now() - ultimaConsulta.current >= espera) void ejecutar()
+    }
+
+    // Se mira seguido y se consulta poco: el reloj corre cada pocos segundos,
+    // pero solo dispara cuando de verdad ya paso el tiempo que toca.
+    const reloj = window.setInterval(revisar, REVISION_SIN_CANAL_MS)
+
+    /**
+     * Volver a la pantalla es el momento en que los datos viejos se notan.
+     *
+     * Un celular bloqueado suspende la pestana y con ella el socket: al
+     * desbloquearlo, la comandera ensena el salon de hace media hora. Esto lo
+     * corrige antes de que al mesero le de tiempo de leerlo mal.
+     */
+    const alDespertar = () => {
+      if (document.visibilityState !== 'visible') return
+      if (Date.now() - ultimaConsulta.current < MARGEN_DESPERTAR_MS) return
+      void ejecutar()
+    }
+
+    document.addEventListener('visibilitychange', alDespertar)
+    window.addEventListener('focus', alDespertar)
+    window.addEventListener('online', alDespertar)
+
+    return () => {
+      window.clearInterval(reloj)
+      document.removeEventListener('visibilitychange', alDespertar)
+      window.removeEventListener('focus', alDespertar)
+      window.removeEventListener('online', alDespertar)
+    }
+  }, [ejecutar])
 
   return { datos, cargando, error, refrescar: ejecutar, sello }
 }

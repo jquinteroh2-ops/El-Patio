@@ -87,6 +87,10 @@ function crearCliente(): Client {
     onWebSocketClose: () => {
       if (!conectado) return
       conectado = false
+      // Queda escrito en la consola a proposito: si el canal no levanta en un
+      // despliegue, esta es la unica pista de que las pantallas se estan
+      // manteniendo al dia por consulta y no por aviso.
+      console.warn('[almacen] se cayó el canal de tiempo real; reintentando')
       // 'canal' no lo observa ninguna pantalla de datos: solo despierta al
       // indicador de conexion para que el mesero vea que perdio la senal.
       avisarOyentes({ version: Date.now(), origen: 'desconexion', cambios: ['canal'] })
