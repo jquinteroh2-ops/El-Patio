@@ -104,7 +104,7 @@ function TarjetaEntrega({ pedido, trabajando, onEntregar }: PropsTarjeta) {
   const espera = minutosDesde(orden.recibidoEn ?? orden.abiertaEn)
 
   const chip =
-    'inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-noche-700 bg-noche-850 px-3 py-3 text-sm text-crema-100 transition hover:border-ambar-500/50'
+    'inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-noche-700 bg-noche-850 px-3 py-3 text-sm text-crema-100 transition hover:border-oro-500/50'
 
   return (
     <article className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
@@ -113,11 +113,11 @@ function TarjetaEntrega({ pedido, trabajando, onEntregar }: PropsTarjeta) {
           <p className="truncate text-lg font-semibold text-crema-100">{etiqueta}</p>
           <p className="truncate text-sm text-noche-300">{orden.cliente?.nombre}</p>
         </div>
-        <Insignia tono="ambar">{espera} min</Insignia>
+        <Insignia tono="oro">{espera} min</Insignia>
       </header>
 
       <p className="mb-2 flex items-start gap-1.5 text-sm text-crema-100">
-        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-oro-400" aria-hidden />
         <span>
           {orden.cliente?.direccion ?? 'Sin dirección anotada'}
           {zonaNombre && <span className="text-noche-400"> · {zonaNombre}</span>}

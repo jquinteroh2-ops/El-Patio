@@ -115,7 +115,7 @@ export default function MapaMesas() {
               onClick={() => setZonaActiva(zona)}
               className={`min-h-[38px] shrink-0 rounded-xl border px-3.5 text-sm font-medium transition ${
                 zonaActiva === zona
-                  ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                  ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                   : 'border-noche-700 bg-noche-900 text-noche-300 hover:bg-noche-800'
               }`}
             >
@@ -177,7 +177,7 @@ export default function MapaMesas() {
                     onClick={() => setComensales(n)}
                     className={`h-toque w-12 rounded-xl border text-base font-semibold transition ${
                       comensales === n
-                        ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                        ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                         : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
                     }`}
                   >

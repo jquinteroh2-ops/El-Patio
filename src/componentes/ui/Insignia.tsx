@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-type Tono = 'neutro' | 'listo' | 'proceso' | 'demorado' | 'reservada' | 'ambar'
+type Tono = 'neutro' | 'listo' | 'proceso' | 'demorado' | 'reservada' | 'oro'
 
 const TONOS: Record<Tono, string> = {
   neutro: 'bg-noche-800 text-noche-300 border-noche-700',
@@ -8,7 +8,7 @@ const TONOS: Record<Tono, string> = {
   proceso: 'bg-estado-proceso/15 text-estado-proceso border-estado-proceso/35',
   demorado: 'bg-estado-demorado/15 text-estado-demorado border-estado-demorado/35',
   reservada: 'bg-estado-reservada/15 text-estado-reservada border-estado-reservada/35',
-  ambar: 'bg-ambar-500/15 text-ambar-300 border-ambar-500/35',
+  oro: 'bg-oro-500/15 text-oro-300 border-oro-500/35',
 }
 
 interface Props {

@@ -13,7 +13,7 @@
  * la vista, y parece que la pagina estuviera vacia. Va primero en el atributo
  * para que cualquier clase que llegue lo pueda pisar.
  */
-const MEDIDA = 'h-14 w-24 text-ambar-400/60'
+const MEDIDA = 'h-14 w-24 text-oro-400/60'
 
 export function Ornamento({ className = '' }: { className?: string }) {
   return (

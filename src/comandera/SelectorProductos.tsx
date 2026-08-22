@@ -172,7 +172,7 @@ export default function SelectorProductos() {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder={`Buscar en la carta · ${etiquetaMesa}`}
-              className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 pl-9 pr-9 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+              className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 pl-9 pr-9 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
             />
             {busqueda && (
               <button
@@ -196,7 +196,7 @@ export default function SelectorProductos() {
                 onClick={() => setCategoriaActiva(categoria.id)}
                 className={`min-h-[40px] shrink-0 rounded-xl border px-3.5 text-sm font-medium transition ${
                   categoriaVisible === categoria.id
-                    ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                    ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                     : 'border-noche-700 bg-noche-900 text-noche-300 hover:bg-noche-800'
                 }`}
               >
@@ -226,9 +226,9 @@ export default function SelectorProductos() {
                     !item.disponible
                       ? 'border-noche-800 bg-noche-900/50 opacity-60'
                       : recienTocado
-                        ? 'border-ambar-400 bg-ambar-500/15'
+                        ? 'border-oro-400 bg-oro-500/15'
                         : cantidad > 0
-                          ? 'border-ambar-500/50 bg-noche-850'
+                          ? 'border-oro-500/50 bg-noche-850'
                           : 'border-noche-700 bg-noche-900 hover:bg-noche-850'
                   }`}
                 >
@@ -236,7 +236,7 @@ export default function SelectorProductos() {
                     {item.nombre}
                   </span>
                   <span className="mt-2 flex items-end justify-between gap-2">
-                    <span className="text-sm font-semibold tabular-nums text-ambar-300">
+                    <span className="text-sm font-semibold tabular-nums text-oro-300">
                       {formatoCOP(item.precio)}
                     </span>
                     {!item.disponible && (
@@ -250,7 +250,7 @@ export default function SelectorProductos() {
                   </span>
 
                   {cantidad > 0 && (
-                    <span className="absolute right-2 top-2 flex h-6 min-w-[24px] items-center justify-center rounded-lg bg-ambar-500 px-1 text-xs font-bold text-noche-950">
+                    <span className="absolute right-2 top-2 flex h-6 min-w-[24px] items-center justify-center rounded-lg bg-oro-500 px-1 text-xs font-bold text-noche-950">
                       {cantidad}
                     </span>
                   )}
@@ -269,7 +269,7 @@ export default function SelectorProductos() {
               onClick={() => setRevisando(true)}
               className="flex min-h-toque flex-1 items-center gap-2.5 rounded-xl border border-noche-700 bg-noche-850 px-3 text-left transition hover:bg-noche-800"
             >
-              <ShoppingBag className="h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+              <ShoppingBag className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-crema-100">
                   {unidadesBorrador} {unidadesBorrador === 1 ? 'producto' : 'productos'}
@@ -336,7 +336,7 @@ export default function SelectorProductos() {
                       </p>
                     )}
                     {linea.nota && (
-                      <p className="mt-0.5 text-xs italic text-ambar-300">{linea.nota}</p>
+                      <p className="mt-0.5 text-xs italic text-oro-300">{linea.nota}</p>
                     )}
                   </div>
                   <button

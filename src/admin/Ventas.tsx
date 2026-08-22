@@ -27,7 +27,7 @@ const NOMBRE_METODO: Record<MetodoPago, string> = {
 }
 
 const CAMPO =
-  'min-h-toque rounded-xl border border-noche-700 bg-noche-900 px-3 text-crema-100 focus:border-ambar-500 focus:outline-none'
+  'min-h-toque rounded-xl border border-noche-700 bg-noche-900 px-3 text-crema-100 focus:border-oro-500 focus:outline-none'
 
 const haceDias = (dias: number): string => claveDia(new Date(Date.now() - dias * 86400000))
 
@@ -166,7 +166,7 @@ export default function Ventas() {
                   <td className="px-3 py-2.5 text-crema-100">{venta.mesaEtiqueta}</td>
                   <td className="px-3 py-2.5 text-noche-300">{venta.meseroNombre}</td>
                   <td className="px-3 py-2.5">
-                    <Insignia tono={venta.pago.metodo === 'mixto' ? 'ambar' : 'neutro'}>
+                    <Insignia tono={venta.pago.metodo === 'mixto' ? 'oro' : 'neutro'}>
                       {NOMBRE_METODO[venta.pago.metodo]}
                     </Insignia>
                   </td>

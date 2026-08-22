@@ -150,7 +150,7 @@ export default function Reservas() {
             onClick={() => setFiltro(id)}
             className={`min-h-[40px] rounded-xl border px-3.5 text-sm font-medium transition ${
               filtro === id
-                ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                 : 'border-noche-700 bg-noche-900 text-noche-300 hover:bg-noche-800'
             }`}
           >
@@ -203,7 +203,7 @@ export default function Reservas() {
                 {(ocasion || reserva.notas || mesa) && (
                   <div className="mt-2 space-y-1">
                     {ocasion && (
-                      <p className="inline-flex items-center gap-1.5 text-xs text-ambar-300">
+                      <p className="inline-flex items-center gap-1.5 text-xs text-oro-300">
                         <Cake className="h-3.5 w-3.5" aria-hidden />
                         {ocasion}
                       </p>
@@ -302,7 +302,7 @@ export default function Reservas() {
               onClick={() => setMesaElegida('')}
               className={`min-h-[56px] rounded-xl border text-sm transition ${
                 mesaElegida === ''
-                  ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                  ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                   : 'border-noche-700 bg-noche-850 text-noche-300'
               }`}
             >
@@ -316,7 +316,7 @@ export default function Reservas() {
                   onClick={() => setMesaElegida(mesa.id)}
                   className={`flex min-h-[56px] flex-col items-center justify-center rounded-xl border transition ${
                     mesaElegida === mesa.id
-                      ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                      ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                       : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
                   }`}
                 >
@@ -352,7 +352,7 @@ export default function Reservas() {
               type="datetime-local"
               value={nuevaFecha}
               onChange={(e) => setNuevaFecha(e.target.value)}
-              className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 focus:border-ambar-500 focus:outline-none"
+              className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 focus:border-oro-500 focus:outline-none"
             />
           </label>
           <p className="text-xs text-noche-500">

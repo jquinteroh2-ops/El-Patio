@@ -37,7 +37,7 @@ export default function LayoutAdmin() {
               className={({ isActive }) =>
                 `flex min-h-[42px] shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition ${
                   isActive
-                    ? 'bg-ambar-500/15 text-ambar-300'
+                    ? 'bg-oro-500/15 text-oro-300'
                     : 'text-noche-300 hover:bg-noche-800 hover:text-crema-100'
                 }`
               }

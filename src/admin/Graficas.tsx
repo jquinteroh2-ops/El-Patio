@@ -21,7 +21,7 @@ interface Punto {
 }
 
 const RELLENO: Record<NonNullable<Punto['tono']>, string> = {
-  normal: 'bg-ambar-500',
+  normal: 'bg-oro-500',
   atencion: 'bg-estado-proceso',
   demorado: 'bg-estado-demorado',
 }
@@ -114,7 +114,7 @@ export function BarrasHora({
           </p>
         ) : (
           <p className="text-xs text-noche-500">
-            Hora pico: <span className="font-semibold text-ambar-300">{pico.franja}</span> con{' '}
+            Hora pico: <span className="font-semibold text-oro-300">{pico.franja}</span> con{' '}
             {pico.texto}
           </p>
         )}
@@ -136,8 +136,8 @@ export function BarrasHora({
             <span
               className={`w-full rounded-t-[4px] transition-all duration-300 ${
                 activa === punto.hora || (activa === null && punto.hora === pico.hora)
-                  ? 'bg-ambar-400'
-                  : 'bg-ambar-500/70 group-hover:bg-ambar-400'
+                  ? 'bg-oro-400'
+                  : 'bg-oro-500/70 group-hover:bg-oro-400'
               }`}
               style={{ height: `${Math.max(3, (punto.valor / maximo) * 100)}%` }}
             />

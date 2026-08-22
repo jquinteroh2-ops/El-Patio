@@ -147,7 +147,7 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
             <p className="mb-2 flex items-center gap-2 text-sm font-medium text-crema-100">
               {modificador.nombre}
               {modificador.obligatorio ? (
-                <span className="rounded-md bg-ambar-500/15 px-1.5 py-0.5 text-xs text-ambar-300">
+                <span className="rounded-md bg-oro-500/15 px-1.5 py-0.5 text-xs text-oro-300">
                   Obligatorio
                 </span>
               ) : (
@@ -160,7 +160,7 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
                 value={textos[modificador.nombre] ?? ''}
                 onChange={(e) => setTextos((t) => ({ ...t, [modificador.nombre]: e.target.value }))}
                 placeholder="Escribe aquí"
-                className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+                className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
               />
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -181,19 +181,19 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
                       }
                       className={`flex min-h-toque items-center justify-between gap-2 rounded-xl border px-3 text-left text-sm transition active:scale-[0.98] ${
                         activo
-                          ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                          ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                           : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
                       }`}
                     >
                       <span className="min-w-0">
                         <span className="block truncate">{opcion.nombre}</span>
                         {opcion.precioAdicional > 0 && (
-                          <span className="block text-xs text-ambar-300">
+                          <span className="block text-xs text-oro-300">
                             +{formatoCOP(opcion.precioAdicional)}
                           </span>
                         )}
                       </span>
-                      {activo && <Check className="h-4 w-4 shrink-0 text-ambar-400" aria-hidden />}
+                      {activo && <Check className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />}
                     </button>
                   )
                 })}
@@ -218,7 +218,7 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
                   onClick={() => alternarNota(texto)}
                   className={`min-h-[40px] rounded-xl border px-3 text-sm transition active:scale-95 ${
                     activo
-                      ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                      ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                       : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
                   }`}
                 >
@@ -231,7 +231,7 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
             value={nota}
             onChange={(e) => setNota(e.target.value)}
             placeholder="Otra indicación"
-            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
           />
         </div>
       </div>

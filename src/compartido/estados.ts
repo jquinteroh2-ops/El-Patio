@@ -87,9 +87,9 @@ export const ETIQUETA_PEDIDO: Record<EstadoPedido, string> = {
 
 export const TONO_PEDIDO: Record<
   EstadoPedido,
-  'neutro' | 'listo' | 'proceso' | 'demorado' | 'ambar'
+  'neutro' | 'listo' | 'proceso' | 'demorado' | 'oro'
 > = {
-  nuevo: 'ambar',
+  nuevo: 'oro',
   aceptado: 'proceso',
   en_preparacion: 'proceso',
   listo: 'listo',

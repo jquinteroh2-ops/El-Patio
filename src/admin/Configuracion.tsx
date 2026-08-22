@@ -124,7 +124,7 @@ export default function Configuracion() {
                 inputMode="decimal"
                 value={valorInc}
                 onChange={(e) => setInc(e.target.value)}
-                className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 pr-9 text-crema-100 focus:border-ambar-500 focus:outline-none"
+                className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 pr-9 text-crema-100 focus:border-oro-500 focus:outline-none"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-noche-400">%</span>
             </div>

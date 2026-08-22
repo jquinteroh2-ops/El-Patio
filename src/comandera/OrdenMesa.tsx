@@ -232,7 +232,7 @@ export default function OrdenMesa() {
           </div>
           <div className="bg-noche-900 px-3 py-2">
             <p className="text-xs text-noche-400">Total</p>
-            <p className="text-base font-semibold tabular-nums text-ambar-300">
+            <p className="text-base font-semibold tabular-nums text-oro-300">
               {formatoCOP(cuenta.total)}
             </p>
           </div>
@@ -241,7 +241,7 @@ export default function OrdenMesa() {
 
       <main className="flex-1 space-y-4 px-3 py-4">
         {orden.notas && (
-          <p className="flex items-start gap-2 rounded-xl border border-ambar-500/30 bg-ambar-500/10 px-3 py-2.5 text-sm text-ambar-200">
+          <p className="flex items-start gap-2 rounded-xl border border-oro-500/30 bg-oro-500/10 px-3 py-2.5 text-sm text-oro-200">
             <StickyNote className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             {orden.notas}
           </p>
@@ -249,11 +249,11 @@ export default function OrdenMesa() {
 
         {/* ---------- Todavia en la libreta del mesero ---------- */}
         {sinEnviar.length > 0 && (
-          <section className="rounded-2xl border border-ambar-500/40 bg-noche-900 p-3">
-            <h2 className="mb-2.5 flex items-center gap-2 text-sm font-semibold text-ambar-300">
+          <section className="rounded-2xl border border-oro-500/40 bg-noche-900 p-3">
+            <h2 className="mb-2.5 flex items-center gap-2 text-sm font-semibold text-oro-300">
               <ClipboardList className="h-4 w-4" aria-hidden />
               Sin enviar
-              <span className="rounded-md bg-ambar-500/20 px-1.5 text-xs">{sinEnviar.length}</span>
+              <span className="rounded-md bg-oro-500/20 px-1.5 text-xs">{sinEnviar.length}</span>
             </h2>
             <ul className="space-y-2">
               {sinEnviar.map((item) => (
@@ -267,7 +267,7 @@ export default function OrdenMesa() {
                         </p>
                       )}
                       {item.notaCocina && (
-                        <p className="mt-0.5 text-xs italic text-ambar-300">{item.notaCocina}</p>
+                        <p className="mt-0.5 text-xs italic text-oro-300">{item.notaCocina}</p>
                       )}
                       {item.destino === 'bar' && (
                         <p className="mt-0.5 text-xs text-noche-500">va a la barra</p>
@@ -373,7 +373,7 @@ export default function OrdenMesa() {
                         </p>
                       )}
                       {item.notaCocina && (
-                        <p className="mt-0.5 text-xs italic text-ambar-300">{item.notaCocina}</p>
+                        <p className="mt-0.5 text-xs italic text-oro-300">{item.notaCocina}</p>
                       )}
                     </div>
 
@@ -600,14 +600,14 @@ export default function OrdenMesa() {
             value={nombreCargo}
             onChange={(e) => setNombreCargo(e.target.value)}
             placeholder="Concepto visible para el cliente"
-            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
           />
           <input
             value={valorCargo}
             onChange={(e) => setValorCargo(e.target.value)}
             inputMode="numeric"
             placeholder="Valor en pesos"
-            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
           />
           <p className="text-xs leading-relaxed text-noche-500">
             Queda registrado con tu nombre y aparece como una línea aparte en la cuenta. Nunca debe
@@ -670,7 +670,7 @@ export default function OrdenMesa() {
           onChange={(e) => setNota(e.target.value)}
           rows={4}
           placeholder="Cumpleaños, alergias, forma de servir..."
-          className="w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 py-3 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+          className="w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 py-3 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
         />
       </HojaInferior>
 
@@ -695,7 +695,7 @@ export default function OrdenMesa() {
                   onClick={() => setMotivo(texto)}
                   className={`min-h-[40px] rounded-xl border px-3 text-sm transition ${
                     motivo === texto
-                      ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                      ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                       : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
                   }`}
                 >
@@ -708,7 +708,7 @@ export default function OrdenMesa() {
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
             placeholder="Motivo de la anulación"
-            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
           />
         </div>
       </HojaInferior>

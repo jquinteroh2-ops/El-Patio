@@ -94,9 +94,9 @@ export default function Carta() {
   return (
     <>
       <section className="mx-auto max-w-3xl px-5 pb-10 pt-16 text-center">
-        <p className="text-[0.7rem] uppercase tracking-[0.35em] text-ambar-400">Nuestra carta</p>
+        <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Nuestra carta</p>
         <h1 className="mt-4 font-titulo text-5xl font-light text-crema-100">La carta</h1>
-        <Filete className="mx-auto mt-6 w-32 text-ambar-400" />
+        <Filete className="mx-auto mt-6 w-32 text-oro-400" />
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-crema-100/65">
           Cocina de fusión con producto del Caribe. Los precios están en pesos colombianos e
           incluyen el impuesto al consumo al momento de la cuenta.
@@ -104,13 +104,13 @@ export default function Carta() {
       </section>
 
       {aviso && (
-        <p className="mx-auto mb-2 max-w-3xl rounded-sm border border-ambar-400/30 bg-ambar-500/10 px-5 py-3 text-center text-sm text-ambar-200">
+        <p className="mx-auto mb-2 max-w-3xl rounded-sm border border-oro-400/30 bg-oro-500/10 px-5 py-3 text-center text-sm text-oro-200">
           {aviso}
         </p>
       )}
 
       {/* Navegación por categorías, siempre a la vista */}
-      <div className="sticky top-16 z-30 border-y border-crema-100/10 bg-bosque-950/95 backdrop-blur">
+      <div className="sticky top-16 z-30 border-y border-oro-500/15 bg-onix-950/95 backdrop-blur">
         <div ref={navRef} className="sin-scrollbar mx-auto flex max-w-5xl gap-1 overflow-x-auto px-3 py-2">
           {categorias.map((categoria) => (
             <a
@@ -119,8 +119,8 @@ export default function Carta() {
               data-categoria={categoria.id}
               className={`min-h-[40px] shrink-0 rounded-sm px-3.5 text-sm leading-[40px] transition ${
                 activa === categoria.id
-                  ? 'bg-ambar-500/15 text-ambar-300'
-                  : 'text-crema-100/60 hover:text-ambar-300'
+                  ? 'bg-oro-500/15 text-oro-300'
+                  : 'text-crema-100/60 hover:text-oro-300'
               }`}
             >
               {categoria.nombre}
@@ -136,7 +136,7 @@ export default function Carta() {
           <div className="space-y-16">
             {categorias.map((categoria) => (
               <section key={categoria.id} id={categoria.id} className="scroll-mt-36">
-                <h2 className="font-titulo text-3xl font-light text-ambar-300 sm:text-4xl">
+                <h2 className="font-titulo text-3xl font-light text-oro-300 sm:text-4xl">
                   {categoria.nombre}
                 </h2>
                 <span className="mt-3 mb-7 block h-px w-full bg-crema-100/10" aria-hidden />
@@ -153,7 +153,7 @@ export default function Carta() {
                             </span>
                           )}
                           {item.disponible && enPromocion(item) && (
-                            <span className="ml-2 rounded-sm border border-ambar-400/50 bg-ambar-500/10 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-ambar-300">
+                            <span className="ml-2 rounded-sm border border-oro-400/50 bg-oro-500/10 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-oro-300">
                               Promoción
                             </span>
                           )}
@@ -162,7 +162,7 @@ export default function Carta() {
                             lista tachado. Poner solo el rebajado ahorraría un
                             renglón y escondería justo lo que hace atractiva la
                             oferta: cuánto se está ahorrando el cliente. */}
-                        <span className="shrink-0 text-right font-titulo text-xl tabular-nums text-ambar-300">
+                        <span className="shrink-0 text-right font-titulo text-xl tabular-nums text-oro-300">
                           {enPromocion(item) ? (
                             <>
                               <span className="mr-2 text-base text-crema-100/40 line-through">
@@ -185,7 +185,7 @@ export default function Carta() {
                         <button
                           type="button"
                           onClick={() => alTocarAgregar(item)}
-                          className="mt-3 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-ambar-400 hover:text-ambar-300"
+                          className="mt-3 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
                         >
                           <Plus className="h-4 w-4" aria-hidden />
                           Agregar
@@ -199,7 +199,7 @@ export default function Carta() {
           </div>
         )}
 
-        <p className="mt-16 border-t border-crema-100/10 pt-8 text-center text-sm leading-relaxed text-crema-100/50">
+        <p className="mt-16 border-t border-oro-500/15 pt-8 text-center text-sm leading-relaxed text-crema-100/50">
           La propina es voluntaria. Si desea dejarla, su mesero se la consultará antes de incluirla
           en la cuenta.
         </p>
@@ -210,10 +210,10 @@ export default function Carta() {
 
       {/* ---------- Botón flotante con el conteo y el total corriente ---------- */}
       {carrito.unidades > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-crema-100/10 bg-bosque-950/95 p-4 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-oro-500/15 bg-onix-950/95 p-4 backdrop-blur">
           <Link
             to="/pedir"
-            className="mx-auto flex min-h-[56px] max-w-3xl items-center justify-between gap-4 rounded-sm bg-ambar-500 px-5 text-bosque-950 transition hover:bg-ambar-400"
+            className="mx-auto flex min-h-[56px] max-w-3xl items-center justify-between gap-4 rounded-sm bg-oro-500 px-5 text-onix-950 transition hover:bg-oro-400"
           >
             <span className="flex items-center gap-2 font-semibold">
               <ShoppingBag className="h-5 w-5" aria-hidden />

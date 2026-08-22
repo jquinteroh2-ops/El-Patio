@@ -23,8 +23,8 @@ const HORAS = Array.from({ length: 21 }, (_, i) => {
 })
 
 const CAMPO =
-  'min-h-[52px] w-full rounded-sm border border-crema-100/25 bg-bosque-900/60 px-4 text-crema-100 ' +
-  'placeholder:text-crema-100/35 focus:border-ambar-400 focus:outline-none transition'
+  'min-h-[52px] w-full rounded-sm border border-crema-100/25 bg-onix-900/60 px-4 text-crema-100 ' +
+  'placeholder:text-crema-100/35 focus:border-oro-400 focus:outline-none transition'
 
 export default function Reservar() {
   const [nombre, setNombre] = useState('')
@@ -72,7 +72,7 @@ export default function Reservar() {
   if (enviada) {
     return (
       <section className="mx-auto max-w-2xl px-5 py-24 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-ambar-400/50 text-ambar-300">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-oro-400/50 text-oro-300">
           <Check className="h-7 w-7" aria-hidden />
         </span>
 
@@ -81,9 +81,9 @@ export default function Reservar() {
         </h1>
         <p className="mt-5 text-lg text-crema-100/75">Te confirmamos por WhatsApp.</p>
 
-        <Filete className="mx-auto mt-8 w-32 text-ambar-400" />
+        <Filete className="mx-auto mt-8 w-32 text-oro-400" />
 
-        <div className="mx-auto mt-8 max-w-sm rounded-sm border border-crema-100/15 bg-bosque-900/50 p-5 text-left">
+        <div className="mx-auto mt-8 max-w-sm rounded-sm border border-crema-100/15 bg-onix-900/50 p-5 text-left">
           <dl className="space-y-2.5 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-crema-100/55">A nombre de</dt>
@@ -117,14 +117,14 @@ export default function Reservar() {
             )}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-sm border border-crema-100/30 px-8 text-sm uppercase tracking-[0.16em] text-crema-100 transition hover:border-ambar-400 hover:text-ambar-300"
+            className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-sm border border-crema-100/30 px-8 text-sm uppercase tracking-[0.16em] text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
           >
             <MessageCircle className="h-4 w-4" aria-hidden />
             Escribir por WhatsApp
           </a>
           <Link
             to="/carta"
-            className="min-h-[52px] rounded-sm bg-ambar-500 px-8 text-sm font-semibold uppercase tracking-[0.16em] leading-[52px] text-bosque-950 transition hover:bg-ambar-400"
+            className="min-h-[52px] rounded-sm bg-oro-500 px-8 text-sm font-semibold uppercase tracking-[0.16em] leading-[52px] text-onix-950 transition hover:bg-oro-400"
           >
             Ver la carta
           </Link>
@@ -137,8 +137,8 @@ export default function Reservar() {
   return (
     <section className="mx-auto max-w-xl px-5 py-16">
       <div className="text-center">
-        <Ornamento className="mx-auto mb-6 h-14 w-24 text-ambar-400/60" />
-        <p className="text-[0.7rem] uppercase tracking-[0.35em] text-ambar-400">Reservas</p>
+        <Ornamento className="mx-auto mb-6 h-14 w-24 text-oro-400/60" />
+        <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Reservas</p>
         <h1 className="mt-4 font-titulo text-5xl font-light text-crema-100">Reserve su mesa</h1>
         <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-crema-100/65">
           Déjenos sus datos y le confirmamos por WhatsApp. Toma menos de un minuto.
@@ -216,8 +216,8 @@ export default function Reservar() {
                 onClick={() => setPersonas(n)}
                 className={`min-h-[48px] w-14 rounded-sm border text-base transition ${
                   personas === n
-                    ? 'border-ambar-400 bg-ambar-500/15 text-ambar-300'
-                    : 'border-crema-100/25 text-crema-100/70 hover:border-ambar-400/60'
+                    ? 'border-oro-400 bg-oro-500/15 text-oro-300'
+                    : 'border-crema-100/25 text-crema-100/70 hover:border-oro-400/60'
                 }`}
               >
                 {n}
@@ -228,7 +228,7 @@ export default function Reservar() {
               value={personas}
               onChange={(e) => setPersonas(Math.max(1, Number(e.target.value.replace(/\D/g, '')) || 1))}
               aria-label="Otro número de personas"
-              className="min-h-[48px] w-20 rounded-sm border border-crema-100/25 bg-bosque-900/60 px-3 text-center text-crema-100 focus:border-ambar-400 focus:outline-none"
+              className="min-h-[48px] w-20 rounded-sm border border-crema-100/25 bg-onix-900/60 px-3 text-center text-crema-100 focus:border-oro-400 focus:outline-none"
             />
           </div>
         </div>
@@ -245,8 +245,8 @@ export default function Reservar() {
                 onClick={() => setOcasion(o.id)}
                 className={`min-h-[48px] rounded-sm border px-4 text-sm transition ${
                   ocasion === o.id
-                    ? 'border-ambar-400 bg-ambar-500/15 text-ambar-300'
-                    : 'border-crema-100/25 text-crema-100/70 hover:border-ambar-400/60'
+                    ? 'border-oro-400 bg-oro-500/15 text-oro-300'
+                    : 'border-crema-100/25 text-crema-100/70 hover:border-oro-400/60'
                 }`}
               >
                 {o.etiqueta}
@@ -270,7 +270,7 @@ export default function Reservar() {
         </label>
 
         {error && (
-          <p className="rounded-sm border border-ambar-400/50 bg-ambar-500/10 px-4 py-3 text-sm text-ambar-200">
+          <p className="rounded-sm border border-oro-400/50 bg-oro-500/10 px-4 py-3 text-sm text-oro-200">
             {error}
           </p>
         )}
@@ -278,7 +278,7 @@ export default function Reservar() {
         <button
           type="submit"
           disabled={enviando}
-          className="min-h-[56px] w-full rounded-sm bg-ambar-500 text-sm font-semibold uppercase tracking-[0.18em] text-bosque-950 transition hover:bg-ambar-400 disabled:opacity-60"
+          className="min-h-[56px] w-full rounded-sm bg-oro-500 text-sm font-semibold uppercase tracking-[0.18em] text-onix-950 transition hover:bg-oro-400 disabled:opacity-60"
         >
           {enviando ? 'Enviando…' : 'Solicitar reserva'}
         </button>

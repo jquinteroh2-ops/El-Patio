@@ -12,20 +12,32 @@ export default {
           300: '#D8C6A5',
           400: '#C0A87F',
         },
-        bosque: {
-          950: '#08170F',
-          900: '#0C2317',
-          800: '#123322',
-          700: '#1A4A31',
-          600: '#256446',
-          500: '#357F5C',
+        // El fondo del sitio publico. Negro con una gota de calor: un negro
+        // puro (#000) sobre pantalla se ve plano y duro, y a 20 cm de la cara
+        // cansa. Estos llevan un punto de marron que no se nombra pero se
+        // siente, y es lo que separa «oscuro» de «elegante».
+        onix: {
+          950: '#0A0908',
+          900: '#100F0D',
+          800: '#171512',
+          700: '#211E1A',
+          600: '#2D2924',
+          500: '#3B352E',
         },
-        ambar: {
-          700: '#8A4B10',
-          600: '#A85D16',
-          500: '#C6741F',
-          400: '#DC8B33',
-          300: '#E9A75E',
+        // El dorado de la casa. El anterior era ambar -naranja quemado- y
+        // sobre negro leia a cobre, no a oro. Estos bajan el rojo y suben el
+        // verde hasta el amarillo del metal.
+        //
+        // Se usa con cuentagotas: filetes, versalitas, el boton principal y
+        // poco mas. Un dorado repartido por toda la pantalla deja de parecer
+        // oro y empieza a parecer amarillo.
+        oro: {
+          700: '#7A5E1F',
+          600: '#9B7A28',
+          500: '#C09A33',
+          400: '#D4B255',
+          300: '#E3CA84',
+          200: '#F0E2B8',
         },
         // --- Areas operativas: neutro profundo, se usan de noche ---
         noche: {

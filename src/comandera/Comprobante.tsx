@@ -38,16 +38,16 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
   const vigentes = orden.items.filter((i) => i.estado !== 'anulado')
 
   return (
-    <article className="mx-auto w-full max-w-md rounded-2xl bg-crema-50 p-5 text-bosque-950 shadow-xl shadow-black/40">
-      <header className="border-b border-bosque-950/15 pb-3 text-center">
+    <article className="mx-auto w-full max-w-md rounded-2xl bg-crema-50 p-5 text-onix-950 shadow-xl shadow-black/40">
+      <header className="border-b border-onix-950/15 pb-3 text-center">
         <p className="font-marca text-lg tracking-[0.28em]">EL PATIO</p>
-        <p className="mt-1 text-xs text-bosque-950/70">
+        <p className="mt-1 text-xs text-onix-950/70">
           {RESTAURANTE.direccion} · {RESTAURANTE.ciudad}
         </p>
-        <p className="text-xs text-bosque-950/70">{RESTAURANTE.telefono}</p>
+        <p className="text-xs text-onix-950/70">{RESTAURANTE.telefono}</p>
       </header>
 
-      <div className="grid grid-cols-2 gap-y-1 border-b border-bosque-950/15 py-3 text-xs text-bosque-950/80">
+      <div className="grid grid-cols-2 gap-y-1 border-b border-onix-950/15 py-3 text-xs text-onix-950/80">
         <span>Comanda</span>
         <span className="text-right font-medium">#{orden.numero}</span>
         <span>Mesa</span>
@@ -60,7 +60,7 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
         <span className="text-right font-medium">{formatoFechaHora(pago.fechaHora)}</span>
       </div>
 
-      <ul className="space-y-1.5 border-b border-bosque-950/15 py-3">
+      <ul className="space-y-1.5 border-b border-onix-950/15 py-3">
         {vigentes.map((item) => (
           <li key={item.id} className="flex items-start justify-between gap-3 text-sm">
             <span className="min-w-0">
@@ -68,7 +68,7 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
                 {item.cantidad} × {item.nombre}
               </span>
               {item.modificadoresSeleccionados.length > 0 && (
-                <span className="block text-xs text-bosque-950/60">
+                <span className="block text-xs text-onix-950/60">
                   {item.modificadoresSeleccionados.map((m) => m.valor).join(' · ')}
                 </span>
               )}
@@ -95,29 +95,29 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
           </div>
         ))}
 
-        <div className="flex justify-between border-t border-dashed border-bosque-950/25 pt-1.5">
+        <div className="flex justify-between border-t border-dashed border-onix-950/25 pt-1.5">
           <dt>
             Propina
-            <span className="ml-1.5 rounded border border-bosque-950/25 px-1 text-[0.65rem] uppercase tracking-wide">
+            <span className="ml-1.5 rounded border border-onix-950/25 px-1 text-[0.65rem] uppercase tracking-wide">
               Voluntaria
             </span>
           </dt>
           <dd className="tabular-nums">{formatoCOP(pago.propina)}</dd>
         </div>
 
-        <div className="flex justify-between border-t border-bosque-950/25 pt-2 text-base font-bold">
+        <div className="flex justify-between border-t border-onix-950/25 pt-2 text-base font-bold">
           <dt>Total</dt>
           <dd className="tabular-nums">{formatoCOP(pago.total)}</dd>
         </div>
       </dl>
 
-      <div className="border-t border-bosque-950/15 pt-3 text-sm">
+      <div className="border-t border-onix-950/15 pt-3 text-sm">
         <div className="flex justify-between font-medium">
           <span>{NOMBRE_METODO[pago.metodo]}</span>
           <span className="tabular-nums">{formatoCOP(pago.total)}</span>
         </div>
         {pago.divisiones && pago.divisiones.length > 1 && (
-          <ul className="mt-1.5 space-y-1 text-xs text-bosque-950/70">
+          <ul className="mt-1.5 space-y-1 text-xs text-onix-950/70">
             {pago.divisiones.map((parte, i) => (
               <li key={i} className="flex justify-between">
                 <span>
@@ -130,8 +130,8 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
         )}
       </div>
 
-      <footer className="mt-4 border-t border-bosque-950/15 pt-3 text-center">
-        <p className="text-xs text-bosque-950/70">
+      <footer className="mt-4 border-t border-onix-950/15 pt-3 text-center">
+        <p className="text-xs text-onix-950/70">
           La propina es voluntaria. Si no está de acuerdo con ella, puede solicitar su retiro.
         </p>
 
@@ -140,7 +140,7 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
             texto de otra: hay documento fiscal, hay documento de prueba, o no
             hay documento. */}
         {documento && !documento.esPrueba && (
-          <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/70">
+          <p className="mt-2 text-[0.65rem] leading-relaxed text-onix-950/70">
             {DENOMINACION[documento.tipo]} N.º {documento.numeroCompleto}
             <br />
             Consúltela en el portal de la DIAN con el código impreso.
@@ -148,7 +148,7 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
         )}
 
         {documento?.esPrueba && (
-          <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/50">
+          <p className="mt-2 text-[0.65rem] leading-relaxed text-onix-950/50">
             Documento de prueba N.º {documento.numeroCompleto} · sin valor fiscal.
             <br />
             {DATOS_FISCALES.leyenda}
@@ -156,7 +156,7 @@ export function Comprobante({ pago, orden, mesaEtiqueta, meseroNombre, documento
         )}
 
         {!documento && (
-          <p className="mt-2 text-[0.65rem] leading-relaxed text-bosque-950/50">
+          <p className="mt-2 text-[0.65rem] leading-relaxed text-onix-950/50">
             {DATOS_FISCALES.leyenda}
           </p>
         )}

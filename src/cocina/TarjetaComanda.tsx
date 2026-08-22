@@ -47,7 +47,7 @@ export function TarjetaComanda({ bloque, reciente, ocupado, onCambiarItem, onCam
   return (
     <article
       className={`overflow-hidden rounded-2xl border-2 bg-noche-900 transition-colors duration-500 ${
-        reciente ? 'animate-destello border-ambar-400' : 'border-noche-700'
+        reciente ? 'animate-destello border-oro-400' : 'border-noche-700'
       }`}
     >
       <header className="flex items-center justify-between gap-2 border-b border-noche-800 px-3 py-2.5">
@@ -68,7 +68,7 @@ export function TarjetaComanda({ bloque, reciente, ocupado, onCambiarItem, onCam
       </header>
 
       {bloque.notas && (
-        <p className="flex items-start gap-1.5 border-b border-noche-800 bg-ambar-500/10 px-3 py-2 text-sm text-ambar-200">
+        <p className="flex items-start gap-1.5 border-b border-noche-800 bg-oro-500/10 px-3 py-2 text-sm text-oro-200">
           <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
           {bloque.notas}
         </p>
@@ -104,7 +104,7 @@ export function TarjetaComanda({ bloque, reciente, ocupado, onCambiarItem, onCam
                     {item.nombre}
                   </span>
                   {item.modificadoresSeleccionados.length > 0 && (
-                    <span className="mt-0.5 block text-sm font-medium text-ambar-300">
+                    <span className="mt-0.5 block text-sm font-medium text-oro-300">
                       {item.modificadoresSeleccionados.map((m) => m.valor).join(' · ')}
                     </span>
                   )}

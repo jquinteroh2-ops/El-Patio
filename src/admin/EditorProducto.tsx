@@ -23,7 +23,7 @@ const TIPOS: { id: TipoModificador; etiqueta: string }[] = [
 ]
 
 const CAMPO =
-  'min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none'
+  'min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none'
 
 const vacio = (categoriaId: string): ItemCarta => ({
   id: '',
@@ -222,7 +222,7 @@ export function EditorProducto({
             {borrador.precioPromocional ? (
               <button
                 type="button"
-                className="text-xs text-ambar-300"
+                className="text-xs text-oro-300"
                 onClick={() =>
                   cambiar({ precioPromocional: null, promocionDesde: null, promocionHasta: null })
                 }
@@ -305,7 +305,7 @@ export function EditorProducto({
                 onClick={() => cambiar({ destino })}
                 className={`min-h-toque rounded-xl border text-sm font-medium transition ${
                   borrador.destino === destino
-                    ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                    ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                     : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
                 }`}
               >
@@ -362,7 +362,7 @@ export function EditorProducto({
                       onClick={() => cambiarModificador(indice, { tipo: tipo.id })}
                       className={`min-h-[36px] rounded-lg border px-2.5 text-xs transition ${
                         modificador.tipo === tipo.id
-                          ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                          ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                           : 'border-noche-700 bg-noche-900 text-noche-400'
                       }`}
                     >
@@ -440,7 +440,7 @@ export function EditorProducto({
                             opciones: [...(modificador.opciones ?? []), { nombre: '', precioAdicional: 0 }],
                           })
                         }
-                        className="text-xs font-medium text-ambar-300 hover:underline"
+                        className="text-xs font-medium text-oro-300 hover:underline"
                       >
                         + Otra opción
                       </button>

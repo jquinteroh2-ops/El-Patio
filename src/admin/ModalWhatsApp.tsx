@@ -70,7 +70,7 @@ export function ModalWhatsApp({ abierto, titulo, telefono, mensaje, onCerrar }: 
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           rows={9}
-          className="w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 py-3 text-sm leading-relaxed text-crema-100 focus:border-ambar-500 focus:outline-none"
+          className="w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 py-3 text-sm leading-relaxed text-crema-100 focus:border-oro-500 focus:outline-none"
         />
       </div>
     </HojaInferior>

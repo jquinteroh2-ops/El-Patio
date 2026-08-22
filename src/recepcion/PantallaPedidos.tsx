@@ -293,7 +293,7 @@ export default function PantallaPedidos() {
             aria-label={sonidoActivo ? 'Sonido activo' : 'Activar aviso sonoro'}
             icono={
               sonidoActivo ? (
-                <Bell className="h-4 w-4 text-ambar-400" aria-hidden />
+                <Bell className="h-4 w-4 text-oro-400" aria-hidden />
               ) : (
                 <BellOff className="h-4 w-4" aria-hidden />
               )
@@ -310,7 +310,7 @@ export default function PantallaPedidos() {
           <button
             type="button"
             onClick={activarSonido}
-            className="font-medium text-ambar-400 underline"
+            className="font-medium text-oro-400 underline"
           >
             Activar aviso sonoro
           </button>
@@ -437,7 +437,7 @@ export default function PantallaPedidos() {
                 onClick={() => setMotivo(texto)}
                 className={`rounded-xl border px-3 py-2 text-left text-xs transition ${
                   motivo === texto
-                    ? 'border-ambar-500 bg-ambar-500/10 text-ambar-300'
+                    ? 'border-oro-500 bg-oro-500/10 text-oro-300'
                     : 'border-noche-700 bg-noche-850 text-noche-300 hover:border-noche-600'
                 }`}
               >
@@ -508,7 +508,7 @@ export default function PantallaPedidos() {
                         }}
                         className={`min-h-toque rounded-xl border px-4 text-sm transition ${
                           repartidorId === quien.id
-                            ? 'border-ambar-500 bg-ambar-500/10 text-ambar-300'
+                            ? 'border-oro-500 bg-oro-500/10 text-oro-300'
                             : 'border-noche-700 bg-noche-850 text-crema-100 hover:border-noche-600'
                         }`}
                       >
@@ -525,7 +525,7 @@ export default function PantallaPedidos() {
                       }}
                       className={`min-h-toque rounded-xl border px-4 text-sm transition ${
                         repartidorId === ''
-                          ? 'border-ambar-500 bg-ambar-500/10 text-ambar-300'
+                          ? 'border-oro-500 bg-oro-500/10 text-oro-300'
                           : 'border-noche-700 bg-noche-850 text-noche-300 hover:border-noche-600'
                       }`}
                     >
@@ -659,16 +659,16 @@ function TarjetaPedido({
   return (
     <article
       className={`rounded-2xl border bg-noche-900 p-3 transition ${
-        reciente ? 'border-ambar-500 ring-2 ring-ambar-500/40' : 'border-noche-800'
+        reciente ? 'border-oro-500 ring-2 ring-oro-500/40' : 'border-noche-800'
       }`}
     >
       <header className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 truncate font-semibold text-crema-100">
             {orden.tipo === 'domicilio' ? (
-              <Bike className="h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+              <Bike className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
             ) : (
-              <ShoppingBag className="h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+              <ShoppingBag className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
             )}
             <span className="truncate">{etiqueta}</span>
           </p>
@@ -731,7 +731,7 @@ function TarjetaPedido({
                   href={enlaceWaze(orden.ubicacion)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-crema-100 transition hover:border-ambar-500/50"
+                  className="inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-crema-100 transition hover:border-oro-500/50"
                 >
                   <Navigation className="h-3 w-3" aria-hidden />
                   Waze
@@ -740,7 +740,7 @@ function TarjetaPedido({
                   href={enlaceMapa(orden.ubicacion)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-crema-100 transition hover:border-ambar-500/50"
+                  className="inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-crema-100 transition hover:border-oro-500/50"
                 >
                   <Crosshair className="h-3 w-3" aria-hidden />
                   Mapa
@@ -789,7 +789,7 @@ function TarjetaPedido({
                 type="button"
                 onClick={() => setMapaAbierto((abierto) => !abierto)}
                 aria-expanded={mapaAbierto}
-                className="mt-1.5 inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-noche-300 transition hover:border-ambar-500/50"
+                className="mt-1.5 inline-flex items-center gap-1 rounded-lg border border-noche-700 bg-noche-850 px-2 py-1 text-xs text-noche-300 transition hover:border-oro-500/50"
               >
                 <MapPinned className="h-3 w-3" aria-hidden />
                 {mapaAbierto ? 'Ocultar el mapa' : 'Ver el mapa'}
@@ -805,7 +805,7 @@ function TarjetaPedido({
           .filter((i) => i.estado !== 'anulado')
           .map((item) => (
             <li key={item.id} className="text-sm text-crema-100">
-              <span className="mr-1.5 font-semibold text-ambar-400">{item.cantidad}×</span>
+              <span className="mr-1.5 font-semibold text-oro-400">{item.cantidad}×</span>
               {item.nombre}
               {item.modificadoresSeleccionados.length > 0 && (
                 <span className="block pl-5 text-xs text-noche-400">
@@ -967,7 +967,7 @@ function EnlacesCliente({ pedido, mensaje }: { pedido: PedidoEnRecepcion; mensaj
 
   return (
     <div className="rounded-2xl border border-noche-700 bg-noche-850 p-3">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ambar-400">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-oro-400">
         Mensaje para el cliente
       </p>
       <p className="mb-3 whitespace-pre-line text-sm leading-relaxed text-noche-200">{mensaje}</p>
@@ -1008,11 +1008,11 @@ function EnlacesCliente({ pedido, mensaje }: { pedido: PedidoEnRecepcion; mensaj
 function EntregaDelDomicilio({ pedido }: { pedido: PedidoEnRecepcion }) {
   const { orden, zonaNombre } = pedido
   const chip =
-    'inline-flex items-center gap-1.5 rounded-xl border border-noche-700 px-3 py-2 text-sm text-crema-100 transition hover:border-ambar-500/50'
+    'inline-flex items-center gap-1.5 rounded-xl border border-noche-700 px-3 py-2 text-sm text-crema-100 transition hover:border-oro-500/50'
 
   return (
     <div className="rounded-2xl border border-noche-700 bg-noche-850 p-3">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ambar-400">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-oro-400">
         Para quien lo lleva
       </p>
 

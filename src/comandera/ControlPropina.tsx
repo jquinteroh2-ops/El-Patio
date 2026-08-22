@@ -58,7 +58,7 @@ export function ControlPropina({ subtotal, propina, onCambiar }: Props) {
               onClick={() => elegirPorcentaje(porcentaje)}
               className={`flex min-h-[56px] flex-col items-center justify-center rounded-xl border transition active:scale-95 ${
                 activo
-                  ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                  ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                   : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
               }`}
             >
@@ -78,7 +78,7 @@ export function ControlPropina({ subtotal, propina, onCambiar }: Props) {
           }}
           className={`flex min-h-[56px] flex-col items-center justify-center rounded-xl border transition active:scale-95 ${
             libre
-              ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+              ? 'border-oro-500 bg-oro-500/15 text-crema-100'
               : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
           }`}
         >
@@ -95,7 +95,7 @@ export function ControlPropina({ subtotal, propina, onCambiar }: Props) {
             value={propina.valor || ''}
             onChange={(e) => escribirValor(e.target.value)}
             placeholder="Valor de la propina en pesos"
-            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
           />
         </div>
       )}

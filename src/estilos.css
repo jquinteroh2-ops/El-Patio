@@ -18,7 +18,7 @@
      * lo que abre un cliente desde un enlace, para que ahi no aparezca una
      * franja de otro color.
      */
-    background: theme('colors.bosque.950');
+    background: theme('colors.onix.950');
     color: theme('colors.crema.100');
     overscroll-behavior-y: none;
   }
@@ -38,7 +38,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid theme('colors.ambar.400');
+    outline: 2px solid theme('colors.oro.400');
     outline-offset: 2px;
   }
 }

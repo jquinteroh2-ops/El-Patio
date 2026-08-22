@@ -117,7 +117,7 @@ export default function Cierre() {
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-3">
         {/* ---------- Resumen del turno ---------- */}
-        <section className="rounded-2xl border border-ambar-500/30 bg-noche-900 p-4 lg:col-span-2">
+        <section className="rounded-2xl border border-oro-500/30 bg-noche-900 p-4 lg:col-span-2">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-crema-100">
@@ -128,7 +128,7 @@ export default function Cierre() {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold tabular-nums text-ambar-300">
+              <p className="text-2xl font-bold tabular-nums text-oro-300">
                 {formatoCOP(resumen.ventaTotal)}
               </p>
               {variacion !== null && (
@@ -317,7 +317,7 @@ export default function Cierre() {
             </div>
             <div className="flex justify-between border-t border-noche-700 pt-1.5 text-noche-300">
               <dt>Propinas a repartir</dt>
-              <dd className="tabular-nums font-semibold text-ambar-300">
+              <dd className="tabular-nums font-semibold text-oro-300">
                 {formatoCOP(resumen.propinasTotales)}
               </dd>
             </div>

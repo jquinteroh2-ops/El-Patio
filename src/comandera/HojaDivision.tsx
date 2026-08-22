@@ -89,7 +89,7 @@ export function HojaDivision({ abierta, cuenta, items, comensales, onCerrar, onA
             onClick={() => setModo('iguales')}
             className={`flex min-h-toque items-center justify-center gap-2 rounded-xl border text-sm font-medium transition ${
               modo === 'iguales'
-                ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                 : 'border-noche-700 bg-noche-850 text-noche-300'
             }`}
           >
@@ -101,7 +101,7 @@ export function HojaDivision({ abierta, cuenta, items, comensales, onCerrar, onA
             onClick={() => setModo('productos')}
             className={`flex min-h-toque items-center justify-center gap-2 rounded-xl border text-sm font-medium transition ${
               modo === 'productos'
-                ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                 : 'border-noche-700 bg-noche-850 text-noche-300'
             }`}
           >
@@ -149,13 +149,13 @@ export function HojaDivision({ abierta, cuenta, items, comensales, onCerrar, onA
                       onClick={() => alternar(item.id)}
                       className={`flex w-full min-h-toque items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition ${
                         activo
-                          ? 'border-ambar-500 bg-ambar-500/15'
+                          ? 'border-oro-500 bg-oro-500/15'
                           : 'border-noche-700 bg-noche-850 hover:bg-noche-800'
                       }`}
                     >
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
-                          activo ? 'border-ambar-400 bg-ambar-500' : 'border-noche-600'
+                          activo ? 'border-oro-400 bg-oro-500' : 'border-noche-600'
                         }`}
                       >
                         {activo && <Check className="h-3.5 w-3.5 text-noche-950" aria-hidden />}

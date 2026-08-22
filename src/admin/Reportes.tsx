@@ -48,7 +48,7 @@ export default function Reportes() {
               onClick={() => setDias(n)}
               className={`min-h-[40px] rounded-xl border px-3.5 text-sm font-medium transition ${
                 dias === n
-                  ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                  ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                   : 'border-noche-700 bg-noche-900 text-noche-300 hover:bg-noche-800'
               }`}
             >
@@ -93,7 +93,7 @@ export default function Reportes() {
               <div key={t.etiqueta} className="rounded-2xl border border-noche-800 bg-noche-900 p-3">
                 <p className="text-lg font-bold tabular-nums text-crema-100">{t.valor}</p>
                 <p className="text-xs leading-tight text-noche-400">{t.etiqueta}</p>
-                {t.pie && <p className="mt-0.5 text-xs text-ambar-300">{t.pie}</p>}
+                {t.pie && <p className="mt-0.5 text-xs text-oro-300">{t.pie}</p>}
               </div>
             ))}
           </section>

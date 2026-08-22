@@ -72,7 +72,7 @@ export default function Acceso() {
         </Link>
 
         <div className="mb-8">
-          <p className="font-marca text-2xl tracking-[0.2em] text-ambar-400">EL PATIO</p>
+          <p className="font-marca text-2xl tracking-[0.2em] text-oro-400">EL PATIO</p>
           <h1 className="mt-3 font-titulo text-3xl font-light text-crema-100">Acceso del personal</h1>
           <p className="mt-1 text-sm text-noche-400">
             {RESTAURANTE.ciudad} · Ingresa con el usuario que te asignó administración
@@ -119,7 +119,7 @@ export default function Acceso() {
         */}
         {hayCuentas ? (
           <div className="mt-10 rounded-2xl border border-noche-700 bg-noche-900 p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-ambar-400">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-oro-400">
               Cuentas de demostración
             </p>
             <ul className="space-y-2">
@@ -128,7 +128,7 @@ export default function Acceso() {
                   <button
                     type="button"
                     onClick={() => usarCuenta(cuenta.usuario)}
-                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-noche-700 bg-noche-850 px-3 py-2.5 text-left transition hover:border-ambar-500/50 hover:bg-noche-800"
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-noche-700 bg-noche-850 px-3 py-2.5 text-left transition hover:border-oro-500/50 hover:bg-noche-800"
                   >
                     <span>
                       <span className="block text-sm font-medium text-crema-100">

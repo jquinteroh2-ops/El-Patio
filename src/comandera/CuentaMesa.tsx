@@ -391,7 +391,7 @@ export default function CuentaMesa() {
         />
 
         {/* ---------- Totales ---------- */}
-        <section className="rounded-2xl border border-ambar-500/30 bg-noche-900 p-3">
+        <section className="rounded-2xl border border-oro-500/30 bg-noche-900 p-3">
           <dl className="space-y-1.5 text-sm">
             <div className="flex justify-between text-noche-300">
               <dt>Subtotal</dt>
@@ -415,7 +415,7 @@ export default function CuentaMesa() {
             </div>
             <div className="flex justify-between border-t border-noche-700 pt-2 text-xl font-bold text-crema-100">
               <dt>Total</dt>
-              <dd className="tabular-nums text-ambar-300">{formatoCOP(cuenta.total)}</dd>
+              <dd className="tabular-nums text-oro-300">{formatoCOP(cuenta.total)}</dd>
             </div>
           </dl>
         </section>

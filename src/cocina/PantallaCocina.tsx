@@ -118,7 +118,7 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
                 type="button"
                 onClick={() => navegar('/cocina')}
                 className={`flex h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition ${
-                  !esBar ? 'bg-ambar-500 text-noche-950' : 'text-noche-300 hover:bg-noche-800'
+                  !esBar ? 'bg-oro-500 text-noche-950' : 'text-noche-300 hover:bg-noche-800'
                 }`}
               >
                 <Soup className="h-4 w-4" aria-hidden />
@@ -128,7 +128,7 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
                 type="button"
                 onClick={() => navegar('/cocina/bar')}
                 className={`flex h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition ${
-                  esBar ? 'bg-ambar-500 text-noche-950' : 'text-noche-300 hover:bg-noche-800'
+                  esBar ? 'bg-oro-500 text-noche-950' : 'text-noche-300 hover:bg-noche-800'
                 }`}
               >
                 <GlassWater className="h-4 w-4" aria-hidden />
@@ -143,7 +143,7 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
               aria-label={sonido ? 'Silenciar avisos' : 'Activar aviso sonoro'}
               className={`flex h-toque w-11 items-center justify-center rounded-xl transition ${
                 sonido
-                  ? 'bg-ambar-500/15 text-ambar-300'
+                  ? 'bg-oro-500/15 text-oro-300'
                   : 'text-noche-400 hover:bg-noche-800 hover:text-crema-100'
               }`}
             >
@@ -183,7 +183,7 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
           className="border-b border-noche-800 bg-noche-900 px-4 py-2 text-left text-xs text-noche-400 transition hover:bg-noche-850"
         >
           El navegador exige un toque para permitir sonido.{' '}
-          <span className="font-semibold text-ambar-300">Activar aviso sonoro</span>
+          <span className="font-semibold text-oro-300">Activar aviso sonoro</span>
         </button>
       )}
 
@@ -215,12 +215,12 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
                       key={`${columna.estado}-${grupo[0].mesaId}`}
                       className={
                         grupo.length > 1
-                          ? 'space-y-2 rounded-2xl border-l-4 border-ambar-500/70 bg-noche-900/40 py-2 pl-2 pr-0.5'
+                          ? 'space-y-2 rounded-2xl border-l-4 border-oro-500/70 bg-noche-900/40 py-2 pl-2 pr-0.5'
                           : 'space-y-2'
                       }
                     >
                       {grupo.length > 1 && (
-                        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-ambar-300">
+                        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-oro-300">
                           {grupo[0].mesaEtiqueta} · {grupo.length} turnos
                         </p>
                       )}

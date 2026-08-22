@@ -98,7 +98,7 @@ export function ZonasDomicilio({ ajustes }: { ajustes: Ajustes }) {
     void conAviso(() => api.eliminarZonaDomicilio(zona.id), `Zona «${zona.nombre}» eliminada`)
 
   const campo =
-    'min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 focus:border-ambar-500 focus:outline-none'
+    'min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 focus:border-oro-500 focus:outline-none'
   const etiqueta = 'mb-1.5 block text-xs uppercase tracking-wide text-noche-400'
 
   return (
@@ -113,7 +113,7 @@ export function ZonasDomicilio({ ajustes }: { ajustes: Ajustes }) {
       </p>
 
       {/* ---------- Pausa del canal ---------- */}
-      <div className="mb-4 rounded-xl border border-ambar-500/30 bg-noche-850 p-3">
+      <div className="mb-4 rounded-xl border border-oro-500/30 bg-noche-850 p-3">
         <Interruptor
           activo={ajustes.domiciliosPausados}
           onCambiar={alternarPausa}

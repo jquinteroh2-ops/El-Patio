@@ -198,7 +198,7 @@ export default function InicioAdmin() {
               <button
                 type="button"
                 onClick={() => navegar('/admin/reservas')}
-                className="rounded-lg bg-ambar-500/15 px-2 py-0.5 text-xs font-semibold text-ambar-300 transition hover:bg-ambar-500/25"
+                className="rounded-lg bg-oro-500/15 px-2 py-0.5 text-xs font-semibold text-oro-300 transition hover:bg-oro-500/25"
               >
                 {solicitudes.length} por responder
               </button>

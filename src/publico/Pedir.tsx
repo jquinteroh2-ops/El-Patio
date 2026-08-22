@@ -162,20 +162,20 @@ export default function Pedir() {
   if (confirmado) {
     return (
       <div className="mx-auto max-w-lg px-5 py-20 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-ambar-400/40 bg-ambar-500/10">
-          <Check className="h-8 w-8 text-ambar-300" aria-hidden />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-oro-400/40 bg-oro-500/10">
+          <Check className="h-8 w-8 text-oro-300" aria-hidden />
         </div>
         <h1 className="mt-6 font-titulo text-4xl font-light text-crema-100">Pedido recibido</h1>
-        <Filete className="mx-auto mt-6 w-32 text-ambar-400" />
+        <Filete className="mx-auto mt-6 w-32 text-oro-400" />
 
         <p className="mt-8 text-[0.7rem] uppercase tracking-[0.3em] text-crema-100/50">
           Su número de pedido
         </p>
-        <p className="font-titulo text-6xl text-ambar-300">{confirmado.numero}</p>
+        <p className="font-titulo text-6xl text-oro-300">{confirmado.numero}</p>
 
         {confirmado.minutosEstimados && (
           <p className="mt-6 inline-flex items-center gap-2 text-base text-crema-100/75">
-            <Clock className="h-4 w-4 text-ambar-400" aria-hidden />
+            <Clock className="h-4 w-4 text-oro-400" aria-hidden />
             {tipo === 'domicilio'
               ? `Se lo llevamos en unos ${confirmado.minutosEstimados} minutos`
               : `Puede recogerlo en unos ${confirmado.minutosEstimados} minutos`}
@@ -187,7 +187,7 @@ export default function Pedir() {
           mismo número.
         </p>
 
-        <div className="mt-6 rounded-sm border border-crema-100/10 p-4 text-left text-sm">
+        <div className="mt-6 rounded-sm border border-oro-500/15 p-4 text-left text-sm">
           <div className="flex justify-between text-crema-100/70">
             <span>Productos</span>
             <span className="tabular-nums">{formatoCOP(confirmado.cuenta.subtotal)}</span>
@@ -202,9 +202,9 @@ export default function Pedir() {
               <span className="tabular-nums">{formatoCOP(confirmado.cuenta.costoEnvio)}</span>
             </div>
           )}
-          <div className="mt-2 flex justify-between border-t border-crema-100/10 pt-2 font-titulo text-lg text-crema-100">
+          <div className="mt-2 flex justify-between border-t border-oro-500/15 pt-2 font-titulo text-lg text-crema-100">
             <span>Total</span>
-            <span className="tabular-nums text-ambar-300">
+            <span className="tabular-nums text-oro-300">
               {formatoCOP(confirmado.cuenta.total)}
             </span>
           </div>
@@ -212,7 +212,7 @@ export default function Pedir() {
 
         <Link
           to="/carta"
-          className="mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-sm border border-crema-100/25 px-5 text-sm text-crema-100 transition hover:border-ambar-400 hover:text-ambar-300"
+          className="mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-sm border border-crema-100/25 px-5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
         >
           Volver a la carta
         </Link>
@@ -236,7 +236,7 @@ export default function Pedir() {
         </p>
         <Link
           to="/carta"
-          className="mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-sm border border-crema-100/25 px-5 text-sm text-crema-100 transition hover:border-ambar-400 hover:text-ambar-300"
+          className="mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-sm border border-crema-100/25 px-5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
         >
           Ver la carta
         </Link>
@@ -269,29 +269,29 @@ export default function Pedir() {
 
   const etiquetaCampo = 'mb-1.5 block text-[0.7rem] uppercase tracking-[0.2em] text-crema-100/50'
   const campo =
-    'w-full min-h-[48px] rounded-sm border border-crema-100/20 bg-bosque-950 px-3.5 text-crema-100 outline-none transition focus:border-ambar-400'
+    'w-full min-h-[48px] rounded-sm border border-crema-100/20 bg-onix-950 px-3.5 text-crema-100 outline-none transition focus:border-oro-400'
 
   return (
     <div className="mx-auto max-w-lg px-5 py-12">
       <button
         type="button"
         onClick={() => navegar(-1)}
-        className="mb-8 inline-flex items-center gap-2 text-sm text-crema-100/60 transition hover:text-ambar-300"
+        className="mb-8 inline-flex items-center gap-2 text-sm text-crema-100/60 transition hover:text-oro-300"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Seguir viendo la carta
       </button>
 
       <h1 className="font-titulo text-4xl font-light text-crema-100">Su pedido</h1>
-      <Filete className="mt-5 w-24 text-ambar-400" />
+      <Filete className="mt-5 w-24 text-oro-400" />
 
       {/* ---------- Resumen ---------- */}
-      <ul className="mt-8 space-y-3 border-b border-crema-100/10 pb-6">
+      <ul className="mt-8 space-y-3 border-b border-oro-500/15 pb-6">
         {carrito.lineas.map((linea) => (
           <li key={linea.id} className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-crema-100">
-                <span className="mr-1.5 text-ambar-300">{linea.cantidad}×</span>
+                <span className="mr-1.5 text-oro-300">{linea.cantidad}×</span>
                 {linea.nombre}
               </p>
               {linea.modificadores.length > 0 && (
@@ -304,7 +304,7 @@ export default function Pedir() {
                 <button
                   type="button"
                   onClick={() => carrito.cambiarCantidad(linea.id, linea.cantidad - 1)}
-                  className="h-8 w-8 rounded-sm border border-crema-100/20 text-crema-100/70 transition hover:border-ambar-400"
+                  className="h-8 w-8 rounded-sm border border-crema-100/20 text-crema-100/70 transition hover:border-oro-400"
                   aria-label="Quitar uno"
                 >
                   –
@@ -315,7 +315,7 @@ export default function Pedir() {
                 <button
                   type="button"
                   onClick={() => carrito.cambiarCantidad(linea.id, linea.cantidad + 1)}
-                  className="h-8 w-8 rounded-sm border border-crema-100/20 text-crema-100/70 transition hover:border-ambar-400"
+                  className="h-8 w-8 rounded-sm border border-crema-100/20 text-crema-100/70 transition hover:border-oro-400"
                   aria-label="Agregar uno"
                 >
                   +
@@ -323,7 +323,7 @@ export default function Pedir() {
                 <button
                   type="button"
                   onClick={() => carrito.quitar(linea.id)}
-                  className="ml-1 text-crema-100/40 transition hover:text-ambar-300"
+                  className="ml-1 text-crema-100/40 transition hover:text-oro-300"
                   aria-label={`Quitar ${linea.nombre}`}
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
@@ -349,7 +349,7 @@ export default function Pedir() {
                 onClick={() => setTipo(valor)}
                 className={`flex min-h-[56px] items-center justify-center gap-2 rounded-sm border text-sm transition ${
                   tipo === valor
-                    ? 'border-ambar-400 bg-ambar-500/10 text-ambar-300'
+                    ? 'border-oro-400 bg-oro-500/10 text-oro-300'
                     : 'border-crema-100/20 text-crema-100/70 hover:border-crema-100/40'
                 }`}
               >
@@ -447,13 +447,13 @@ export default function Pedir() {
               ahorra al domiciliario la llamada de «¿por dónde es?». Si el
               cliente no quiere darla, el pedido entra igual.
             */}
-            <div className="rounded-sm border border-crema-100/10 p-4">
+            <div className="rounded-sm border border-oro-500/15 p-4">
               <p className={etiquetaCampo}>Ubicación exacta (opcional)</p>
 
               {ubicacion ? (
                 <div>
                   <p className="flex items-start gap-2 text-sm text-crema-100">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-oro-400" aria-hidden />
                     <span>
                       Ubicación compartida
                       {ubicacion.precisionMetros !== undefined && (
@@ -476,7 +476,7 @@ export default function Pedir() {
                     ubicacion={ubicacion}
                     titulo="El punto que va a compartir con el restaurante"
                     alto="h-56"
-                    className="mt-3 rounded-sm border border-crema-100/10"
+                    className="mt-3 rounded-sm border border-oro-500/15"
                   />
                   <p className="mt-2 text-xs leading-relaxed text-crema-100/50">
                     ¿El punto cae donde va a recibir el pedido? Si no, tóquelo otra vez desde el
@@ -487,7 +487,7 @@ export default function Pedir() {
                       type="button"
                       onClick={tomarUbicacion}
                       disabled={buscandoUbicacion}
-                      className="min-h-[40px] rounded-sm border border-crema-100/20 px-3.5 text-xs text-crema-100/70 transition hover:border-ambar-400 hover:text-ambar-300 disabled:opacity-60"
+                      className="min-h-[40px] rounded-sm border border-crema-100/20 px-3.5 text-xs text-crema-100/70 transition hover:border-oro-400 hover:text-oro-300 disabled:opacity-60"
                     >
                       {buscandoUbicacion ? 'Buscando…' : 'Volver a tomarla'}
                     </button>
@@ -514,7 +514,7 @@ export default function Pedir() {
                     type="button"
                     onClick={tomarUbicacion}
                     disabled={buscandoUbicacion}
-                    className="inline-flex min-h-[48px] items-center gap-2 rounded-sm border border-crema-100/25 px-4 text-sm text-crema-100 transition hover:border-ambar-400 hover:text-ambar-300 disabled:opacity-60"
+                    className="inline-flex min-h-[48px] items-center gap-2 rounded-sm border border-crema-100/25 px-4 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300 disabled:opacity-60"
                   >
                     <Crosshair className="h-4 w-4" aria-hidden />
                     {buscandoUbicacion ? 'Buscando su ubicación…' : 'Estoy aquí, usar mi ubicación'}
@@ -540,7 +540,7 @@ export default function Pedir() {
                 onClick={() => setMetodo(m.valor)}
                 className={`min-h-[48px] rounded-sm border text-sm transition ${
                   metodo === m.valor
-                    ? 'border-ambar-400 bg-ambar-500/10 text-ambar-300'
+                    ? 'border-oro-400 bg-oro-500/10 text-oro-300'
                     : 'border-crema-100/20 text-crema-100/70 hover:border-crema-100/40'
                 }`}
               >
@@ -569,7 +569,7 @@ export default function Pedir() {
         </div>
 
         {/* ---------- Totales ---------- */}
-        <div className="rounded-sm border border-crema-100/10 p-4 text-sm">
+        <div className="rounded-sm border border-oro-500/15 p-4 text-sm">
           <div className="flex justify-between text-crema-100/70">
             <span>Productos</span>
             <span className="tabular-nums">{formatoCOP(carrito.subtotal)}</span>
@@ -587,7 +587,7 @@ export default function Pedir() {
         </div>
 
         {intentado && problemas.length > 0 && (
-          <ul className="rounded-sm border border-ambar-400/30 bg-ambar-500/10 p-3 text-sm text-ambar-200">
+          <ul className="rounded-sm border border-oro-400/30 bg-oro-500/10 p-3 text-sm text-oro-200">
             {problemas.map((p) => (
               <li key={p}>· {p}</li>
             ))}
@@ -595,7 +595,7 @@ export default function Pedir() {
         )}
 
         {error && (
-          <p className="rounded-sm border border-ambar-400/40 bg-ambar-500/10 p-3 text-sm text-ambar-200">
+          <p className="rounded-sm border border-oro-400/40 bg-oro-500/10 p-3 text-sm text-oro-200">
             {error}
           </p>
         )}
@@ -603,7 +603,7 @@ export default function Pedir() {
         <button
           type="submit"
           disabled={enviando}
-          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-sm bg-ambar-500 px-5 font-semibold text-bosque-950 transition hover:bg-ambar-400 disabled:opacity-60"
+          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-sm bg-oro-500 px-5 font-semibold text-onix-950 transition hover:bg-oro-400 disabled:opacity-60"
         >
           {enviando ? 'Enviando…' : 'Confirmar pedido'}
         </button>

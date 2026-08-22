@@ -9,13 +9,13 @@ export default function LayoutPublico() {
   const whatsapp = enlaceWhatsApp(RESTAURANTE.whatsapp, SALUDO_WHATSAPP)
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bosque-950 text-crema-100">
-      <header className="sticky top-0 z-40 border-b border-crema-100/10 bg-bosque-950/90 backdrop-blur">
+    <div className="flex min-h-dvh flex-col bg-onix-950 text-crema-100">
+      <header className="sticky top-0 z-40 border-b border-oro-500/15 bg-onix-950/90 backdrop-blur">
         {/* Altura fija: la barra de categorías de la carta se pega debajo (top-16). */}
         <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
           <Link
             to="/"
-            className="font-marca text-base tracking-[0.3em] text-crema-100 transition hover:text-ambar-300 sm:text-lg"
+            className="font-marca text-base tracking-[0.3em] text-crema-100 transition hover:text-oro-300 sm:text-lg"
           >
             EL PATIO
           </Link>
@@ -24,7 +24,7 @@ export default function LayoutPublico() {
             <NavLink
               to="/carta"
               className={({ isActive }) =>
-                `transition hover:text-ambar-300 ${isActive ? 'text-ambar-300' : 'text-crema-100/70'}`
+                `transition hover:text-oro-300 ${isActive ? 'text-oro-300' : 'text-crema-100/70'}`
               }
             >
               Carta
@@ -32,7 +32,7 @@ export default function LayoutPublico() {
             <NavLink
               to="/pedir"
               className={({ isActive }) =>
-                `transition hover:text-ambar-300 ${isActive ? 'text-ambar-300' : 'text-crema-100/70'}`
+                `transition hover:text-oro-300 ${isActive ? 'text-oro-300' : 'text-crema-100/70'}`
               }
             >
               Pedir
@@ -42,8 +42,8 @@ export default function LayoutPublico() {
               className={({ isActive }) =>
                 `rounded-sm border px-3.5 py-2 transition ${
                   isActive
-                    ? 'border-ambar-400 text-ambar-300'
-                    : 'border-crema-100/25 text-crema-100 hover:border-ambar-400 hover:text-ambar-300'
+                    ? 'border-oro-400 text-oro-300'
+                    : 'border-crema-100/25 text-crema-100 hover:border-oro-400 hover:text-oro-300'
                 }`
               }
             >
@@ -57,7 +57,7 @@ export default function LayoutPublico() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-crema-100/10 bg-bosque-900">
+      <footer className="border-t border-oro-500/15 bg-onix-900">
         <div className="mx-auto grid max-w-5xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div>
             <p className="font-marca text-lg tracking-[0.28em] text-crema-100">EL PATIO</p>
@@ -67,43 +67,43 @@ export default function LayoutPublico() {
           </div>
 
           <div>
-            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-ambar-400">Visítanos</p>
+            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-oro-400">Visítanos</p>
             <p className="flex items-start gap-2 text-sm text-crema-100/70">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-oro-400" aria-hidden />
               {RESTAURANTE.direccion}
               <br />
               {RESTAURANTE.ciudad}
             </p>
             <p className="mt-3 flex items-center gap-2 text-sm text-crema-100/70">
-              <Phone className="h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+              <Phone className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
               {RESTAURANTE.telefono}
             </p>
           </div>
 
           <div>
-            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-ambar-400">Escríbenos</p>
+            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-oro-400">Escríbenos</p>
             <a
               href={whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-crema-100/70 transition hover:text-ambar-300"
+              className="flex items-center gap-2 text-sm text-crema-100/70 transition hover:text-oro-300"
             >
-              <MessageCircle className="h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+              <MessageCircle className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
               WhatsApp
             </a>
             <a
               href={`https://instagram.com/${RESTAURANTE.instagram}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-center gap-2 text-sm text-crema-100/70 transition hover:text-ambar-300"
+              className="mt-3 flex items-center gap-2 text-sm text-crema-100/70 transition hover:text-oro-300"
             >
-              <Instagram className="h-4 w-4 shrink-0 text-ambar-400" aria-hidden />
+              <Instagram className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
               @{RESTAURANTE.instagram}
             </a>
           </div>
         </div>
 
-        <div className="border-t border-crema-100/10">
+        <div className="border-t border-oro-500/15">
           <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-5 py-5 text-center sm:flex-row sm:justify-between">
             <span className="text-xs text-crema-100/35">
               {RESTAURANTE.nombreCompleto} · NIT {DATOS_FISCALES.nitCompleto}
@@ -111,7 +111,7 @@ export default function LayoutPublico() {
             {/* Acceso del personal: existe, pero no compite con la carta ni la reserva. */}
             <Link
               to="/acceso"
-              className="text-xs uppercase tracking-[0.18em] text-crema-100/35 transition hover:text-ambar-300"
+              className="text-xs uppercase tracking-[0.18em] text-crema-100/35 transition hover:text-oro-300"
             >
               Acceso personal
             </Link>

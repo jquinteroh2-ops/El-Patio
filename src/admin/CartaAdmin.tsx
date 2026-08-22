@@ -93,7 +93,7 @@ export default function CartaAdmin() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar producto"
-            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-900 pl-9 pr-3 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-900 pl-9 pr-3 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
           />
         </div>
         <Boton
@@ -125,7 +125,7 @@ export default function CartaAdmin() {
             onClick={() => setCategoriaActiva(id)}
             className={`min-h-[38px] shrink-0 rounded-xl border px-3.5 text-sm font-medium transition ${
               categoriaActiva === id
-                ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                 : 'border-noche-700 bg-noche-900 text-noche-300 hover:bg-noche-800'
             }`}
           >
@@ -167,7 +167,7 @@ export default function CartaAdmin() {
                 <p className="truncate text-xs text-noche-500">
                   {nombreCategoria(item.categoriaId)} · {item.tiempoPreparacionMin} min
                   {item.modificadores && item.modificadores.length > 0 && (
-                    <span className="ml-1.5 text-ambar-300">
+                    <span className="ml-1.5 text-oro-300">
                       {item.modificadores.length} modificador
                       {item.modificadores.length === 1 ? '' : 'es'}
                     </span>
@@ -184,7 +184,7 @@ export default function CartaAdmin() {
                     <span className="block text-xs font-normal text-noche-400 line-through">
                       {formatoCOP(item.precio)}
                     </span>
-                    <span className="text-ambar-300">{formatoCOP(item.precioPromocional!)}</span>
+                    <span className="text-oro-300">{formatoCOP(item.precioPromocional!)}</span>
                   </>
                 ) : (
                   formatoCOP(item.precio)

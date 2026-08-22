@@ -27,7 +27,7 @@ const ALCANCE: Record<Rol, string> = {
 }
 
 const CAMPO =
-  'min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none'
+  'min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none'
 
 const vacio = (): Usuario => ({
   id: '',

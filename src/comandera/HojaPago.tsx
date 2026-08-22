@@ -103,7 +103,7 @@ export function HojaPago({
                     onClick={() => actualizar(0, { metodo: id, valor: total })}
                     className={`flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border transition active:scale-95 ${
                       activo
-                        ? 'border-ambar-500 bg-ambar-500/15 text-crema-100'
+                        ? 'border-oro-500 bg-oro-500/15 text-crema-100'
                         : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
                     }`}
                   >
@@ -139,7 +139,7 @@ export function HojaPago({
                     onChange={(e) =>
                       actualizar(indice, { valor: Number(e.target.value.replace(/\D/g, '')) || 0 })
                     }
-                    className="min-h-toque w-32 rounded-xl border border-noche-700 bg-noche-900 px-3 text-crema-100 focus:border-ambar-500 focus:outline-none"
+                    className="min-h-toque w-32 rounded-xl border border-noche-700 bg-noche-900 px-3 text-crema-100 focus:border-oro-500 focus:outline-none"
                   />
                   <div className="flex flex-1 gap-1">
                     {METODOS.map(({ id, icono: Icono, etiqueta }) => (
@@ -151,7 +151,7 @@ export function HojaPago({
                         onClick={() => actualizar(indice, { metodo: id })}
                         className={`flex min-h-toque flex-1 items-center justify-center rounded-xl border transition ${
                           parte.metodo === id
-                            ? 'border-ambar-500 bg-ambar-500/15 text-ambar-300'
+                            ? 'border-oro-500 bg-oro-500/15 text-oro-300'
                             : 'border-noche-700 bg-noche-900 text-noche-400 hover:bg-noche-800'
                         }`}
                       >
@@ -165,7 +165,7 @@ export function HojaPago({
                   <button
                     type="button"
                     onClick={() => actualizar(indice, { valor: parte.valor + diferencia })}
-                    className="mt-2 text-xs font-medium text-ambar-300 underline-offset-2 hover:underline"
+                    className="mt-2 text-xs font-medium text-oro-300 underline-offset-2 hover:underline"
                   >
                     Cargar aquí lo que falta ({formatoCOP(diferencia)})
                   </button>
@@ -196,7 +196,7 @@ export function HojaPago({
               value={recibido}
               onChange={(e) => setRecibido(e.target.value)}
               placeholder="¿Con cuánto paga?"
-              className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-900 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none"
+              className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-900 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
             />
             {recibidoNumero > 0 && (
               <p

@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTML
 
 const BASE =
   'w-full min-h-toque rounded-xl border border-noche-700 bg-noche-900 px-3.5 text-crema-100 ' +
-  'placeholder:text-noche-500 focus:border-ambar-500 focus:outline-none focus:ring-1 focus:ring-ambar-500/40 transition'
+  'placeholder:text-noche-500 focus:border-oro-500 focus:outline-none focus:ring-1 focus:ring-oro-500/40 transition'
 
 interface EnvoltorioProps {
   etiqueta?: string

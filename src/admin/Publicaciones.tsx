@@ -124,7 +124,7 @@ export default function Publicaciones() {
             onClick={() => setFiltro(f.valor)}
             className={`min-h-toque rounded-xl border px-3.5 text-sm transition ${
               filtro === f.valor
-                ? 'border-ambar-500 bg-ambar-500/10 text-ambar-300'
+                ? 'border-oro-500 bg-oro-500/10 text-oro-300'
                 : 'border-noche-700 text-noche-300'
             }`}
           >
