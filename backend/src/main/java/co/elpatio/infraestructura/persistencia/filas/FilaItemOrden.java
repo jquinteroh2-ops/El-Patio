@@ -29,6 +29,9 @@ public class FilaItemOrden {
   @Column(name = "precio_unitario")
   private long precioUnitario;
 
+  @Column(name = "precio_lista")
+  private Long precioLista;
+
   private int cantidad;
 
   @Type(JsonType.class)
@@ -59,6 +62,7 @@ public class FilaItemOrden {
     item.setItemCartaId(itemCartaId);
     item.setNombre(nombre);
     item.setPrecioUnitario(precioUnitario);
+    item.setPrecioLista(precioLista);
     item.setCantidad(cantidad);
     item.setModificadoresSeleccionados(
         modificadoresSeleccionados == null ? new ArrayList<>() : new ArrayList<>(modificadoresSeleccionados));
@@ -77,6 +81,7 @@ public class FilaItemOrden {
     fila.itemCartaId = item.getItemCartaId();
     fila.nombre = item.getNombre();
     fila.precioUnitario = item.getPrecioUnitario();
+    fila.precioLista = item.getPrecioLista();
     fila.cantidad = item.getCantidad();
     fila.modificadoresSeleccionados = new ArrayList<>(item.getModificadoresSeleccionados());
     fila.notaCocina = item.getNotaCocina();

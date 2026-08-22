@@ -166,6 +166,11 @@ public class Orden {
     // linea y ya no cambia: si manana termina la promocion, esta comanda sigue
     // valiendo lo que se le dijo al cliente cuando pidio.
     item.setPrecioUnitario(carta.precioVigente(dia));
+    // El de lista solo se guarda cuando difiere: en el caso normal seria
+    // repetir el mismo numero en dos columnas.
+    if (carta.enPromocion(dia)) {
+      item.setPrecioLista(carta.getPrecio());
+    }
     item.setCantidad(cantidad);
     item.setModificadoresSeleccionados(new ArrayList<>(seleccion));
     item.setNotaCocina(notaCocina);

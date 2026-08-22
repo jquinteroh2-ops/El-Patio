@@ -55,6 +55,30 @@ public class FilaCierreCaja {
   @Column(name = "total_envios")
   private long totalEnvios;
 
+  @Column(name = "base_gravable")
+  private long baseGravable;
+
+  @Column(name = "base_no_gravada")
+  private long baseNoGravada;
+
+  @Column(name = "total_cargos")
+  private long totalCargos;
+
+  @Column(name = "porcentaje_inc")
+  private int porcentajeInc;
+
+  @Column(name = "descuentos")
+  private long descuentos;
+
+  @Column(name = "comensales")
+  private int comensales;
+
+  @Column(name = "lineas_anuladas")
+  private int lineasAnuladas;
+
+  @Column(name = "valor_anulado")
+  private long valorAnulado;
+
   @Column(name = "cerrado_por")
   private String cerradoPor;
 
@@ -78,6 +102,14 @@ public class FilaCierreCaja {
     cierre.setTotalDomicilio(totalDomicilio);
     cierre.setTotalLlevar(totalLlevar);
     cierre.setTotalEnvios(totalEnvios);
+    cierre.setBaseGravable(baseGravable);
+    cierre.setBaseNoGravada(baseNoGravada);
+    cierre.setTotalCargos(totalCargos);
+    cierre.setPorcentajeInc(porcentajeInc);
+    cierre.setDescuentos(descuentos);
+    cierre.setComensales(comensales);
+    cierre.setLineasAnuladas(lineasAnuladas);
+    cierre.setValorAnulado(valorAnulado);
     cierre.setCerradoPor(cerradoPor);
     cierre.setFechaHora(fechaHora);
     return cierre;
@@ -100,6 +132,14 @@ public class FilaCierreCaja {
     fila.totalDomicilio = cierre.getTotalDomicilio();
     fila.totalLlevar = cierre.getTotalLlevar();
     fila.totalEnvios = cierre.getTotalEnvios();
+    fila.baseGravable = cierre.getBaseGravable();
+    fila.baseNoGravada = cierre.getBaseNoGravada();
+    fila.totalCargos = cierre.getTotalCargos();
+    fila.porcentajeInc = cierre.getPorcentajeInc();
+    fila.descuentos = cierre.getDescuentos();
+    fila.comensales = cierre.getComensales();
+    fila.lineasAnuladas = cierre.getLineasAnuladas();
+    fila.valorAnulado = cierre.getValorAnulado();
     fila.cerradoPor = cierre.getCerradoPor();
     fila.fechaHora = cierre.getFechaHora();
     return fila;

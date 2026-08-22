@@ -100,18 +100,80 @@ export function CierreTermico({ resumen, cerradoPor }: Props) {
         <span>Cuentas cobradas</span>
         <span>{resumen.ordenesAtendidas}</span>
       </div>
+      {resumen.comensales > 0 && (
+        <div className="ticket-linea">
+          <span>Comensales</span>
+          <span>{resumen.comensales}</span>
+        </div>
+      )}
       <div className="ticket-linea">
         <span>Ticket promedio</span>
         <span>{formatoCOP(resumen.ticketPromedio)}</span>
       </div>
+
+      <hr className="ticket-separador" />
+
+      {/* ---------- Lo que el contador declara ----------
+          Estas cuatro líneas son las que se llevan a la declaración. Antes
+          estaban implícitas dentro de la venta total y había que deducirlas a
+          mano, que es justo donde aparecen las diferencias. */}
+      <div className="ticket-negrita">PARA LA DECLARACIÓN</div>
       <div className="ticket-linea">
-        <span>INC recaudado</span>
+        <span>Base gravable</span>
+        <span>{formatoCOP(resumen.baseGravable)}</span>
+      </div>
+      <div className="ticket-linea">
+        <span>INC {resumen.porcentajeInc}%</span>
         <span>{formatoCOP(resumen.incTotal)}</span>
       </div>
       <div className="ticket-linea">
-        <span>Propinas</span>
+        <span>Base no gravada</span>
+        <span>{formatoCOP(resumen.baseNoGravada)}</span>
+      </div>
+      {/* El desglose de lo no gravado, porque son dos conceptos distintos y el
+          contador los clasifica distinto. */}
+      {resumen.totalCargos > 0 && (
+        <div className="ticket-linea ticket-detalle">
+          <span>de eso, cargos</span>
+          <span>{formatoCOP(resumen.totalCargos)}</span>
+        </div>
+      )}
+      {resumen.totalEnvios > 0 && (
+        <div className="ticket-linea ticket-detalle">
+          <span>de eso, domicilios</span>
+          <span>{formatoCOP(resumen.totalEnvios)}</span>
+        </div>
+      )}
+      {/* La propina no es venta del restaurante. Va aquí para que se vea que
+          está fuera de la base, no escondida dentro del total. */}
+      <div className="ticket-linea">
+        <span>Propinas (no es venta)</span>
         <span>{formatoCOP(resumen.propinasTotales)}</span>
       </div>
+
+      {(resumen.descuentos > 0 || resumen.lineasAnuladas > 0) && (
+        <>
+          <hr className="ticket-separador" />
+          <div className="ticket-negrita">CONTROL</div>
+          {resumen.descuentos > 0 && (
+            <div className="ticket-linea">
+              <span>Descuentos por promoción</span>
+              <span>{formatoCOP(resumen.descuentos)}</span>
+            </div>
+          )}
+          {/* Lo anulado no entra en la venta —no se cobró— pero tiene que
+              verse: es la única huella de un plato que salió de cocina y nadie
+              pagó. Un cierre sin esta línea no se puede auditar. */}
+          {resumen.lineasAnuladas > 0 && (
+            <div className="ticket-linea">
+              <span>
+                Anulado ({resumen.lineasAnuladas} {resumen.lineasAnuladas === 1 ? 'línea' : 'líneas'})
+              </span>
+              <span>{formatoCOP(resumen.valorAnulado)}</span>
+            </div>
+          )}
+        </>
+      )}
 
       <hr className="ticket-separador" />
 

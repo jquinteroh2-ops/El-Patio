@@ -965,6 +965,26 @@ export interface ResumenTurno {
   /** Mismo turno del dia anterior, para comparar. */
   ventaDiaAnterior: number
   ordenesDiaAnterior: number
+
+  // --- Lo que el contador necesita para declarar ---------------------------
+  //
+  // No son adorno del cierre: son las lineas que se llevan a la declaracion.
+  // Estaban implicitas dentro del total y habia que deducirlas a mano, que es
+  // justo donde aparecen las diferencias.
+
+  /** Alimentos y bebidas, antes de impuesto y de propina. Base del INC. */
+  baseGravable: number
+  /** Cargos y domicilios: no causan INC y por eso van aparte. */
+  baseNoGravada: number
+  totalCargos: number
+  /** La tarifa que rigio el turno, tal como quedo configurada. */
+  porcentajeInc: number
+  /** Lo que se dejo de cobrar por promociones, contra el precio de lista. */
+  descuentos: number
+  comensales: number
+  /** Lo anulado: no entra en la venta, pero un cierre sin esto no se audita. */
+  lineasAnuladas: number
+  valorAnulado: number
 }
 
 export async function resumenTurnoActual(): Promise<ResumenTurno> {

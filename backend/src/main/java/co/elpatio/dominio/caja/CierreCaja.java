@@ -22,6 +22,18 @@ public class CierreCaja {
   private long totalLlevar;
   /** Lo cobrado por envios, ya incluido dentro de `totalDomicilio`. */
   private long totalEnvios;
+  // --- Lo que el contador necesita para declarar ---------------------------
+  // Se guardan y no se recalculan: el INC se declara cada dos meses, y para
+  // entonces las comandas de ese turno pueden haber cambiado de estado.
+  private long baseGravable;
+  private long baseNoGravada;
+  private long totalCargos;
+  private int porcentajeInc;
+  private long descuentos;
+  private int comensales;
+  private int lineasAnuladas;
+  private long valorAnulado;
+
   private String cerradoPor;
   private Instant fechaHora;
 
@@ -57,6 +69,22 @@ public class CierreCaja {
   public void setTotalLlevar(long totalLlevar) { this.totalLlevar = totalLlevar; }
   public long getTotalEnvios() { return totalEnvios; }
   public void setTotalEnvios(long totalEnvios) { this.totalEnvios = totalEnvios; }
+  public long getBaseGravable() { return baseGravable; }
+  public void setBaseGravable(long baseGravable) { this.baseGravable = baseGravable; }
+  public long getBaseNoGravada() { return baseNoGravada; }
+  public void setBaseNoGravada(long baseNoGravada) { this.baseNoGravada = baseNoGravada; }
+  public long getTotalCargos() { return totalCargos; }
+  public void setTotalCargos(long totalCargos) { this.totalCargos = totalCargos; }
+  public int getPorcentajeInc() { return porcentajeInc; }
+  public void setPorcentajeInc(int porcentajeInc) { this.porcentajeInc = porcentajeInc; }
+  public long getDescuentos() { return descuentos; }
+  public void setDescuentos(long descuentos) { this.descuentos = descuentos; }
+  public int getComensales() { return comensales; }
+  public void setComensales(int comensales) { this.comensales = comensales; }
+  public int getLineasAnuladas() { return lineasAnuladas; }
+  public void setLineasAnuladas(int lineasAnuladas) { this.lineasAnuladas = lineasAnuladas; }
+  public long getValorAnulado() { return valorAnulado; }
+  public void setValorAnulado(long valorAnulado) { this.valorAnulado = valorAnulado; }
   public String getCerradoPor() { return cerradoPor; }
   public void setCerradoPor(String cerradoPor) { this.cerradoPor = cerradoPor; }
   public Instant getFechaHora() { return fechaHora; }

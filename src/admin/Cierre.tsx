@@ -41,6 +41,14 @@ const VACIO: ResumenTurno = {
   totalEnvios: 0,
   ventaDiaAnterior: 0,
   ordenesDiaAnterior: 0,
+  baseGravable: 0,
+  baseNoGravada: 0,
+  totalCargos: 0,
+  porcentajeInc: 0,
+  descuentos: 0,
+  comensales: 0,
+  lineasAnuladas: 0,
+  valorAnulado: 0,
 }
 
 export default function Cierre() {

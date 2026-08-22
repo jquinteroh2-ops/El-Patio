@@ -404,6 +404,20 @@ export interface CierreCaja {
   totalLlevar: number
   /** Lo cobrado por envios, ya incluido dentro de `totalDomicilio`. */
   totalEnvios: number
+  /**
+   * Lo que el contador necesita para declarar, guardado con el cierre.
+   *
+   * Se guarda y no se recalcula: el INC se declara cada dos meses, y para
+   * entonces las comandas de ese turno pueden haber cambiado de estado.
+   */
+  baseGravable: number
+  baseNoGravada: number
+  totalCargos: number
+  porcentajeInc: number
+  descuentos: number
+  comensales: number
+  lineasAnuladas: number
+  valorAnulado: number
   cerradoPor: string
   fechaHora: string
 }

@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,9 @@ public class ServicioAdministracion {
   private final Repositorios.DeMesas mesas;
   private final Repositorios.DeUsuarios usuarios;
   private final Repositorios.DeCierres cierres;
+  // La tarifa de INC del turno sale de aqui: es configuracion del
+  // establecimiento, no un numero fijo del sistema.
+  private final Repositorios.DeAjustes ajustes;
   private final GeneradorIds ids;
   private final Reloj reloj;
   private final PublicadorEventos eventos;
@@ -61,12 +65,14 @@ public class ServicioAdministracion {
       Repositorios.DeCierres cierres,
       GeneradorIds ids,
       Reloj reloj,
-      PublicadorEventos eventos) {
+      PublicadorEventos eventos,
+      Repositorios.DeAjustes ajustes) {
     this.ordenes = ordenes;
     this.pagos = pagos;
     this.mesas = mesas;
     this.usuarios = usuarios;
     this.cierres = cierres;
+    this.ajustes = ajustes;
     this.ids = ids;
     this.reloj = reloj;
     this.eventos = eventos;
@@ -165,9 +171,37 @@ public class ServicioAdministracion {
 
     // El canal de cada pago sale de su comanda: el pago no lo guarda porque ya
     // esta en la orden, y duplicarlo abriria la puerta a que se contradigan.
+    List<Orden> todas = ordenes.listar();
     Map<String, TipoPedido> canalPorOrden =
-        ordenes.listar().stream()
-            .collect(Collectors.toMap(Orden::getId, Orden::getTipo, (a, b) -> a));
+        todas.stream().collect(Collectors.toMap(Orden::getId, Orden::getTipo, (a, b) -> a));
+
+    // Las comandas que corresponden a los pagos del turno. Todo lo que se
+    // reporta de la comanda -comensales, descuentos, anulaciones- se mira
+    // sobre estas y no sobre las del dia entero: un cierre es de un turno.
+    Set<String> ordenesDelTurno =
+        delTurno.stream().map(Pago::getOrdenId).collect(Collectors.toSet());
+    List<Orden> comandasDelTurno =
+        todas.stream().filter(o -> ordenesDelTurno.contains(o.getId())).toList();
+
+    // La base gravable es el subtotal de alimentos y bebidas: lo unico que
+    // causa impuesto al consumo. Los cargos y el domicilio van aparte porque no
+    // lo causan, y sumarlos aqui inflaria la base que se declara.
+    long baseGravable = delTurno.stream().mapToLong(Pago::getSubtotal).sum();
+    long totalCargos = delTurno.stream().mapToLong(Pago::getCargosAdicionales).sum();
+    long totalEnvios = delTurno.stream().mapToLong(Pago::getCostoEnvio).sum();
+
+    long descuentos =
+        comandasDelTurno.stream()
+            .flatMap(o -> o.getItems().stream())
+            .filter(ItemOrden::estaVigente)
+            .mapToLong(ItemOrden::descuento)
+            .sum();
+
+    List<ItemOrden> anulados =
+        comandasDelTurno.stream()
+            .flatMap(o -> o.getItems().stream())
+            .filter(i -> !i.estaVigente())
+            .toList();
 
     return new Dtos.ResumenTurno(
         hoy,
@@ -183,9 +217,17 @@ public class ServicioAdministracion {
         totalDeCanal(delTurno, canalPorOrden, TipoPedido.MESA),
         totalDeCanal(delTurno, canalPorOrden, TipoPedido.DOMICILIO),
         totalDeCanal(delTurno, canalPorOrden, TipoPedido.LLEVAR),
-        delTurno.stream().mapToLong(Pago::getCostoEnvio).sum(),
+        totalEnvios,
         deAyer.stream().mapToLong(Pago::getTotal).sum(),
-        deAyer.size());
+        deAyer.size(),
+        baseGravable,
+        totalCargos + totalEnvios,
+        totalCargos,
+        ajustes.leer().getPorcentajeInc(),
+        descuentos,
+        comandasDelTurno.stream().mapToInt(Orden::getComensales).sum(),
+        anulados.size(),
+        anulados.stream().mapToLong(ItemOrden::precio).sum());
   }
 
   @Transactional(readOnly = true)
@@ -213,6 +255,14 @@ public class ServicioAdministracion {
     cierre.setTotalDomicilio(resumen.totalDomicilio());
     cierre.setTotalLlevar(resumen.totalLlevar());
     cierre.setTotalEnvios(resumen.totalEnvios());
+    cierre.setBaseGravable(resumen.baseGravable());
+    cierre.setBaseNoGravada(resumen.baseNoGravada());
+    cierre.setTotalCargos(resumen.totalCargos());
+    cierre.setPorcentajeInc(resumen.porcentajeInc());
+    cierre.setDescuentos(resumen.descuentos());
+    cierre.setComensales(resumen.comensales());
+    cierre.setLineasAnuladas(resumen.lineasAnuladas());
+    cierre.setValorAnulado(resumen.valorAnulado());
     cierre.setCerradoPor(cerradoPor);
     cierre.setFechaHora(reloj.ahora());
 

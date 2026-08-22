@@ -11,6 +11,14 @@ public class ItemOrden {
   private String itemCartaId;
   private String nombre;
   private long precioUnitario;
+  /**
+   * El precio que tenia en la carta cuando se tomo la comanda.
+   *
+   * Nulo cuando se vendio sin rebaja, que es el caso normal. Existe para poder
+   * decir en el cierre cuanto se descontó: la carta de hoy no sirve para eso
+   * porque el precio pudo cambiar desde entonces.
+   */
+  private Long precioLista;
   private int cantidad;
   private List<ModificadorSeleccionado> modificadoresSeleccionados = new ArrayList<>();
   /** "sin sal", "para compartir", "termino tres cuartos". */
@@ -46,6 +54,19 @@ public class ItemOrden {
   public void setItemCartaId(String itemCartaId) { this.itemCartaId = itemCartaId; }
   public String getNombre() { return nombre; }
   public void setNombre(String nombre) { this.nombre = nombre; }
+  /**
+   * Lo que se rebajo en esta linea, si se rebajo algo.
+   *
+   * Se calcula y no se guarda porque es una resta de dos datos que ya estan:
+   * guardarlo abriria la puerta a que los tres se contradigan.
+   */
+  public long descuento() {
+    if (precioLista == null || precioLista <= precioUnitario) return 0;
+    return (precioLista - precioUnitario) * cantidad;
+  }
+
+  public Long getPrecioLista() { return precioLista; }
+  public void setPrecioLista(Long precioLista) { this.precioLista = precioLista; }
   public long getPrecioUnitario() { return precioUnitario; }
   public void setPrecioUnitario(long precioUnitario) { this.precioUnitario = precioUnitario; }
   public int getCantidad() { return cantidad; }

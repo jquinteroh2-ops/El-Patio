@@ -376,7 +376,49 @@ public final class Dtos {
       long totalEnvios,
       /** Mismo turno del dia anterior, para comparar. */
       long ventaDiaAnterior,
-      int ordenesDiaAnterior) {}
+      int ordenesDiaAnterior,
+
+      // --- Lo que el contador necesita para declarar -------------------------
+      //
+      // Estas cifras no son un adorno del cierre: son las lineas que se llevan
+      // a la declaracion. Estaban implicitas en el total y habia que deducirlas
+      // a mano, que es justo donde aparecen las diferencias.
+
+      /**
+       * Base gravable: alimentos y bebidas, antes de impuesto y de propina.
+       * Es la base sobre la que se liquida el impuesto al consumo.
+       */
+      long baseGravable,
+      /**
+       * Base no gravada: cargos adicionales y domicilios. No causan INC, y por
+       * eso no pueden ir sumados dentro de la base gravable.
+       */
+      long baseNoGravada,
+      /** Cargos adicionales cobrados: descorche, decoracion. */
+      long totalCargos,
+      /** La tarifa de INC que rigio el turno, tal como quedo configurada. */
+      int porcentajeInc,
+
+      /**
+       * Lo que se dejo de cobrar por promociones, contra el precio de lista.
+       *
+       * Solo cuenta lo vendido con el precio de lista guardado en la linea: una
+       * rebaja anterior a que existiera esa columna no se puede reconstruir.
+       */
+      long descuentos,
+
+      /** Comensales atendidos. Separa el ticket por persona del ticket por mesa. */
+      int comensales,
+
+      /**
+       * Lo anulado en el turno: cuantas lineas y cuanto valian.
+       *
+       * Un cierre sin anulaciones no se puede auditar. No entra en la venta
+       * -no se cobro- pero tiene que verse, porque es la unica huella de un
+       * plato que salio de cocina y no se pago.
+       */
+      int lineasAnuladas,
+      long valorAnulado) {}
 
   public record PeticionCierre(String cerradoPor) {}
 
