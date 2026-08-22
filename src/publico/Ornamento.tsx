@@ -4,6 +4,17 @@
  * Va en SVG y no en imagen para que cargue sin red, se vea nitido en cualquier
  * pantalla y herede el color del texto que lo rodea.
  */
+/**
+ * Tamano y color de partida.
+ *
+ * Un SVG sin alto ni ancho se estira hasta llenar su contenedor. Sin este
+ * valor por defecto, olvidar la clase no da un error ni se nota al programar:
+ * da un ornamento de pantalla completa que empuja el contenido real fuera de
+ * la vista, y parece que la pagina estuviera vacia. Va primero en el atributo
+ * para que cualquier clase que llegue lo pueda pisar.
+ */
+const MEDIDA = 'h-14 w-24 text-ambar-400/60'
+
 export function Ornamento({ className = '' }: { className?: string }) {
   return (
     <svg
@@ -12,7 +23,7 @@ export function Ornamento({ className = '' }: { className?: string }) {
       stroke="currentColor"
       strokeWidth="1"
       strokeLinecap="round"
-      className={className}
+      className={`${MEDIDA} ${className}`}
       aria-hidden
     >
       {/* Arco */}
