@@ -55,9 +55,17 @@ self.addEventListener('fetch', (evento) => {
 
   // Navegacion: primero la red, y si no hay senal, el index guardado.
   // Asi el mesero siempre entra, aunque el salon se quede sin WiFi.
+  //
+  // `cache: 'reload'` salta la cache HTTP del navegador, no la de aqui. Sin
+  // eso, este `fetch` podia recibir el index.html que el navegador tenia
+  // guardado por su cuenta -uno viejo, que apunta a los archivos JS de otra
+  // compilacion- y el aparato se quedaba en una version anterior aunque
+  // hubiera senal de sobra. Es defensa doble: las cabeceras del servidor ya lo
+  // impiden, pero un aparato que abrio el sitio antes de que existieran esas
+  // cabeceras todavia tiene el archivo viejo guardado.
   if (peticion.mode === 'navigate') {
     evento.respondWith(
-      fetch(peticion)
+      fetch(peticion.url, { cache: 'reload', credentials: 'same-origin' })
         .then((respuesta) => {
           const copia = respuesta.clone()
           void caches.open(CACHE).then((cache) => cache.put(RAIZ, copia))

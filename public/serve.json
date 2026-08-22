@@ -1,0 +1,31 @@
+{
+  "_comentario": [
+    "Cabeceras de caché del sitio. Lo lee `serve`, que es quien entrega dist/ en",
+    "Railway; Vite copia este archivo a dist/ junto con el resto de public/.",
+    "",
+    "Sin esto no se enviaba ningún Cache-Control y el navegador decidía por su",
+    "cuenta cuánto guardar el index.html. El resultado era el peor posible: se",
+    "desplegaba una versión nueva y el cliente seguía abriendo la anterior,",
+    "porque el HTML guardado apunta a los archivos JS de su propia compilación.",
+    "",
+    "La regla es la de siempre para una aplicación de una sola página:",
+    "el index.html se revalida SIEMPRE, y los archivos con huella en el nombre",
+    "se guardan para siempre porque un cambio en ellos cambia su nombre."
+  ],
+  "headers": [
+    {
+      "source": "index.html",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "sw.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "assets/**",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}
