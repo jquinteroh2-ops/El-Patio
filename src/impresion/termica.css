@@ -23,8 +23,14 @@
     margin: 0;
   }
 
-  /* Se oculta la aplicación entera y solo queda el ticket. */
-  body > *:not(#contenedor-impresion) {
+  /* Se oculta la aplicación entera y solo queda el ticket.
+     La condición del `:has` importa: sin ella, esta regla también se aplica
+     cuando NO hay ningún ticket montado —alguien presionó Ctrl+P, o el
+     navegador imprimió por su cuenta— y entonces esconde la aplicación sin
+     poner nada en su lugar. El resultado es una hoja en blanco sin ninguna
+     explicación. Con la condición, un Ctrl+P imprime lo que se ve, que es lo
+     que cualquiera espera, y el ticket sigue saliendo solo cuando lo hay. */
+  body:has(#contenedor-impresion > *) > *:not(#contenedor-impresion) {
     display: none !important;
   }
 

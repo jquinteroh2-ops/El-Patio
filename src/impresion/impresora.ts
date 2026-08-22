@@ -26,6 +26,15 @@ const ID_CONTENEDOR = 'contenedor-impresion'
 const ESPERA_MAXIMA_PINTADO_MS = 1500
 
 /**
+ * Lo que se espera a que el navegador termine con el papel.
+ *
+ * `afterprint` lo dispara Chrome tanto si se imprimio como si se cancelo, pero
+ * si algun dia no llegara, la cola no puede quedarse detenida para siempre: la
+ * caja tiene que poder sacar el siguiente tiquete.
+ */
+const ESPERA_MAXIMA_IMPRESION_MS = 5000
+
+/**
  * Impresora del navegador.
  *
  * El documento se monta en un contenedor aparte del arbol de la aplicacion, se
@@ -84,7 +93,7 @@ export class ImpresoraNavegador implements Impresora {
     })
 
     try {
-      window.print()
+      await this.imprimirYEsperar()
     } finally {
       // Se limpia siempre, incluso si el usuario cancelo el dialogo: dejar el
       // ticket montado haria que la siguiente impresion sacara los dos.
@@ -103,6 +112,41 @@ export class ImpresoraNavegador implements Impresora {
         setTimeout(seguir, ESPERA_MAXIMA_PINTADO_MS)
       })
     }
+  }
+
+  /**
+   * Manda el papel y espera a que el navegador haya terminado con el.
+   *
+   * La espera no es una precaucion de mas: con `--kiosk-printing`, que es como
+   * corre la caja para que no aparezca el dialogo, `window.print()` NO bloquea.
+   * Devuelve el control de inmediato y el trabajo de impresion se arma despues.
+   * Desmontar el ticket en ese hueco es exactamente lo que saca la hoja en
+   * blanco: cuando el navegador va a leer la pagina, ya no hay nada que leer.
+   *
+   * Con el dialogo normal `print()` si bloquea y `afterprint` llega enseguida,
+   * asi que esto no cuesta nada donde ya funcionaba.
+   */
+  private imprimirYEsperar(): Promise<void> {
+    return new Promise<void>((resolver) => {
+      let terminado = false
+      let red: ReturnType<typeof setTimeout>
+      const terminar = () => {
+        if (terminado) return
+        terminado = true
+        window.removeEventListener('afterprint', terminar)
+        clearTimeout(red)
+        resolver()
+      }
+      window.addEventListener('afterprint', terminar)
+      red = setTimeout(terminar, ESPERA_MAXIMA_IMPRESION_MS)
+      try {
+        window.print()
+      } catch {
+        // Si el navegador ni siquiera acepto la orden, no tiene sentido esperar
+        // un `afterprint` que no va a llegar.
+        terminar()
+      }
+    })
   }
 
   private contenedor(): HTMLElement {
