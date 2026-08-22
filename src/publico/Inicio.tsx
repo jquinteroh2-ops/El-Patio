@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Clock, Flame, MapPin, MessageCircle, Navigation, Sparkles, Wine } from 'lucide-react'
 import { RESTAURANTE } from '@/compartido/config'
+import * as api from '@/compartido/mockApi'
+import type { Publicacion } from '@/compartido/tipos'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import { enlaceMapaEmbebido, enlaceRutaHacia } from './ubicacion'
 import { Filete, Ornamento } from './Ornamento'
@@ -27,6 +30,23 @@ const DISTINTIVOS = [
 
 export default function Inicio() {
   const whatsapp = enlaceWhatsApp(RESTAURANTE.whatsapp, SALUDO)
+
+  // Lo que el restaurante esta anunciando ahora. Se pide aparte y sin bloquear:
+  // la portada tiene que pintarse completa aunque esto no llegue, porque una
+  // promocion es un extra y la carta y la reserva son el motivo de la visita.
+  const [anuncios, setAnuncios] = useState<Publicacion[]>([])
+  useEffect(() => {
+    let vigente = true
+    api
+      .publicacionesVisibles()
+      .then((datos) => {
+        if (vigente) setAnuncios(datos.filter((p) => p.tipo !== 'galeria').slice(0, 2))
+      })
+      .catch(() => undefined)
+    return () => {
+      vigente = false
+    }
+  }, [])
 
   return (
     <>
@@ -104,6 +124,60 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* ---------------- Lo que esta pasando ----------------
+          Solo aparece si hay algo que anunciar. Una seccion vacia con un
+          «no hay promociones» ocuparia el mejor lugar de la portada para no
+          decir nada. */}
+      {anuncios.length > 0 && (
+        <section className="border-t border-crema-100/10 bg-bosque-900/40">
+          <div className="mx-auto max-w-5xl px-5 py-16">
+            <div className="flex items-end justify-between gap-4">
+              <h2 className="font-titulo text-3xl font-light text-crema-100">
+                Ahora en El Patio
+              </h2>
+              <Link
+                to="/novedades"
+                className="shrink-0 text-xs uppercase tracking-[0.16em] text-ambar-300 transition hover:text-ambar-200"
+              >
+                Ver todo
+              </Link>
+            </div>
+
+            <div className="mt-7 grid gap-6 sm:grid-cols-2">
+              {anuncios.map((p) => (
+                <Link
+                  key={p.id}
+                  to="/novedades"
+                  className="overflow-hidden rounded-2xl border border-crema-100/10 transition hover:border-ambar-500/40"
+                >
+                  {p.imagen && (
+                    <img
+                      src={api.urlImagen(p.imagen, 900)}
+                      alt={p.titulo}
+                      loading="lazy"
+                      className="h-48 w-full object-cover"
+                    />
+                  )}
+                  <div className="p-5">
+                    <p className="text-[0.65rem] uppercase tracking-[0.3em] text-ambar-400">
+                      {p.tipo === 'promocion' ? 'Promoción' : 'Evento'}
+                    </p>
+                    <h3 className="mt-2 font-titulo text-2xl font-light text-crema-100">
+                      {p.titulo}
+                    </h3>
+                    {p.cuerpo && (
+                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-crema-100/60">
+                        {p.cuerpo}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---------------- El lugar ---------------- */}
       <section className="mx-auto max-w-3xl px-5 py-20 text-center">

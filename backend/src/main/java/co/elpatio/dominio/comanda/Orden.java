@@ -9,6 +9,7 @@ import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
 import co.elpatio.dominio.pedido.UbicacionEntrega;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -127,13 +128,18 @@ public class Orden {
    * Agrega un producto de la carta. Un mismo plato sin modificadores ni nota se
    * acumula en una sola linea mientras no se haya enviado, para que la comanda
    * no se llene de renglones repetidos.
+   *
+   * El dia entra por parametro y no se lee de un reloj aqui adentro: el dominio
+   * no consulta la hora, se la dan. Sirve ademas para que una promocion se
+   * pueda probar sin esperar a que llegue la fecha.
    */
   public ItemOrden agregarItem(
       ItemCarta carta,
       int cantidad,
       List<ModificadorSeleccionado> modificadores,
       String notaCocina,
-      String nuevoId) {
+      String nuevoId,
+      LocalDate dia) {
     exigirEditable();
     if (!carta.isDisponible()) throw new ReglaDeNegocioError(carta.getNombre() + " está agotado");
 
@@ -156,7 +162,10 @@ public class Orden {
     item.setId(nuevoId);
     item.setItemCartaId(carta.getId());
     item.setNombre(carta.getNombre());
-    item.setPrecioUnitario(carta.getPrecio());
+    // El precio que rige HOY, que puede ser el de promocion. Se copia a la
+    // linea y ya no cambia: si manana termina la promocion, esta comanda sigue
+    // valiendo lo que se le dijo al cliente cuando pidio.
+    item.setPrecioUnitario(carta.precioVigente(dia));
     item.setCantidad(cantidad);
     item.setModificadoresSeleccionados(new ArrayList<>(seleccion));
     item.setNotaCocina(notaCocina);

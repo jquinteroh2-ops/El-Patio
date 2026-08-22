@@ -30,6 +30,14 @@ export default function LayoutPublico() {
               Carta
             </NavLink>
             <NavLink
+              to="/novedades"
+              className={({ isActive }) =>
+                `transition hover:text-ambar-300 ${isActive ? 'text-ambar-300' : 'text-crema-100/70'}`
+              }
+            >
+              Novedades
+            </NavLink>
+            <NavLink
               to="/pedir"
               className={({ isActive }) =>
                 `transition hover:text-ambar-300 ${isActive ? 'text-ambar-300' : 'text-crema-100/70'}`

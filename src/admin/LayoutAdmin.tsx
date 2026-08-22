@@ -1,13 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import {
-  BarChart3,
-  BookOpen,
-  CalendarClock,
-  LayoutDashboard,
-  Receipt,
-  Settings,
-  Wallet,
-} from 'lucide-react'
+import { BarChart3, BookOpen, CalendarClock, LayoutDashboard, Megaphone, Receipt, Settings, Wallet } from 'lucide-react'
 import { useSesionActiva } from '@/compartido/auth'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
 
@@ -16,6 +8,8 @@ const SECCIONES = [
   { ruta: '/admin', etiqueta: 'Inicio', icono: LayoutDashboard, exacta: true, soloAdmin: false },
   { ruta: '/admin/reservas', etiqueta: 'Reservas', icono: CalendarClock, exacta: false, soloAdmin: false },
   { ruta: '/admin/carta', etiqueta: 'Carta', icono: BookOpen, exacta: false, soloAdmin: false },
+  // Solo el dueno: lo que se publica aqui lo ve cualquiera que pase por el sitio.
+  { ruta: '/admin/publicaciones', etiqueta: 'Publicaciones', icono: Megaphone, exacta: false, soloAdmin: true },
   { ruta: '/admin/ventas', etiqueta: 'Ventas', icono: Receipt, exacta: false, soloAdmin: false },
   { ruta: '/admin/cierre', etiqueta: 'Cierre de caja', icono: Wallet, exacta: false, soloAdmin: false },
   { ruta: '/admin/reportes', etiqueta: 'Reportes', icono: BarChart3, exacta: false, soloAdmin: true },

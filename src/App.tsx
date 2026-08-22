@@ -11,6 +11,7 @@ import { ProveedorAvisos } from '@/componentes/ui/Avisos'
 import LayoutPublico from '@/publico/LayoutPublico'
 import Inicio from '@/publico/Inicio'
 import Carta from '@/publico/Carta'
+import Novedades from '@/publico/Novedades'
 import Reservar from '@/publico/Reservar'
 import Pedir from '@/publico/Pedir'
 import Acceso from '@/publico/Acceso'
@@ -25,6 +26,7 @@ import LayoutAdmin from '@/admin/LayoutAdmin'
 import InicioAdmin from '@/admin/InicioAdmin'
 import Reservas from '@/admin/Reservas'
 import CartaAdmin from '@/admin/CartaAdmin'
+import Publicaciones from '@/admin/Publicaciones'
 import Ventas from '@/admin/Ventas'
 import Cierre from '@/admin/Cierre'
 import Reportes from '@/admin/Reportes'
@@ -52,6 +54,7 @@ export default function App() {
             <Route element={<LayoutPublico />}>
               <Route path="/" element={<Inicio />} />
               <Route path="/carta" element={<Carta />} />
+              <Route path="/novedades" element={<Novedades />} />
               <Route path="/reservar" element={<Reservar />} />
               <Route path="/pedir" element={<Pedir />} />
             </Route>
@@ -141,6 +144,7 @@ export default function App() {
               <Route index element={<InicioAdmin />} />
               <Route path="reservas" element={<Reservas />} />
               <Route path="carta" element={<CartaAdmin />} />
+              <Route path="publicaciones" element={<Publicaciones />} />
               <Route path="ventas" element={<Ventas />} />
               <Route path="cierre" element={<Cierre />} />
               <Route

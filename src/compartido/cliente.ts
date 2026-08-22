@@ -287,3 +287,48 @@ export async function pedirOpcional<T>(ruta: string, opciones: Opciones = {}): P
   const resultado = await pedir<T | undefined>(ruta, opciones)
   return resultado ?? null
 }
+
+/**
+ * Sube un archivo.
+ *
+ * Va aparte de `pedir` porque un archivo no es JSON: viaja como `FormData` y
+ * el navegador tiene que poner el `Content-Type` con la frontera del multipart.
+ * Si se lo ponemos nosotros —como hace `pedir` con `application/json`— esa
+ * frontera falta y el servidor recibe un cuerpo que no puede separar.
+ */
+export async function subirArchivo<T>(ruta: string, campo: string, archivo: File): Promise<T> {
+  if (!hayConexion()) throw new SinConexionError()
+
+  const cuerpo = new FormData()
+  cuerpo.append(campo, archivo)
+
+  const enviar = async (token: string | null) =>
+    fetch(`${URL_API}${ruta}`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: cuerpo,
+    })
+
+  let respuesta: Response
+  try {
+    respuesta = await enviar(await tokenVigente())
+  } catch {
+    throw new SinConexionError('No hay conexión con el servidor')
+  }
+
+  // Subir una foto desde el celular puede tardar, y la sesión puede vencerse
+  // justo mientras sube. Se renueva y se reintenta una vez, igual que `pedir`:
+  // perder la foto por eso obligaría a subir los megas de nuevo.
+  if (respuesta.status === 401) {
+    const nuevo = await renovar()
+    if (!nuevo) {
+      anunciarExpiracion()
+      throw new ErrorApi('La sesión expiró: vuelva a ingresar', 401)
+    }
+    respuesta = await enviar(nuevo)
+  }
+
+  if (!respuesta.ok) throw new ErrorApi(await mensajeDeError(respuesta), respuesta.status)
+  const texto = await respuesta.text()
+  return (texto ? JSON.parse(texto) : undefined) as T
+}

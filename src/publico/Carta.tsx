@@ -4,6 +4,7 @@ import { Plus, ShoppingBag } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { CategoriaConItems } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
+import { enPromocion } from '@/compartido/calculos'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type { EstadoCanal, ItemCarta } from '@/compartido/tipos'
 import { HojaModificadores, type SeleccionProducto } from '@/comandera/HojaModificadores'
@@ -151,9 +152,27 @@ export default function Carta() {
                               Agotado
                             </span>
                           )}
+                          {item.disponible && enPromocion(item) && (
+                            <span className="ml-2 rounded-sm border border-ambar-400/50 bg-ambar-500/10 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-ambar-300">
+                              Promoción
+                            </span>
+                          )}
                         </h3>
-                        <span className="shrink-0 font-titulo text-xl tabular-nums text-ambar-300">
-                          {formatoCOP(item.precio)}
+                        {/* En promoción se muestran los dos precios, con el de
+                            lista tachado. Poner solo el rebajado ahorraría un
+                            renglón y escondería justo lo que hace atractiva la
+                            oferta: cuánto se está ahorrando el cliente. */}
+                        <span className="shrink-0 text-right font-titulo text-xl tabular-nums text-ambar-300">
+                          {enPromocion(item) ? (
+                            <>
+                              <span className="mr-2 text-base text-crema-100/40 line-through">
+                                {formatoCOP(item.precio)}
+                              </span>
+                              {formatoCOP(item.precioPromocional!)}
+                            </>
+                          ) : (
+                            formatoCOP(item.precio)
+                          )}
                         </span>
                       </div>
                       {item.descripcion && (

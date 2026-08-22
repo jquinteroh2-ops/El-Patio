@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { BookOpen, GlassWater, Pencil, Plus, Search, Soup } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
+import { enPromocion } from '@/compartido/calculos'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type { CategoriaCarta, ItemCarta } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
@@ -174,8 +175,20 @@ export default function CartaAdmin() {
                 </p>
               </div>
 
-              <span className="shrink-0 text-sm font-semibold tabular-nums text-crema-100">
-                {formatoCOP(item.precio)}
+              {/* Con promoción se muestran los dos precios, el de lista tachado.
+                  Un solo número no dejaría ver que el plato está rebajado, que
+                  es justo lo que el dueño viene a comprobar a esta pantalla. */}
+              <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-crema-100">
+                {enPromocion(item) ? (
+                  <>
+                    <span className="block text-xs font-normal text-noche-400 line-through">
+                      {formatoCOP(item.precio)}
+                    </span>
+                    <span className="text-ambar-300">{formatoCOP(item.precioPromocional!)}</span>
+                  </>
+                ) : (
+                  formatoCOP(item.precio)
+                )}
               </span>
 
               <Interruptor

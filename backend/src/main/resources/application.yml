@@ -48,15 +48,6 @@ spring:
       max-file-size: 12MB
       max-request-size: 12MB
 
-elpatio:
-  imagenes:
-    # Donde se guardan las fotos de promociones, eventos y galeria.
-    #
-    # EN RAILWAY TIENE QUE APUNTAR A UN VOLUMEN. El sistema de archivos normal
-    # del contenedor se borra en cada despliegue: sin volumen, las fotos duran
-    # hasta el siguiente `git push` y el sitio queda con los marcos vacios.
-    ruta: ${ELPATIO_RUTA_IMAGENES:./datos/imagenes}
-
 server:
   port: ${PORT:8080}
   error:
@@ -79,6 +70,24 @@ management:
 elpatio:
   # El día operativo y el turno se calculan en esta zona, nunca en UTC.
   zona-horaria: ${ELPATIO_ZONA:America/Bogota}
+
+  imagenes:
+    # Dónde se guardan las fotos de promociones, eventos y galería.
+    #
+    # EN RAILWAY TIENE QUE APUNTAR A UN VOLUMEN. El sistema de archivos normal
+    # del contenedor se borra en cada despliegue: sin volumen, las fotos duran
+    # hasta el siguiente despliegue y el sitio queda con los marcos vacíos.
+    ruta: ${ELPATIO_RUTA_IMAGENES:./datos/imagenes}
+
+    # Si estas tres están puestas, las fotos van a Cloudinary y no al disco.
+    # Vacías en desarrollo: la máquina local no necesita cuenta de nadie.
+    #
+    # El secreto NO se escribe aquí ni en ningún archivo del repositorio: entra
+    # por variable de entorno del servicio, igual que el secreto del JWT.
+    cloudinary:
+      nombre: ${ELPATIO_CLOUDINARY_NOMBRE:}
+      llave: ${ELPATIO_CLOUDINARY_LLAVE:}
+      secreto: ${ELPATIO_CLOUDINARY_SECRETO:}
 
   # Dónde queda el local, para medir qué tan lejos pidió el cliente.
   #

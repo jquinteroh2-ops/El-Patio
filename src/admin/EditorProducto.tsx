@@ -31,6 +31,9 @@ const vacio = (categoriaId: string): ItemCarta => ({
   nombre: '',
   descripcion: '',
   precio: 0,
+  precioPromocional: null,
+  promocionDesde: null,
+  promocionHasta: null,
   disponible: true,
   tiempoPreparacionMin: 15,
   destino: 'cocina',
@@ -91,6 +94,21 @@ export function EditorProducto({
     }
     if (borrador.precio <= 0) {
       setError('El precio debe ser mayor que cero')
+      return
+    }
+    // La base rechaza esto igual, pero el mesero merece enterarse aquí y no
+    // después de guardar: es el error de teclado que sube el precio creyendo
+    // que lo baja.
+    if (borrador.precioPromocional != null && borrador.precioPromocional >= borrador.precio) {
+      setError('El precio de promoción tiene que ser menor que el normal')
+      return
+    }
+    if (
+      borrador.promocionDesde &&
+      borrador.promocionHasta &&
+      borrador.promocionDesde > borrador.promocionHasta
+    ) {
+      setError('La promoción terminaría antes de empezar')
       return
     }
     onGuardar({
@@ -189,6 +207,73 @@ export function EditorProducto({
               className={CAMPO}
             />
           </label>
+        </div>
+
+        {/* ---------- Precio promocional ----------
+            El descuento se pone como PRECIO, no como rebaja sobre la cuenta.
+            Así la venta ocurre a este valor y el impuesto al consumo, la
+            propina y el documento ante la DIAN se calculan sobre él sin
+            ninguna regla aparte. */}
+        <div className="rounded-xl border border-noche-800 bg-noche-900/60 p-3">
+          <div className="mb-2.5 flex items-center justify-between">
+            <span className="text-xs uppercase tracking-wide text-noche-400">
+              Precio en promoción
+            </span>
+            {borrador.precioPromocional ? (
+              <button
+                type="button"
+                className="text-xs text-ambar-300"
+                onClick={() =>
+                  cambiar({ precioPromocional: null, promocionDesde: null, promocionHasta: null })
+                }
+              >
+                Quitar la promoción
+              </button>
+            ) : null}
+          </div>
+
+          <input
+            inputMode="numeric"
+            placeholder="Vacío: se vende al precio normal"
+            value={borrador.precioPromocional || ''}
+            onChange={(e) =>
+              cambiar({ precioPromocional: Number(e.target.value.replace(/\D/g, '')) || null })
+            }
+            className={CAMPO}
+          />
+
+          {borrador.precioPromocional ? (
+            <>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
+                    Desde
+                  </span>
+                  <input
+                    type="date"
+                    value={borrador.promocionDesde ?? ''}
+                    onChange={(e) => cambiar({ promocionDesde: e.target.value || null })}
+                    className={CAMPO}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
+                    Hasta
+                  </span>
+                  <input
+                    type="date"
+                    value={borrador.promocionHasta ?? ''}
+                    onChange={(e) => cambiar({ promocionHasta: e.target.value || null })}
+                    className={CAMPO}
+                  />
+                </label>
+              </div>
+              <p className="mt-1.5 text-xs text-noche-400">
+                Sin fechas, la promoción vale mientras el precio esté puesto. Con fechas, empieza y
+                termina sola.
+              </p>
+            </>
+          ) : null}
         </div>
 
         <label className="block">

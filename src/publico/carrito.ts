@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { escribirCrudo, leerCrudo } from '@/compartido/almacen'
+import { precioVigente } from '@/compartido/calculos'
 import type { ItemCarta, ModificadorSeleccionado } from '@/compartido/tipos'
 
 /**
@@ -99,7 +100,10 @@ export function useCarrito(): Carrito {
         id: `lc_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
         itemCartaId: item.id,
         nombre: item.nombre,
-        precioUnitario: item.precio,
+        // El precio que rige hoy, que puede ser el de promocion. Es el mismo
+        // calculo que hace el backend al armar la comanda: si aqui se copiara
+        // el de lista, el cliente veria un precio en la carta y otro al pagar.
+        precioUnitario: precioVigente(item),
         cantidad,
         modificadores,
         nota,

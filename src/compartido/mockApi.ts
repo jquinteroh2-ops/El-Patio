@@ -1,4 +1,5 @@
-import { ErrorApi, borrarCredenciales, guardarCredenciales, pedir, pedirOpcional, tokenDeRefresco } from './cliente'
+import { ErrorApi, borrarCredenciales, guardarCredenciales, pedir, pedirOpcional, subirArchivo, tokenDeRefresco } from './cliente'
+import { URL_API } from './config'
 import {
   SinConexionError,
   colaOrdenada,
@@ -26,7 +27,9 @@ import type {
   ModificadorSeleccionado,
   Orden,
   Pago,
+  Publicacion,
   EstadoCanal,
+  TipoPublicacion,
   EstadoPedido,
   Reserva,
   Rol,
@@ -270,6 +273,73 @@ export async function guardarCategoria(categoria: CategoriaCarta): Promise<Categ
   return contra(() =>
     pedir<CategoriaCarta>('/api/carta/categorias', { metodo: 'PUT', cuerpo: categoria }),
   )
+}
+
+// ---------------------------------------------------------------------------
+// Publicaciones: promociones, eventos y fotos del local
+// ---------------------------------------------------------------------------
+
+/**
+ * Lo que esta publicado y vigente hoy. Sin sesion: es lo que el restaurante
+ * quiere que vea quien todavia no es cliente.
+ */
+export async function publicacionesVisibles(tipo?: TipoPublicacion): Promise<Publicacion[]> {
+  return contra(() =>
+    pedir<Publicacion[]>('/api/publicaciones/visibles', {
+      consulta: tipo ? { tipo } : undefined,
+      sinSesion: true,
+    }),
+  )
+}
+
+/** Todas, con borradores y vencidas. Es la pantalla del dueno. */
+export async function listarPublicaciones(): Promise<Publicacion[]> {
+  return contra(() => pedir<Publicacion[]>('/api/publicaciones'))
+}
+
+export async function guardarPublicacion(publicacion: Publicacion): Promise<Publicacion> {
+  return contra(() =>
+    pedir<Publicacion>('/api/publicaciones', { metodo: 'PUT', cuerpo: publicacion }),
+  )
+}
+
+export async function eliminarPublicacion(id: string): Promise<void> {
+  return contra(() => pedir<void>(`/api/publicaciones/${id}`, { metodo: 'DELETE' }))
+}
+
+/**
+ * Sube una foto y devuelve el nombre con que quedo guardada.
+ *
+ * Se sube antes de guardar la publicacion, no junto con ella: asi el dueno ve
+ * la foto en pantalla antes de decidir, y si se arrepiente del texto no tiene
+ * que volver a subir los megas desde el celular.
+ */
+export async function subirImagenPublicacion(archivo: File): Promise<string> {
+  const { imagen } = await contra(() =>
+    subirArchivo<{ imagen: string }>('/api/publicaciones/imagenes', 'archivo', archivo),
+  )
+  return imagen
+}
+
+/**
+ * La direccion desde la que el navegador pide una foto ya guardada.
+ *
+ * Hay dos formas de guardar y las dos pasan por aqui:
+ *
+ *  - Cloudinary devuelve una direccion completa. En ese caso se le pide la
+ *    version que sirve para el ancho que va a ocupar en pantalla, y el formato
+ *    lo escoge Cloudinary segun el navegador: `f_auto` entrega WebP a quien lo
+ *    entienda. La misma foto pesa unos 60 KB en un celular y se ve nitida en un
+ *    computador, sin guardar dos archivos.
+ *  - El almacen en disco devuelve solo un nombre, y lo sirve este backend en un
+ *    unico tamano.
+ *
+ * Por eso `ancho` es una peticion, no una promesa: con Cloudinary se cumple, en
+ * disco se ignora porque solo hay un archivo.
+ */
+export function urlImagen(nombre: string, ancho = 800): string {
+  if (!nombre.startsWith('http')) return `${URL_API}/api/publicaciones/imagenes/${nombre}`
+  return nombre.replace('/upload/', `/upload/f_auto,q_auto,w_${ancho}/`)
 }
 
 // ---------------------------------------------------------------------------

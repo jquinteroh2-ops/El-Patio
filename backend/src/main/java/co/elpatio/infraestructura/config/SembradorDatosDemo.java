@@ -762,7 +762,8 @@ public class SembradorDatosDemo implements ApplicationRunner {
           1 + (azar.nextInt(100) < 25 ? 1 : 0),
           List.of(),
           nota,
-          orden.getId().replace("ord_", "io_") + "_" + i);
+          orden.getId().replace("ord_", "io_") + "_" + i,
+          reloj.hoy());
     }
   }
 

@@ -216,7 +216,8 @@ public class ServicioPedidos {
           nuevo.cantidad(),
           nuevo.modificadoresSeleccionados(),
           nuevo.notaCocina(),
-          ids.nuevo("io"));
+          ids.nuevo("io"),
+          reloj.hoy());
     }
 
     // El monto minimo se comprueba contra el subtotal de comida, sin el envio:

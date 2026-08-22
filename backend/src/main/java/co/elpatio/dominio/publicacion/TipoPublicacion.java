@@ -1,5 +1,8 @@
 package co.elpatio.dominio.publicacion;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * Que es lo que el restaurante esta publicando.
  *
@@ -13,5 +16,18 @@ public enum TipoPublicacion {
   /** Una noche de musica, un menu especial, una fecha. */
   EVENTO,
   /** Como se ve el local. Sin urgencia y sin vencimiento. */
-  GALERIA
+  GALERIA;
+
+  /**
+   * Como se escribe hacia afuera: en minuscula.
+   *
+   * Es la misma convencion que `Destino`, y no es cosmetica: asi se guarda en
+   * la base -donde la restriccion de la tabla espera minusculas- y asi viaja en
+   * el JSON que lee el navegador. Un solo valor para las dos puntas.
+   */
+  @JsonValue
+  public String codigo() { return name().toLowerCase(); }
+
+  @JsonCreator
+  public static TipoPublicacion de(String valor) { return valueOf(valor.toUpperCase()); }
 }

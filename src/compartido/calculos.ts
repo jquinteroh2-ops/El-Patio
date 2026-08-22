@@ -1,4 +1,4 @@
-import type { CargoAdicional, ItemOrden, Orden } from './tipos'
+import type { CargoAdicional, ItemCarta, ItemOrden, Orden } from './tipos'
 
 /**
  * Desglose de una cuenta. El orden de los campos es el mismo en que se le
@@ -25,6 +25,40 @@ export interface Cuenta {
   propina: number
   porcentajePropina: number
   total: number
+}
+
+/**
+ * El dia de hoy en aaaa-mm-dd, que es como vienen las fechas de la carta.
+ *
+ * Se compara como texto y no como fecha a proposito: dos cadenas aaaa-mm-dd se
+ * ordenan igual que los dias que representan, y asi no entra en juego la zona
+ * horaria del navegador, que es de donde salen los errores de un dia.
+ */
+const hoyEnTexto = (): string => {
+  const ahora = new Date()
+  const mes = String(ahora.getMonth() + 1).padStart(2, '0')
+  const dia = String(ahora.getDate()).padStart(2, '0')
+  return `${ahora.getFullYear()}-${mes}-${dia}`
+}
+
+/**
+ * Si el plato se esta vendiendo hoy en promocion.
+ *
+ * Vive aqui, junto al resto de los calculos de plata, porque la respuesta tiene
+ * que ser la misma en las cuatro pantallas que la preguntan: la carta publica,
+ * la del administrador, el carrito y la comandera. Si cada una lo decidiera por
+ * su cuenta, el cliente podria ver un precio y pagar otro. El backend tiene esta
+ * misma regla en `ItemCarta.enPromocion`, y las dos tienen que decir lo mismo.
+ */
+export function enPromocion(item: ItemCarta, dia = hoyEnTexto()): boolean {
+  if (item.precioPromocional == null) return false
+  if (item.promocionDesde && dia < item.promocionDesde) return false
+  return !item.promocionHasta || dia <= item.promocionHasta
+}
+
+/** Lo que hay que cobrar hoy por este plato. */
+export function precioVigente(item: ItemCarta, dia = hoyEnTexto()): number {
+  return enPromocion(item, dia) ? item.precioPromocional! : item.precio
 }
 
 export const precioItem = (item: ItemOrden): number => {

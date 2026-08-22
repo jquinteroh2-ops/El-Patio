@@ -4,8 +4,6 @@ import co.elpatio.dominio.publicacion.Publicacion;
 import co.elpatio.dominio.publicacion.TipoPublicacion;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -19,14 +17,15 @@ public class FilaPublicacion {
   @Id private String id;
 
   /**
-   * Se guarda como texto y no como numero.
+   * El tipo, en minuscula y como texto.
    *
-   * Un ordinal ata el significado al orden en que estan escritas las constantes
-   * de Java: alguien reordena el enum y todas las promociones de la base pasan
-   * a ser eventos, sin error y sin aviso.
+   * Se convierte a mano en vez de anotarlo con `@Enumerated`, igual que hace
+   * `FilaItemCarta` con el destino. `@Enumerated(STRING)` escribiria
+   * «PROMOCION» en mayuscula y la restriccion de la tabla, que espera
+   * minusculas, rechazaria la fila; `@Enumerated(ORDINAL)` seria peor todavia,
+   * porque ata el significado al orden en que estan escritas las constantes.
    */
-  @Enumerated(EnumType.STRING)
-  private TipoPublicacion tipo;
+  private String tipo;
 
   private String titulo;
 
@@ -50,7 +49,7 @@ public class FilaPublicacion {
   public Publicacion aDominio() {
     Publicacion p = new Publicacion();
     p.setId(id);
-    p.setTipo(tipo);
+    p.setTipo(TipoPublicacion.de(tipo));
     p.setTitulo(titulo);
     p.setCuerpo(cuerpo);
     p.setImagen(imagen);
@@ -65,7 +64,7 @@ public class FilaPublicacion {
   public static FilaPublicacion deDominio(Publicacion p) {
     FilaPublicacion fila = new FilaPublicacion();
     fila.id = p.getId();
-    fila.tipo = p.getTipo();
+    fila.tipo = p.getTipo().codigo();
     fila.titulo = p.getTitulo();
     fila.cuerpo = p.getCuerpo() == null ? "" : p.getCuerpo();
     fila.imagen = p.getImagen();

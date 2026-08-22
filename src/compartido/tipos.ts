@@ -89,6 +89,32 @@ export interface Mesa {
 /** A donde se imprime la comanda: cocina o bar. */
 export type Destino = 'cocina' | 'bar'
 
+/** Que esta publicando el restaurante. Decide donde sale en el sitio. */
+export type TipoPublicacion = 'promocion' | 'evento' | 'galeria'
+
+/**
+ * Una promocion, un evento o una foto del local.
+ *
+ * `publicada` y la vigencia son cosas distintas: el dueno prepara el martes la
+ * promocion del viernes y la deja sin publicar, y una vencida deja de mostrarse
+ * sola. Al cliente solo le llega lo que cumple las dos, y ese filtro lo hace el
+ * servidor: lo que no esta vigente no viaja.
+ */
+export interface Publicacion {
+  id: string
+  tipo: TipoPublicacion
+  titulo: string
+  cuerpo: string
+  /** Nombre del archivo en el almacen. Puede no haber foto. */
+  imagen?: string | null
+  /** aaaa-mm-dd */
+  desde?: string | null
+  hasta?: string | null
+  publicada: boolean
+  orden: number
+  creadaEn?: string
+}
+
 export interface CategoriaCarta {
   id: string
   nombre: string
@@ -115,7 +141,21 @@ export interface ItemCarta {
   categoriaId: string
   nombre: string
   descripcion: string
+  /** El precio de lista. Sigue siendo este aunque haya promocion. */
   precio: number
+  /**
+   * Precio de promocion, o nulo si el plato se vende al de lista.
+   *
+   * Es un PRECIO y no un descuento, y esa diferencia sostiene todo lo demas:
+   * la venta ocurre a este valor, y el INC, la propina y el documento ante la
+   * DIAN se calculan sobre el sin ninguna regla aparte. Una linea de descuento
+   * en la cuenta obligaria a repartir la rebaja entre las lineas gravadas para
+   * que la base gravable declarada siguiera cuadrando.
+   */
+  precioPromocional?: number | null
+  /** aaaa-mm-dd. Nulo en los dos extremos: mientras el precio este puesto. */
+  promocionDesde?: string | null
+  promocionHasta?: string | null
   /** Agotar un plato debe ser un solo clic desde /admin/carta. */
   disponible: boolean
   tiempoPreparacionMin: number

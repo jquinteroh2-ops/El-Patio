@@ -142,7 +142,8 @@ public class ServicioComandas {
           nuevo.cantidad(),
           nuevo.modificadoresSeleccionados(),
           nuevo.notaCocina(),
-          ids.nuevo("io"));
+          ids.nuevo("io"),
+          reloj.hoy());
     }
 
     Orden guardada = ordenes.guardar(orden);

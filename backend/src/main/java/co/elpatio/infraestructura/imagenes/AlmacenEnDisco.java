@@ -12,8 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import javax.imageio.ImageIO;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 /**
  * Las fotos, en un disco.
@@ -28,7 +26,6 @@ import org.springframework.stereotype.Component;
  * fotos no estan en la base. Un respaldo completo tiene que llevarse tambien
  * esta carpeta.
  */
-@Component
 public class AlmacenEnDisco implements AlmacenDeImagenes {
 
   /**
@@ -50,7 +47,7 @@ public class AlmacenEnDisco implements AlmacenDeImagenes {
 
   private final Path carpeta;
 
-  public AlmacenEnDisco(@Value("${elpatio.imagenes.ruta}") String ruta) {
+  public AlmacenEnDisco(String ruta) {
     this.carpeta = Path.of(ruta).toAbsolutePath().normalize();
     try {
       Files.createDirectories(carpeta);

@@ -42,6 +42,13 @@ const PUBLICAS: Record<string, Ficha> = {
       ' negocios. Confirmamos por WhatsApp.',
     indexable: true,
   },
+  '/novedades': {
+    titulo: `Promociones y eventos · ${RESTAURANTE.nombreCompleto}, ${RESTAURANTE.ciudad}`,
+    descripcion:
+      'Las promociones del mes, los eventos de la semana y las fotos del local del Restaurante' +
+      ' El Patio en Turbaco, Bolívar.',
+    indexable: true,
+  },
   '/pedir': {
     titulo: `Pedir a domicilio · ${RESTAURANTE.nombreCompleto}, ${RESTAURANTE.ciudad}`,
     descripcion:
