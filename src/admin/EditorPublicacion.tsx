@@ -102,8 +102,10 @@ export function EditorPublicacion({
       cuerpo: borrador.cuerpo.trim(),
       // Un campo de fecha vacío entrega cadena vacía, no nulo, y el servidor
       // espera nulo para decir «sin vencimiento».
-      desde: borrador.desde || null,
-      hasta: borrador.hasta || null,
+      // Una foto del local no vence nunca, sin importar lo que hubiera quedado
+      // escrito antes de cambiarle el tipo.
+      desde: esGaleria ? null : borrador.desde || null,
+      hasta: esGaleria ? null : borrador.hasta || null,
     })
   }
 
@@ -146,7 +148,14 @@ export function EditorPublicacion({
           etiqueta="Qué es"
           value={borrador.tipo}
           ayuda={TIPOS.find((t) => t.valor === borrador.tipo)?.ayuda}
-          onChange={(e) => cambiar({ tipo: e.target.value as TipoPublicacion })}
+          onChange={(e) => {
+            const tipo = e.target.value as TipoPublicacion
+            cambiar(
+              tipo === 'galeria'
+                ? { tipo, desde: null, hasta: null }
+                : { tipo },
+            )
+          }}
         >
           {TIPOS.map((t) => (
             <option key={t.valor} value={t.valor}>
@@ -216,27 +225,36 @@ export function EditorPublicacion({
         </div>
 
         {/* ---------- Vigencia ----------
-            Se ofrece siempre, pero para las fotos del local no tiene sentido y
-            se dice: una foto de la terraza no vence. */}
-        <div className="grid grid-cols-2 gap-3">
-          <Campo
-            etiqueta="Desde"
-            type="date"
-            value={borrador.desde ?? ''}
-            onChange={(e) => cambiar({ desde: e.target.value || null })}
-          />
-          <Campo
-            etiqueta="Hasta"
-            type="date"
-            value={borrador.hasta ?? ''}
-            onChange={(e) => cambiar({ hasta: e.target.value || null })}
-          />
-        </div>
-        <p className="-mt-2 text-xs text-noche-400">
-          {esGaleria
-            ? 'Una foto del local no suele vencer: puede dejar las dos fechas vacías.'
-            : 'Vacías, se muestra mientras esté publicada. Con fecha, aparece y desaparece sola.'}
-        </p>
+            A una foto del local no se le ofrecen fechas. No es que sobren: una
+            foto de la terraza no vence, y poner ahí dos campos vacíos invita a
+            llenarlos y a que la foto desaparezca sola sin que nadie lo pidiera.
+            Se queda en la página hasta que el administrador la despublique. */}
+        {esGaleria ? (
+          <p className="rounded-xl border border-noche-800 bg-noche-900/60 px-3 py-2.5 text-xs text-noche-300">
+            Las fotos del local no vencen. Esta se queda en la página mientras
+            esté publicada, hasta que usted decida quitarla.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <Campo
+                etiqueta="Desde"
+                type="date"
+                value={borrador.desde ?? ''}
+                onChange={(e) => cambiar({ desde: e.target.value || null })}
+              />
+              <Campo
+                etiqueta="Hasta"
+                type="date"
+                value={borrador.hasta ?? ''}
+                onChange={(e) => cambiar({ hasta: e.target.value || null })}
+              />
+            </div>
+            <p className="-mt-2 text-xs text-noche-400">
+              Vacías, se muestra mientras esté publicada. Con fecha, aparece y desaparece sola.
+            </p>
+          </>
+        )}
 
         <Campo
           etiqueta="Orden"
