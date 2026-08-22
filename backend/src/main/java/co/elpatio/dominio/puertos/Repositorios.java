@@ -8,6 +8,7 @@ import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
+import co.elpatio.dominio.publicacion.Publicacion;
 import co.elpatio.dominio.reserva.Reserva;
 import co.elpatio.dominio.salon.Mesa;
 import java.time.Instant;
@@ -99,6 +100,17 @@ public final class Repositorios {
     Optional<ZonaDomicilio> porId(String id);
 
     ZonaDomicilio guardar(ZonaDomicilio zona);
+
+    void eliminar(String id);
+  }
+
+  public interface DePublicaciones {
+    /** Todas, publicadas o no. Es lo que ve el dueno en su pantalla. */
+    List<Publicacion> listar();
+
+    Optional<Publicacion> porId(String id);
+
+    Publicacion guardar(Publicacion publicacion);
 
     void eliminar(String id);
   }

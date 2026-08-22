@@ -40,6 +40,23 @@ spring:
   jackson:
     default-property-inclusion: non_null
 
+  servlet:
+    multipart:
+      # Lo que se acepta que entre por la red. El almacen vuelve a revisar el
+      # peso y ademas reduce la imagen; esto solo evita que un archivo enorme
+      # ocupe memoria antes de que nadie lo mire.
+      max-file-size: 12MB
+      max-request-size: 12MB
+
+elpatio:
+  imagenes:
+    # Donde se guardan las fotos de promociones, eventos y galeria.
+    #
+    # EN RAILWAY TIENE QUE APUNTAR A UN VOLUMEN. El sistema de archivos normal
+    # del contenedor se borra en cada despliegue: sin volumen, las fotos duran
+    # hasta el siguiente `git push` y el sitio queda con los marcos vacios.
+    ruta: ${ELPATIO_RUTA_IMAGENES:./datos/imagenes}
+
 server:
   port: ${PORT:8080}
   error:

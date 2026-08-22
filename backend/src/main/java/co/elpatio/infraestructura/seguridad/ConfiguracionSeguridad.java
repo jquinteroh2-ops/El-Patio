@@ -69,6 +69,12 @@ public class ConfiguracionSeguridad {
                     // La carta y las reservas las consulta el sitio publico sin
                     // sesion: es el menu que cualquiera puede leer desde la calle.
                     .requestMatchers(HttpMethod.GET, "/api/carta/**").permitAll()
+                    // Las promociones, los eventos y las fotos del local son
+                    // justamente lo que el restaurante quiere que vea quien
+                    // todavia no es cliente. El resto de /api/publicaciones
+                    // -incluida la lista con los borradores- exige sesion.
+                    .requestMatchers(HttpMethod.GET, "/api/publicaciones/visibles").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/publicaciones/imagenes/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/reservas").permitAll()
 
                     // El cliente pide desde su celular sin tener usuario. Son las
@@ -94,6 +100,7 @@ public class ConfiguracionSeguridad {
                     .requestMatchers("/api/usuarios/**").hasRole("ADMINISTRADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/ajustes").hasRole("ADMINISTRADOR")
                     .requestMatchers("/api/carta/**").hasRole("ADMINISTRADOR")
+                    .requestMatchers("/api/publicaciones/**").hasRole("ADMINISTRADOR")
                     .requestMatchers("/api/salon/**").hasAnyRole("MESERO", "CAJERO", "ADMINISTRADOR")
 
                     .anyRequest().authenticated())

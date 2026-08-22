@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.Type;
@@ -25,6 +26,16 @@ public class FilaItemCarta {
   private String nombre;
   private String descripcion;
   private long precio;
+
+  /** Nulo cuando el plato no esta en promocion, que es el caso normal. */
+  @Column(name = "precio_promocional")
+  private Long precioPromocional;
+
+  @Column(name = "promocion_desde")
+  private LocalDate promocionDesde;
+
+  @Column(name = "promocion_hasta")
+  private LocalDate promocionHasta;
   private boolean disponible;
 
   @Column(name = "tiempo_preparacion_min")
@@ -48,6 +59,9 @@ public class FilaItemCarta {
     item.setNombre(nombre);
     item.setDescripcion(descripcion);
     item.setPrecio(precio);
+    item.setPrecioPromocional(precioPromocional);
+    item.setPromocionDesde(promocionDesde);
+    item.setPromocionHasta(promocionHasta);
     item.setDisponible(disponible);
     item.setTiempoPreparacionMin(tiempoPreparacionMin);
     item.setDestino(Destino.de(destino));
@@ -62,6 +76,9 @@ public class FilaItemCarta {
     fila.nombre = item.getNombre();
     fila.descripcion = item.getDescripcion() == null ? "" : item.getDescripcion();
     fila.precio = item.getPrecio();
+    fila.precioPromocional = item.getPrecioPromocional();
+    fila.promocionDesde = item.getPromocionDesde();
+    fila.promocionHasta = item.getPromocionHasta();
     fila.disponible = item.isDisponible();
     fila.tiempoPreparacionMin = item.getTiempoPreparacionMin();
     fila.destino = item.getDestino().codigo();

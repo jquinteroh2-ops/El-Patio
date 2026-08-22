@@ -8,6 +8,7 @@ import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
+import co.elpatio.dominio.publicacion.Publicacion;
 import co.elpatio.dominio.puertos.Reloj;
 import co.elpatio.dominio.puertos.Repositorios;
 import co.elpatio.dominio.reserva.Reserva;
@@ -19,6 +20,7 @@ import co.elpatio.infraestructura.persistencia.dao.DaoItemsCarta;
 import co.elpatio.infraestructura.persistencia.dao.DaoMesas;
 import co.elpatio.infraestructura.persistencia.dao.DaoOrdenes;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
+import co.elpatio.infraestructura.persistencia.dao.DaoPublicaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoReservas;
 import co.elpatio.infraestructura.persistencia.dao.DaoUsuarios;
 import co.elpatio.infraestructura.persistencia.dao.DaoZonasDomicilio;
@@ -29,6 +31,7 @@ import co.elpatio.infraestructura.persistencia.filas.FilaItemCarta;
 import co.elpatio.infraestructura.persistencia.filas.FilaMesa;
 import co.elpatio.infraestructura.persistencia.filas.FilaOrden;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
+import co.elpatio.infraestructura.persistencia.filas.FilaPublicacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaReserva;
 import co.elpatio.infraestructura.persistencia.filas.FilaUsuario;
 import co.elpatio.infraestructura.persistencia.filas.FilaZonaDomicilio;
@@ -159,6 +162,39 @@ public final class Adaptadores {
     @Override
     public void eliminarItem(String id) {
       daoItems.deleteById(id);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class Publicaciones implements Repositorios.DePublicaciones {
+    private final DaoPublicaciones dao;
+
+    public Publicaciones(DaoPublicaciones dao) {
+      this.dao = dao;
+    }
+
+    @Override
+    public List<Publicacion> listar() {
+      return dao.findAllByOrderByOrdenAscCreadaEnDesc().stream()
+          .map(FilaPublicacion::aDominio)
+          .toList();
+    }
+
+    @Override
+    public Optional<Publicacion> porId(String id) {
+      return dao.findById(id).map(FilaPublicacion::aDominio);
+    }
+
+    @Override
+    public Publicacion guardar(Publicacion publicacion) {
+      return dao.save(FilaPublicacion.deDominio(publicacion)).aDominio();
+    }
+
+    @Override
+    public void eliminar(String id) {
+      dao.deleteById(id);
     }
   }
 
