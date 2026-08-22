@@ -11,8 +11,11 @@ import java.time.Instant;
 import java.util.TreeMap;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 /**
  * Las fotos, en Cloudinary.
@@ -63,8 +66,8 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
     parametros.put("folder", CARPETA);
     parametros.put("timestamp", marca);
 
-    var cuerpo = new MultipartBodyBuilder();
-    cuerpo.part("file", new ByteArrayResource(contenido) {
+    var cuerpo = new LinkedMultiValueMap<String, Object>();
+    cuerpo.add("file", new ByteArrayResource(contenido) {
       @Override
       public String getFilename() {
         // Cloudinary necesita un nombre de archivo para aceptar la parte. El
@@ -72,10 +75,10 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
         return "foto";
       }
     });
-    cuerpo.part("api_key", llave);
-    cuerpo.part("timestamp", marca);
-    cuerpo.part("folder", CARPETA);
-    cuerpo.part("signature", firmar(parametros));
+    cuerpo.add("api_key", llave);
+    cuerpo.add("timestamp", marca);
+    cuerpo.add("folder", CARPETA);
+    cuerpo.add("signature", firmar(parametros));
 
     JsonNode respuesta = pedir("upload", cuerpo);
     JsonNode url = respuesta.get("secure_url");
@@ -114,11 +117,11 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
     parametros.put("public_id", id);
     parametros.put("timestamp", marca);
 
-    var cuerpo = new MultipartBodyBuilder();
-    cuerpo.part("public_id", id);
-    cuerpo.part("api_key", llave);
-    cuerpo.part("timestamp", marca);
-    cuerpo.part("signature", firmar(parametros));
+    var cuerpo = new LinkedMultiValueMap<String, Object>();
+    cuerpo.add("public_id", id);
+    cuerpo.add("api_key", llave);
+    cuerpo.add("timestamp", marca);
+    cuerpo.add("signature", firmar(parametros));
     try {
       pedir("destroy", cuerpo);
     } catch (RuntimeException e) {
@@ -135,14 +138,42 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
 
   // ---------------------------------------------------------------------------
 
-  private JsonNode pedir(String accion, MultipartBodyBuilder cuerpo) {
-    String respuesta =
-        http.post()
-            .uri("https://api.cloudinary.com/v1_1/%s/image/%s".formatted(nombreNube, accion))
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(cuerpo.build())
-            .retrieve()
-            .body(String.class);
+  /**
+   * El envio a Cloudinary.
+   *
+   * El cuerpo se arma con un `LinkedMultiValueMap` y NO con `MultipartBodyBuilder`.
+   * Aquella es la clase del mundo reactivo de Spring y arrastra
+   * `org.reactivestreams.Publisher`, que este backend no tiene en el classpath:
+   * compila sin quejarse y revienta al ejecutarse con un `NoClassDefFoundError`
+   * la primera vez que alguien sube una foto. Este mapa lo convierte el
+   * `FormHttpMessageConverter` de siempre, sin dependencias de mas.
+   */
+  private JsonNode pedir(String accion, MultiValueMap<String, Object> cuerpo) {
+    String respuesta;
+    try {
+      respuesta =
+          http.post()
+              .uri("https://api.cloudinary.com/v1_1/%s/image/%s".formatted(nombreNube, accion))
+              .contentType(MediaType.MULTIPART_FORM_DATA)
+              .body(cuerpo)
+              .retrieve()
+              .body(String.class);
+    } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.NotFound e) {
+      // Las dos formas en que Cloudinary dice «esas credenciales no sirven»:
+      // 401 cuando la llave o el secreto estan mal, 404 cuando el nombre de la
+      // cuenta no existe. Al dueno hay que decirselo asi, y no con un «error
+      // del servidor», porque es el unico que puede arreglarlo.
+      //
+      // El nombre de la cuenta se nombra porque no es secreto y es el que mas
+      // se equivoca: viaja en la direccion publica de cada foto. La llave y el
+      // secreto NO se mencionan nunca.
+      throw new ReglaDeNegocioError(
+          "Cloudinary rechazo la subida. Revise las credenciales del servicio;"
+              + " la cuenta configurada es \"" + nombreNube + "\"");
+    } catch (RestClientException e) {
+      throw new ReglaDeNegocioError(
+          "No se pudo hablar con Cloudinary. Intente de nuevo en un momento");
+    }
     try {
       return json.readTree(respuesta);
     } catch (Exception e) {
