@@ -11,8 +11,14 @@
   body {
     @apply font-texto antialiased;
     margin: 0;
-    /* El fondo real lo pone cada layout: publico (crema) u operativo (noche). */
-    background: theme('colors.noche.950');
+    /*
+     * El fondo real lo pone cada layout, que se pinta encima. Este es el que
+     * asoma en el celular cuando la barra de direcciones se recoge y la pagina
+     * queda mas corta que la pantalla. Va del color del sitio publico, que es
+     * lo que abre un cliente desde un enlace, para que ahi no aparezca una
+     * franja de otro color.
+     */
+    background: theme('colors.bosque.950');
     color: theme('colors.crema.100');
     overscroll-behavior-y: none;
   }

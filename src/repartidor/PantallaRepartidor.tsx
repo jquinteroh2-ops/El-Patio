@@ -53,7 +53,7 @@ export default function PantallaRepartidor() {
   }
 
   return (
-    <div className="min-h-screen bg-noche-950">
+    <div className="min-h-dvh bg-noche-950">
       <BarraOperativa
         titulo="Mis entregas"
         subtitulo={

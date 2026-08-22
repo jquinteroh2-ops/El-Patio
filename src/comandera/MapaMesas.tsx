@@ -88,7 +88,7 @@ export default function MapaMesas() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950">
+    <div className="flex min-h-dvh flex-col bg-noche-950">
       <BarraOperativa titulo="Mesas" subtitulo={sesion.nombre} mostrarConexion />
 
       <div className="sticky top-16 z-20 border-b border-noche-800 bg-noche-950/95 backdrop-blur">

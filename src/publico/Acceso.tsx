@@ -61,7 +61,7 @@ export default function Acceso() {
   const hayCuentas = demostracion.activa && demostracion.cuentas.length > 0
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950 px-4 py-8">
+    <div className="flex min-h-dvh flex-col bg-noche-950 px-4 py-8">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <Link
           to="/"

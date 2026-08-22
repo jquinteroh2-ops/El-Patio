@@ -107,7 +107,7 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
     ejecutar(() => api.cambiarEstadoTurno(bloque.ordenId, bloque.turno, destino, estado))
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950">
+    <div className="flex min-h-dvh flex-col bg-noche-950">
       <BarraOperativa
         titulo={esBar ? 'Barra' : 'Cocina'}
         subtitulo={`${bloques.length} ${bloques.length === 1 ? 'comanda activa' : 'comandas activas'}`}

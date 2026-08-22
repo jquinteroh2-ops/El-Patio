@@ -263,14 +263,14 @@ export default function PantallaPedidos() {
 
   if (cargando) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-noche-950 text-noche-400">
+      <div className="flex min-h-dvh items-center justify-center bg-noche-950 text-noche-400">
         Cargando pedidos…
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950">
+    <div className="flex min-h-dvh flex-col bg-noche-950">
       {/*
         El mismo encabezado que cocina, comandera y el panel. Recepcion tenia
         uno propio y por eso era la unica pantalla sin boton de salir: quien

@@ -158,7 +158,7 @@ export default function CuentaMesa() {
   // ---- Comprobante, despues de cobrar ----
   if (cobrado) {
     return (
-      <div className="flex min-h-screen flex-col bg-noche-950 px-4 py-6">
+      <div className="flex min-h-dvh flex-col bg-noche-950 px-4 py-6">
         <div className="mx-auto mb-5 flex w-full max-w-md items-center gap-2 text-estado-listo">
           <CheckCircle2 className="h-5 w-5" aria-hidden />
           <p className="font-semibold">
@@ -206,7 +206,7 @@ export default function CuentaMesa() {
 
   if (!orden || !detalle || !cuenta) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-noche-950 px-6">
+      <div className="flex min-h-dvh items-center justify-center bg-noche-950 px-6">
         <Vacio
           icono={Receipt}
           titulo="Esta mesa no tiene cuenta abierta"
@@ -292,7 +292,7 @@ export default function CuentaMesa() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950 pb-28">
+    <div className="flex min-h-dvh flex-col bg-noche-950 pb-28">
       <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-noche-800 bg-noche-900/95 px-3 py-2.5 backdrop-blur">
         <button
           type="button"

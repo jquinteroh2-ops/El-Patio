@@ -107,7 +107,7 @@ export default function OrdenMesa() {
 
   if (!orden || !mesa || !cuenta) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-noche-950 px-6">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-noche-950 px-6">
         <Vacio
           icono={UtensilsCrossed}
           titulo="Esta mesa no tiene cuenta abierta"
@@ -195,7 +195,7 @@ export default function OrdenMesa() {
   const mesasLibres = mesas.filter((m) => m.estado === 'libre' && m.id !== mesa.id)
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950 pb-40">
+    <div className="flex min-h-dvh flex-col bg-noche-950 pb-40">
       <header className="sticky top-0 z-30 border-b border-noche-800 bg-noche-900/95 backdrop-blur">
         <div className="flex items-center gap-2 px-3 py-2.5">
           <button

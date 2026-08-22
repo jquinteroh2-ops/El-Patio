@@ -27,7 +27,7 @@ export default function LayoutAdmin() {
   const visibles = SECCIONES.filter((s) => !s.soloAdmin || sesion.rol === 'administrador')
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950">
+    <div className="flex min-h-dvh flex-col bg-noche-950">
       <BarraOperativa
         titulo="Panel administrativo"
         subtitulo={`${sesion.nombre} · ${sesion.rol === 'administrador' ? 'Administrador' : 'Cajero'}`}

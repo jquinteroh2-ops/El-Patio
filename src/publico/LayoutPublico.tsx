@@ -9,7 +9,7 @@ export default function LayoutPublico() {
   const whatsapp = enlaceWhatsApp(RESTAURANTE.whatsapp, SALUDO_WHATSAPP)
 
   return (
-    <div className="flex min-h-screen flex-col bg-bosque-950 text-crema-100">
+    <div className="flex min-h-dvh flex-col bg-bosque-950 text-crema-100">
       <header className="sticky top-0 z-40 border-b border-crema-100/10 bg-bosque-950/90 backdrop-blur">
         {/* Altura fija: la barra de categorías de la carta se pega debajo (top-16). */}
         <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">

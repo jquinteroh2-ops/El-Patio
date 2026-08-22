@@ -16,6 +16,6 @@ export function Cargando({ mensaje = 'Cargando', pantallaCompleta = false }: Pro
   if (!pantallaCompleta) return <div className="flex justify-center py-10">{contenido}</div>
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-noche-950">{contenido}</div>
+    <div className="flex min-h-dvh items-center justify-center bg-noche-950">{contenido}</div>
   )
 }

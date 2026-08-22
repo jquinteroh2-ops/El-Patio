@@ -155,7 +155,7 @@ export default function SelectorProductos() {
   const etiquetaMesa = detalle ? (detalle.mesa.nombre ?? `Mesa ${detalle.mesa.numero}`) : ''
 
   return (
-    <div className="flex min-h-screen flex-col bg-noche-950 pb-28">
+    <div className="flex min-h-dvh flex-col bg-noche-950 pb-28">
       <header className="sticky top-0 z-30 border-b border-noche-800 bg-noche-900/95 backdrop-blur">
         <div className="flex items-center gap-2 px-3 py-2.5">
           <button
