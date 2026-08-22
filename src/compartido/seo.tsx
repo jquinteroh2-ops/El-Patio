@@ -24,8 +24,8 @@ const PUBLICAS: Record<string, Ficha> = {
   '/': {
     titulo: `${RESTAURANTE.nombreCompleto} · Cocina de fusión en ${RESTAURANTE.ciudad}`,
     descripcion:
-      'Cocina de fusión y coctelería de autor en Turbaco, Bolívar. Reserve su mesa, vea la carta' +
-      ' o pida a domicilio. Abierto de martes a domingo.',
+      'Cocina de fusión y coctelería de autor en Turbaco, Bolívar. Vea las promociones del mes,' +
+      ' el local por dentro, la carta y reserve su mesa. Abierto de martes a domingo.',
     indexable: true,
   },
   '/carta': {
@@ -40,13 +40,6 @@ const PUBLICAS: Record<string, Ficha> = {
     descripcion:
       'Reserve su mesa en el Restaurante El Patio, Turbaco. Cumpleaños, aniversarios y cenas de' +
       ' negocios. Confirmamos por WhatsApp.',
-    indexable: true,
-  },
-  '/novedades': {
-    titulo: `Promociones y eventos · ${RESTAURANTE.nombreCompleto}, ${RESTAURANTE.ciudad}`,
-    descripcion:
-      'Las promociones del mes, los eventos de la semana y las fotos del local del Restaurante' +
-      ' El Patio en Turbaco, Bolívar.',
     indexable: true,
   },
   '/pedir': {

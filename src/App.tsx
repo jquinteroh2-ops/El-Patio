@@ -11,7 +11,6 @@ import { ProveedorAvisos } from '@/componentes/ui/Avisos'
 import LayoutPublico from '@/publico/LayoutPublico'
 import Inicio from '@/publico/Inicio'
 import Carta from '@/publico/Carta'
-import Novedades from '@/publico/Novedades'
 import Reservar from '@/publico/Reservar'
 import Pedir from '@/publico/Pedir'
 import Acceso from '@/publico/Acceso'
@@ -54,7 +53,6 @@ export default function App() {
             <Route element={<LayoutPublico />}>
               <Route path="/" element={<Inicio />} />
               <Route path="/carta" element={<Carta />} />
-              <Route path="/novedades" element={<Novedades />} />
               <Route path="/reservar" element={<Reservar />} />
               <Route path="/pedir" element={<Pedir />} />
             </Route>

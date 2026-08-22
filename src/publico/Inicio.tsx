@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Clock, Flame, MapPin, MessageCircle, Navigation, Sparkles, Wine } from 'lucide-react'
 import { RESTAURANTE } from '@/compartido/config'
+import { formatoFechaLarga } from '@/compartido/formato'
 import * as api from '@/compartido/mockApi'
 import type { Publicacion } from '@/compartido/tipos'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
@@ -34,19 +35,24 @@ export default function Inicio() {
   // Lo que el restaurante esta anunciando ahora. Se pide aparte y sin bloquear:
   // la portada tiene que pintarse completa aunque esto no llegue, porque una
   // promocion es un extra y la carta y la reserva son el motivo de la visita.
-  const [anuncios, setAnuncios] = useState<Publicacion[]>([])
+  const [publicaciones, setPublicaciones] = useState<Publicacion[]>([])
   useEffect(() => {
     let vigente = true
     api
       .publicacionesVisibles()
       .then((datos) => {
-        if (vigente) setAnuncios(datos.filter((p) => p.tipo !== 'galeria').slice(0, 2))
+        if (vigente) setPublicaciones(datos)
       })
       .catch(() => undefined)
     return () => {
       vigente = false
     }
   }, [])
+
+  // Promociones y eventos van juntos: los dos anuncian algo que pasa. Las fotos
+  // del local son otra cosa y tienen su propio espacio mas abajo.
+  const anuncios = publicaciones.filter((p) => p.tipo !== 'galeria')
+  const galeria = publicaciones.filter((p) => p.tipo === 'galeria' && p.imagen)
 
   return (
     <>
@@ -126,53 +132,103 @@ export default function Inicio() {
       </section>
 
       {/* ---------------- Lo que esta pasando ----------------
-          Solo aparece si hay algo que anunciar. Una seccion vacia con un
-          «no hay promociones» ocuparia el mejor lugar de la portada para no
-          decir nada. */}
+          Promociones y eventos. Solo aparece si hay algo que anunciar: una
+          seccion vacia con un «no hay promociones» ocuparia el mejor lugar de
+          la portada para no decir nada. */}
       {anuncios.length > 0 && (
         <section className="border-t border-crema-100/10 bg-bosque-900/40">
           <div className="mx-auto max-w-5xl px-5 py-16">
-            <div className="flex items-end justify-between gap-4">
-              <h2 className="font-titulo text-3xl font-light text-crema-100">
-                Ahora en El Patio
-              </h2>
-              <Link
-                to="/novedades"
-                className="shrink-0 text-xs uppercase tracking-[0.16em] text-ambar-300 transition hover:text-ambar-200"
-              >
-                Ver todo
-              </Link>
-            </div>
+            <p className="text-[0.7rem] uppercase tracking-[0.35em] text-ambar-400">
+              Ahora en El Patio
+            </p>
+            <h2 className="mt-4 font-titulo text-4xl font-light leading-tight text-crema-100">
+              Lo que está pasando
+            </h2>
 
-            <div className="mt-7 grid gap-6 sm:grid-cols-2">
+            <div className="mt-9 grid gap-6 sm:grid-cols-2">
               {anuncios.map((p) => (
-                <Link
+                <article
                   key={p.id}
-                  to="/novedades"
-                  className="overflow-hidden rounded-2xl border border-crema-100/10 transition hover:border-ambar-500/40"
+                  className="overflow-hidden rounded-2xl border border-crema-100/10 bg-bosque-950/40"
                 >
                   {p.imagen && (
                     <img
                       src={api.urlImagen(p.imagen, 900)}
                       alt={p.titulo}
                       loading="lazy"
-                      className="h-48 w-full object-cover"
+                      className="h-52 w-full object-cover"
                     />
                   )}
-                  <div className="p-5">
+                  <div className="p-6">
                     <p className="text-[0.65rem] uppercase tracking-[0.3em] text-ambar-400">
                       {p.tipo === 'promocion' ? 'Promoción' : 'Evento'}
                     </p>
-                    <h3 className="mt-2 font-titulo text-2xl font-light text-crema-100">
+                    <h3 className="mt-2 font-titulo text-2xl font-light leading-snug text-crema-100">
                       {p.titulo}
                     </h3>
                     {p.cuerpo && (
-                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-crema-100/60">
+                      <p className="mt-3 whitespace-pre-line text-[0.95rem] leading-relaxed text-crema-100/65">
                         {p.cuerpo}
                       </p>
                     )}
+                    {/* La vigencia solo se anuncia cuando de verdad termina.
+                        «Hasta siempre» no informa. */}
+                    {p.hasta && (
+                      <p className="mt-4 text-xs uppercase tracking-wider text-ambar-300">
+                        Hasta el {formatoFechaLarga(p.hasta)}
+                      </p>
+                    )}
                   </div>
-                </Link>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ---------------- El local, en collage ----------------
+          Las fotos no van en una rejilla pareja sino en mosaico: la primera
+          manda y las demas la acompanan. Una cuadricula de recuadros iguales
+          se lee como un catalogo; un collage se lee como un lugar.
+
+          El alto de la fila es fijo y las fotos se recortan al ocupar su
+          casilla. Es a proposito: fotos de celular vienen en proporciones
+          distintas, y dejarlas a su aire haria que el mosaico quedara con
+          escalones. */}
+      {galeria.length > 0 && (
+        <section className="border-t border-crema-100/10">
+          <div className="mx-auto max-w-5xl px-5 py-20">
+            <p className="text-[0.7rem] uppercase tracking-[0.35em] text-ambar-400">
+              El local
+            </p>
+            <h2 className="mt-4 font-titulo text-4xl font-light leading-tight text-crema-100">
+              Así se ve por dentro
+            </h2>
+
+            <div className="mt-9 grid auto-rows-[10rem] grid-cols-2 gap-3 sm:auto-rows-[12rem] sm:grid-cols-4">
+              {galeria.map((foto, i) => (
+                <figure
+                  key={foto.id}
+                  className={`group relative overflow-hidden rounded-2xl border border-crema-100/10 ${
+                    // La primera manda: ocupa cuatro casillas. Cada cuarta de
+                    // las siguientes toma dos de ancho, para que el mosaico no
+                    // caiga en un patron repetido y aburrido.
+                    i === 0 ? 'col-span-2 row-span-2' : i % 4 === 3 ? 'col-span-2' : ''
+                  }`}
+                >
+                  <img
+                    src={api.urlImagen(foto.imagen ?? '', i === 0 ? 1000 : 600)}
+                    alt={foto.titulo}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  {/* El titulo se lee sobre la foto, no debajo: un pie de foto
+                      por cada casilla romperia el mosaico. El degradado existe
+                      para que el texto siga leyendose sobre una foto clara. */}
+                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bosque-950 to-transparent px-4 pb-3 pt-10 text-sm text-crema-100">
+                    {foto.titulo}
+                  </figcaption>
+                </figure>
               ))}
             </div>
           </div>
