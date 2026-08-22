@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import { Percent, UserPlus, Users, Utensils } from 'lucide-react'
+import { Percent, PlusCircle, UserPlus, Users, Utensils } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { MesaEnMapa } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
-import type { Ajustes, Usuario } from '@/compartido/tipos'
+import type { Ajustes, Mesa, Usuario } from '@/compartido/tipos'
 import { NOMBRE_ROL, NOMBRE_ZONA } from '@/compartido/estados'
 import { Boton } from '@/componentes/ui/Boton'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { Interruptor } from '@/componentes/ui/Interruptor'
 import { useAvisos } from '@/componentes/ui/Avisos'
+import { EditorMesa } from './EditorMesa'
 import { EditorUsuario } from './EditorUsuario'
 import { ZonasDomicilio } from './ZonasDomicilio'
 
@@ -37,7 +38,7 @@ export default function Configuracion() {
     [],
     ['usuarios', 'todo'],
   )
-  const { datos: mesas } = useSyncedState<MesaEnMapa[]>(
+  const { datos: mesas, refrescar: refrescarMesas } = useSyncedState<MesaEnMapa[]>(
     () => api.listarMesas(),
     [],
     [],
@@ -51,6 +52,12 @@ export default function Configuracion() {
   const [editorAbierto, setEditorAbierto] = useState(false)
   const [editando, setEditando] = useState<Usuario | null>(null)
   const [guardandoUsuario, setGuardandoUsuario] = useState(false)
+
+  // Igual para el editor de mesas.
+  const [editorMesaAbierto, setEditorMesaAbierto] = useState(false)
+  const [editandoMesa, setEditandoMesa] = useState<Mesa | null>(null)
+  const [guardandoMesa, setGuardandoMesa] = useState(false)
+  const [eliminandoMesa, setEliminandoMesa] = useState(false)
 
   const abrirEditor = (usuario: Usuario | null) => {
     setEditando(usuario)
@@ -93,6 +100,42 @@ export default function Configuracion() {
       mostrar(e instanceof Error ? e.message : 'No se pudo guardar', 'error')
     } finally {
       setGuardando(false)
+    }
+  }
+
+  const abrirEditorMesa = (mesa: Mesa | null) => {
+    setEditandoMesa(mesa)
+    setEditorMesaAbierto(true)
+  }
+
+  const guardarMesa = async (borrador: Mesa) => {
+    setGuardandoMesa(true)
+    try {
+      await api.guardarMesa(borrador)
+      setEditorMesaAbierto(false)
+      refrescarMesas()
+      mostrar(
+        borrador.id ? `Mesa ${borrador.numero}: actualizada` : `Mesa ${borrador.numero} creada`,
+        'exito',
+      )
+    } catch (error) {
+      mostrar(error instanceof Error ? error.message : 'No se pudo guardar la mesa', 'error')
+    } finally {
+      setGuardandoMesa(false)
+    }
+  }
+
+  const eliminarMesa = async (mesaId: string) => {
+    setEliminandoMesa(true)
+    try {
+      await api.eliminarMesa(mesaId)
+      setEditorMesaAbierto(false)
+      refrescarMesas()
+      mostrar('Mesa eliminada', 'exito')
+    } catch (error) {
+      mostrar(error instanceof Error ? error.message : 'No se pudo eliminar la mesa', 'error')
+    } finally {
+      setEliminandoMesa(false)
     }
   }
 
@@ -226,10 +269,19 @@ export default function Configuracion() {
 
       {/* ---------- Mesas ---------- */}
       <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-crema-100">
-          <Utensils className="h-4 w-4" aria-hidden />
-          Mesas y zonas
-        </h2>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-crema-100">
+            <Utensils className="h-4 w-4" aria-hidden />
+            Mesas y zonas
+          </h2>
+          <Boton
+            variante="secundario"
+            icono={<PlusCircle className="h-4 w-4" aria-hidden />}
+            onClick={() => abrirEditorMesa(null)}
+          >
+            Nueva mesa
+          </Boton>
+        </div>
         <div className="space-y-3">
           {porZona.map(({ zona, mesas: deLaZona }) => (
             <div key={zona}>
@@ -241,23 +293,36 @@ export default function Configuracion() {
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {deLaZona.map((mesa) => (
-                  <span
+                  <button
                     key={mesa.id}
-                    title={`${mesa.nombre ?? `Mesa ${mesa.numero}`} · ${mesa.capacidad} puestos`}
-                    className="flex h-10 min-w-[40px] flex-col items-center justify-center rounded-lg border border-noche-700 bg-noche-850 px-1.5 text-xs"
+                    type="button"
+                    title={`${mesa.nombre ?? `Mesa ${mesa.numero}`} · ${mesa.capacidad} puestos · toca para editar`}
+                    onClick={() => abrirEditorMesa(mesa)}
+                    className="flex h-10 min-w-[40px] flex-col items-center justify-center rounded-lg border border-noche-700 bg-noche-850 px-1.5 text-xs transition hover:border-oro-500"
                   >
                     <span className="font-semibold text-crema-100">{mesa.numero}</span>
                     <span className="text-[0.6rem] text-noche-500">{mesa.capacidad}p</span>
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
           ))}
         </div>
         <p className="mt-3 text-xs text-noche-500">
-          {mesas.length} mesas en total, {mesas.reduce((s, m) => s + m.capacidad, 0)} puestos.
+          {mesas.length} mesas en total, {mesas.reduce((s, m) => s + m.capacidad, 0)} puestos. Toca una
+          mesa para editarla o quitarla.
         </p>
       </section>
+
+      <EditorMesa
+        abierto={editorMesaAbierto}
+        mesa={editandoMesa}
+        guardando={guardandoMesa}
+        eliminando={eliminandoMesa}
+        onCerrar={() => setEditorMesaAbierto(false)}
+        onGuardar={guardarMesa}
+        onEliminar={eliminarMesa}
+      />
     </div>
   )
 }
