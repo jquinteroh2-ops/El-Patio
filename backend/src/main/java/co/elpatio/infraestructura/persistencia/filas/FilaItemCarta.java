@@ -52,6 +52,9 @@ public class FilaItemCarta {
   @Column(columnDefinition = "jsonb")
   private List<Modificador> modificadores = new ArrayList<>();
 
+  /** Nombre del archivo en el almacen de imagenes, o nulo si el plato no tiene foto. */
+  private String imagen;
+
   public ItemCarta aDominio() {
     ItemCarta item = new ItemCarta();
     item.setId(id);
@@ -66,6 +69,7 @@ public class FilaItemCarta {
     item.setTiempoPreparacionMin(tiempoPreparacionMin);
     item.setDestino(Destino.de(destino));
     item.setModificadores(modificadores == null ? List.of() : List.copyOf(modificadores));
+    item.setImagen(imagen);
     return item;
   }
 
@@ -84,6 +88,7 @@ public class FilaItemCarta {
     fila.destino = item.getDestino().codigo();
     fila.modificadores =
         item.getModificadores() == null ? new ArrayList<>() : new ArrayList<>(item.getModificadores());
+    fila.imagen = item.getImagen();
     return fila;
   }
 

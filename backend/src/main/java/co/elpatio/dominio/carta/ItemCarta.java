@@ -26,6 +26,8 @@ public class ItemCarta {
   private int tiempoPreparacionMin;
   private Destino destino;
   private List<Modificador> modificadores;
+  /** Nombre del archivo en el almacen de imagenes, o nulo si el plato no tiene foto. */
+  private String imagen;
 
   public ItemCarta() {}
 
@@ -75,4 +77,6 @@ public class ItemCarta {
   public void setDestino(Destino destino) { this.destino = destino; }
   public List<Modificador> getModificadores() { return modificadores; }
   public void setModificadores(List<Modificador> modificadores) { this.modificadores = modificadores; }
+  public String getImagen() { return imagen; }
+  public void setImagen(String imagen) { this.imagen = imagen; }
 }

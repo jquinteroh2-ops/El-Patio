@@ -337,9 +337,28 @@ export async function subirImagenPublicacion(archivo: File): Promise<string> {
  * Por eso `ancho` es una peticion, no una promesa: con Cloudinary se cumple, en
  * disco se ignora porque solo hay un archivo.
  */
-export function urlImagen(nombre: string, ancho = 800): string {
-  if (!nombre.startsWith('http')) return `${URL_API}/api/publicaciones/imagenes/${nombre}`
+export function urlImagen(nombre: string, ancho = 800, base = '/api/publicaciones/imagenes'): string {
+  if (!nombre.startsWith('http')) return `${URL_API}${base}/${nombre}`
   return nombre.replace('/upload/', `/upload/f_auto,q_auto,w_${ancho}/`)
+}
+
+/**
+ * Sube la foto de un plato y devuelve el nombre con que quedo guardada.
+ *
+ * Se sube antes de guardar el producto, no junto con el: asi el administrador
+ * ve la foto en pantalla antes de decidir, y si se arrepiente de un cambio no
+ * tiene que volver a subir los megas desde el celular.
+ */
+export async function subirImagenCarta(archivo: File): Promise<string> {
+  const { imagen } = await contra(() =>
+    subirArchivo<{ imagen: string }>('/api/carta/imagenes', 'archivo', archivo),
+  )
+  return imagen
+}
+
+/** La direccion desde la que el navegador pide la foto de un plato ya guardada. */
+export function urlImagenCarta(nombre: string, ancho = 800): string {
+  return urlImagen(nombre, ancho, '/api/carta/imagenes')
 }
 
 // ---------------------------------------------------------------------------

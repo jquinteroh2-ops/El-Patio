@@ -161,6 +161,8 @@ export interface ItemCarta {
   tiempoPreparacionMin: number
   destino: Destino
   modificadores?: Modificador[]
+  /** Nombre del archivo en el almacen de imagenes, o nulo si el plato no tiene foto. */
+  imagen?: string | null
 }
 
 // ---------------------------------------------------------------------------

@@ -145,16 +145,24 @@ export default function CartaAdmin() {
                 item.disponible ? 'border-noche-800' : 'border-estado-demorado/30'
               }`}
             >
-              <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-noche-850 text-noche-400"
-                title={item.destino === 'bar' ? 'Va a la barra' : 'Va a cocina'}
-              >
-                {item.destino === 'bar' ? (
-                  <GlassWater className="h-4 w-4" aria-hidden />
-                ) : (
-                  <Soup className="h-4 w-4" aria-hidden />
-                )}
-              </span>
+              {item.imagen ? (
+                <img
+                  src={api.urlImagenCarta(item.imagen, 80)}
+                  alt=""
+                  className="h-9 w-9 shrink-0 rounded-xl object-cover"
+                />
+              ) : (
+                <span
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-noche-850 text-noche-400"
+                  title={item.destino === 'bar' ? 'Va a la barra' : 'Va a cocina'}
+                >
+                  {item.destino === 'bar' ? (
+                    <GlassWater className="h-4 w-4" aria-hidden />
+                  ) : (
+                    <Soup className="h-4 w-4" aria-hidden />
+                  )}
+                </span>
+              )}
 
               <div className="min-w-0 flex-1">
                 <p

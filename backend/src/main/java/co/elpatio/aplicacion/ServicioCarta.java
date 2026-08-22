@@ -4,6 +4,7 @@ import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.error.NoEncontradoError;
+import co.elpatio.dominio.puertos.AlmacenDeImagenes;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Repositorios;
@@ -18,11 +19,17 @@ public class ServicioCarta {
   private final Repositorios.DeCarta carta;
   private final GeneradorIds ids;
   private final PublicadorEventos eventos;
+  private final AlmacenDeImagenes imagenes;
 
-  public ServicioCarta(Repositorios.DeCarta carta, GeneradorIds ids, PublicadorEventos eventos) {
+  public ServicioCarta(
+      Repositorios.DeCarta carta,
+      GeneradorIds ids,
+      PublicadorEventos eventos,
+      AlmacenDeImagenes imagenes) {
     this.carta = carta;
     this.ids = ids;
     this.eventos = eventos;
+    this.imagenes = imagenes;
   }
 
   @Transactional(readOnly = true)
@@ -69,7 +76,17 @@ public class ServicioCarta {
 
   @Transactional
   public ItemCarta guardarItemCarta(ItemCarta item) {
-    if (item.getId() == null || item.getId().isBlank()) item.setId(ids.nuevo("p"));
+    if (item.getId() == null || item.getId().isBlank()) {
+      item.setId(ids.nuevo("p"));
+    } else {
+      // Si le cambiaron la foto, la anterior deja de servirle a nadie. Se
+      // borra aqui y no en un aseo posterior, porque este es el unico momento
+      // en que se sabe con certeza que quedo huerfana.
+      carta.porId(item.getId())
+          .map(ItemCarta::getImagen)
+          .filter(previa -> !previa.equals(item.getImagen()))
+          .ifPresent(imagenes::borrar);
+    }
     ItemCarta guardado = carta.guardarItem(item);
     eventos.publicar(List.of("carta"));
     return guardado;
@@ -77,8 +94,22 @@ public class ServicioCarta {
 
   @Transactional
   public void eliminarItemCarta(String itemId) {
+    carta.porId(itemId).map(ItemCarta::getImagen).ifPresent(imagenes::borrar);
     carta.eliminarItem(itemId);
     eventos.publicar(List.of("carta"));
+  }
+
+  /** Sube la foto de un plato y devuelve el nombre con que quedo guardada. */
+  public String guardarImagen(String nombreOriginal, byte[] contenido) {
+    return imagenes.guardar(nombreOriginal, contenido);
+  }
+
+  public byte[] leerImagen(String nombre) {
+    return imagenes.leer(nombre);
+  }
+
+  public String tipoDeContenido(String nombre) {
+    return imagenes.tipoDeContenido(nombre);
   }
 
   @Transactional

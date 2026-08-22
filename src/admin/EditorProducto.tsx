@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { ImagePlus, Plus, Trash2, X } from 'lucide-react'
+import * as api from '@/compartido/mockApi'
 import type { CategoriaCarta, ItemCarta, Modificador, TipoModificador } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
@@ -38,6 +39,7 @@ const vacio = (categoriaId: string): ItemCarta => ({
   tiempoPreparacionMin: 15,
   destino: 'cocina',
   modificadores: [],
+  imagen: null,
 })
 
 export function EditorProducto({
@@ -51,6 +53,8 @@ export function EditorProducto({
 }: Props) {
   const [borrador, setBorrador] = useState<ItemCarta>(vacio(categorias[0]?.id ?? ''))
   const [error, setError] = useState<string | null>(null)
+  const [subiendo, setSubiendo] = useState(false)
+  const archivo = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!abierto) return
@@ -59,6 +63,25 @@ export function EditorProducto({
   }, [abierto, producto, categorias])
 
   const cambiar = (cambios: Partial<ItemCarta>) => setBorrador((b) => ({ ...b, ...cambios }))
+
+  const elegirFoto = async (archivos: FileList | null) => {
+    const elegido = archivos?.[0]
+    if (!elegido) return
+    setError(null)
+    setSubiendo(true)
+    try {
+      // La foto sube ya, antes de guardar el producto. Así el administrador la
+      // ve en pantalla y decide, y si después cambia el precio no tiene que
+      // volver a subir los megas desde el celular.
+      const nombre = await api.subirImagenCarta(elegido)
+      cambiar({ imagen: nombre })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo subir la foto')
+    } finally {
+      setSubiendo(false)
+      if (archivo.current) archivo.current.value = ''
+    }
+  }
 
   const cambiarModificador = (indice: number, cambios: Partial<Modificador>) =>
     setBorrador((b) => ({
@@ -181,6 +204,53 @@ export function EditorProducto({
             className={`${CAMPO} py-3`}
           />
         </label>
+
+        {/* ---------- La foto ---------- */}
+        <div>
+          <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
+            Foto <span className="text-noche-500">· para el menú visual</span>
+          </span>
+          {borrador.imagen ? (
+            <div className="relative overflow-hidden rounded-xl border border-noche-700">
+              <img
+                src={api.urlImagenCarta(borrador.imagen, 700)}
+                alt=""
+                className="max-h-56 w-full object-cover"
+              />
+              <button
+                type="button"
+                aria-label="Quitar la foto"
+                onClick={() => cambiar({ imagen: null })}
+                className="absolute right-2 top-2 rounded-full bg-noche-950/80 p-2 text-crema-100"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => archivo.current?.click()}
+              disabled={subiendo}
+              className="flex min-h-[104px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-noche-700 text-noche-300"
+            >
+              <ImagePlus className="h-6 w-6" aria-hidden />
+              <span className="text-sm">
+                {subiendo ? 'Subiendo la foto…' : 'Tocar para elegir una foto'}
+              </span>
+            </button>
+          )}
+          <input
+            ref={archivo}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => void elegirFoto(e.target.files)}
+          />
+          <p className="mt-1.5 text-xs text-noche-400">
+            Se reduce sola al subirla. Sin foto, el plato igual sale en la carta y en el menú, solo que
+            sin imagen.
+          </p>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
