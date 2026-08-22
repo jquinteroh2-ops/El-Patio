@@ -34,7 +34,12 @@ const vacia = (): Publicacion => ({
   imagen: null,
   desde: null,
   hasta: null,
-  publicada: false,
+  // Nace publicada. Quien entra a esta pantalla viene a mostrar algo, no a
+  // guardarlo en un cajon: dejarlo apagado por defecto convertia el caso comun
+  // en el que exige un paso extra, y ese paso es facil de no ver porque el
+  // interruptor queda al final del formulario. Quien quiera prepararla para
+  // despues lo apaga, que es la decision rara y por lo tanto la consciente.
+  publicada: true,
   orden: 0,
 })
 
@@ -144,6 +149,20 @@ export function EditorPublicacion({
       }
     >
       <div className="space-y-4">
+        {/* El estado, antes que nada. Es lo que decide si esto lo ve un cliente
+            o no lo ve nadie, y enterarse al final del formulario es tarde. */}
+        <div
+          className={`rounded-xl border px-3 py-2.5 text-sm ${
+            borrador.publicada
+              ? 'border-estado-listo/40 bg-estado-listo/10 text-estado-listo'
+              : 'border-noche-700 bg-noche-900 text-noche-300'
+          }`}
+        >
+          {borrador.publicada
+            ? 'Al guardar, esto se ve en el sitio.'
+            : 'Guardado como borrador: no lo verá ningún cliente.'}
+        </div>
+
         <CampoSelect
           etiqueta="Qué es"
           value={borrador.tipo}
