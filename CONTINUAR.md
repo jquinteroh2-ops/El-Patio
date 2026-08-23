@@ -38,6 +38,18 @@ Con eso, "Solicitar número de prueba" funcionó.
 Ya escritos en `backend/.env` (que git ignora). El `VERIFY_TOKEN` también quedó
 generado ahí.
 
+## El bot vive ahora en n8n, no en el backend
+
+Se decidio el 2026-08-23 mover el bot a n8n Cloud. Estado completo, hallazgos y
+que probar manana: **`n8n/ESTADO.md`**.
+
+Resumen: funciona todo (Meta entrega el webhook, n8n enruta, Meta acepta la
+peticion) menos autorizar el numero destinatario, que lo bloquea un fallo de la
+consola de Meta.
+
+> El webhook de Meta apunta a n8n, asi que el backend en Railway ya **no**
+> recibe mensajes de WhatsApp. Los dos no pueden escuchar a la vez.
+
 ## Pendiente
 
 ### 1. Los dos secretos que faltan — necesitan tus manos

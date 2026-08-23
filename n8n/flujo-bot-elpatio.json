@@ -1,0 +1,51 @@
+{
+  "name": "El Patio - Bot de WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["messages"]
+      },
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Mensaje de WhatsApp",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [-260, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Traduce el webhook de Meta a la respuesta que toca enviar.\n// Reproduce el menu de OrquestadorWhatsApp.enviarMenuPrincipal().\n\nconst entrada = $input.first().json;\nconst valor = entrada?.messages ? entrada : entrada?.entry?.[0]?.changes?.[0]?.value;\nconst mensaje = valor?.messages?.[0];\n\nif (!mensaje) {\n  // Acuses de recibo y cambios de estado: no hay nada que contestar.\n  return [];\n}\n\nconst telefono = mensaje.from;\n// El id del boton pulsado, si el cliente pulso uno.\nconst opcion = mensaje.interactive?.button_reply?.id\n  ?? mensaje.interactive?.list_reply?.id\n  ?? null;\n\nconst menuPrincipal = {\n  messaging_product: 'whatsapp',\n  to: telefono,\n  type: 'interactive',\n  interactive: {\n    type: 'button',\n    body: { text: '\u00a1Hola! Soy el asistente de El Patio. \u00bfQu\u00e9 deseas hacer?' },\n    action: {\n      buttons: [\n        { type: 'reply', reply: { id: 'menu:pedido',  title: 'Hacer pedido' } },\n        { type: 'reply', reply: { id: 'menu:reserva', title: 'Reservar mesa' } },\n        { type: 'reply', reply: { id: 'menu:humano',  title: 'Hablar con alguien' } }\n      ]\n    }\n  }\n};\n\nconst texto = (cuerpo) => ({\n  messaging_product: 'whatsapp',\n  to: telefono,\n  type: 'text',\n  text: { body: cuerpo }\n});\n\nlet respuesta;\nswitch (opcion) {\n  case 'menu:pedido':\n    respuesta = texto('Perfecto. Dime qu\u00e9 quieres pedir y te armo la orden.');\n    break;\n  case 'menu:reserva':\n    respuesta = texto('\u00bfPara cu\u00e1ntas personas y a qu\u00e9 hora quieres la mesa?');\n    break;\n  case 'menu:humano':\n    respuesta = texto('Listo, en un momento te atiende alguien del restaurante.');\n    break;\n  default:\n    // Cualquier texto libre abre el menu, igual que hace el backend.\n    respuesta = menuPrincipal;\n}\n\nreturn [{ json: respuesta }];"
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Decidir respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-40, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/1316101424914419/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Responder por WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [190, 0]
+    }
+  ],
+  "connections": {
+    "Mensaje de WhatsApp": {
+      "main": [[{ "node": "Decidir respuesta", "type": "main", "index": 0 }]]
+    },
+    "Decidir respuesta": {
+      "main": [[{ "node": "Responder por WhatsApp", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}
