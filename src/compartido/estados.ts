@@ -75,6 +75,10 @@ export const NOMBRE_ZONA: Record<Zona, string> = {
 }
 
 export const ETIQUETA_PEDIDO: Record<EstadoPedido, string> = {
+  borrador: 'Borrador',
+  pendiente_verificacion: 'Por verificar',
+  esperando_anticipo: 'Esperando pago',
+  anticipo_pagado: 'Anticipo pagado',
   nuevo: 'Nuevo',
   aceptado: 'Aceptado',
   en_preparacion: 'En preparación',
@@ -83,12 +87,20 @@ export const ETIQUETA_PEDIDO: Record<EstadoPedido, string> = {
   entregado: 'Entregado',
   rechazado: 'Rechazado',
   cancelado: 'Cancelado',
+  expirado: 'Pago vencido',
 }
 
 export const TONO_PEDIDO: Record<
   EstadoPedido,
   'neutro' | 'listo' | 'proceso' | 'demorado' | 'oro'
 > = {
+  borrador: 'neutro',
+  pendiente_verificacion: 'neutro',
+  // Neutro y no 'oro': a diferencia de 'nuevo', esta columna es visible pero
+  // no le pide nada a recepcion todavia. El oro se reserva para lo que si
+  // exige que alguien actue.
+  esperando_anticipo: 'neutro',
+  anticipo_pagado: 'proceso',
   nuevo: 'oro',
   aceptado: 'proceso',
   en_preparacion: 'proceso',
@@ -97,6 +109,7 @@ export const TONO_PEDIDO: Record<
   entregado: 'neutro',
   rechazado: 'demorado',
   cancelado: 'demorado',
+  expirado: 'demorado',
 }
 
 export const ETIQUETA_TIPO_PEDIDO: Record<TipoPedido, string> = {

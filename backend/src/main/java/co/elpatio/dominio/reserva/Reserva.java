@@ -1,5 +1,6 @@
 package co.elpatio.dominio.reserva;
 
+import co.elpatio.dominio.canal.Canal;
 import java.time.Instant;
 
 public class Reserva {
@@ -12,6 +13,9 @@ public class Reserva {
   private EstadoReserva estado = EstadoReserva.SOLICITADA;
   private String notas;
   private String mesaAsignadaId;
+
+  /** Por donde se pidio. Igual que en `Orden`: solo dice quien atendio, no cambia el flujo. */
+  private Canal canal = Canal.PRESENCIAL;
 
   public Reserva() {}
 
@@ -33,4 +37,6 @@ public class Reserva {
   public void setNotas(String notas) { this.notas = notas; }
   public String getMesaAsignadaId() { return mesaAsignadaId; }
   public void setMesaAsignadaId(String mesaAsignadaId) { this.mesaAsignadaId = mesaAsignadaId; }
+  public Canal getCanal() { return canal; }
+  public void setCanal(Canal canal) { this.canal = canal != null ? canal : Canal.PRESENCIAL; }
 }

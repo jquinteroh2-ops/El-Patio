@@ -183,8 +183,20 @@ export type TipoPedido = 'mesa' | 'domicilio' | 'llevar'
  *
  * Es distinto de EstadoOrden: aquel sigue la cocina, este sigue al cliente. Un
  * pedido puede estar `despachado` mientras su comanda ya esta `servida`.
+ *
+ * Los primeros cuatro (`borrador` a `anticipo_pagado`) son el tramo que solo
+ * recorren los canales automatizados que cobran anticipo antes de mandar algo
+ * a cocina; un pedido del mostrador o del sitio publico entra directo en
+ * `nuevo`. En la practica, `borrador` y `anticipo_pagado` casi no se ven en
+ * pantalla porque el backend los atraviesa en el mismo instante que crea o
+ * confirma el pedido: el que si se ve, esperando en su propia columna, es
+ * `esperando_anticipo`.
  */
 export type EstadoPedido =
+  | 'borrador'
+  | 'pendiente_verificacion'
+  | 'esperando_anticipo'
+  | 'anticipo_pagado'
   | 'nuevo'
   | 'aceptado'
   | 'en_preparacion'
@@ -193,6 +205,13 @@ export type EstadoPedido =
   | 'entregado'
   | 'rechazado'
   | 'cancelado'
+  | 'expirado'
+
+/**
+ * Por donde entro el pedido, cuando no fue una persona del mostrador quien lo
+ * tomo. Ortogonal a `TipoPedido`: dice quien atendio, no como se entrega.
+ */
+export type Canal = 'whatsapp' | 'telefono' | 'web' | 'presencial'
 
 /**
  * Donde hay que llevar el pedido, en coordenadas.
@@ -312,6 +331,8 @@ export interface Orden {
   tipo: TipoPedido
   /** Solo en pedidos externos: es el recorrido que ve recepcion. */
   estadoPedido?: EstadoPedido
+  /** 'presencial' en todo lo que viene del salon o del mostrador. */
+  canal?: Canal
   cliente?: ClienteExterno
   /** Solo si el cliente autorizo compartirla. Nunca es obligatoria. */
   ubicacion?: UbicacionEntrega

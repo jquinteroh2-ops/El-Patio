@@ -1,5 +1,7 @@
 package co.elpatio.dominio.comanda;
 
+import co.elpatio.dominio.canal.Canal;
+import co.elpatio.dominio.canal.MetadataOrigen;
 import co.elpatio.dominio.carta.Destino;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.error.ReglaDeNegocioError;
@@ -59,6 +61,22 @@ public class Orden {
 
   /** Solo lo llevan los pedidos externos: es el recorrido que ve recepcion. */
   private EstadoPedido estadoPedido;
+
+  /**
+   * Por quien fue atendido el cliente antes de que el pedido llegara aqui.
+   *
+   * Es ortogonal a `tipo`: `tipo` dice como se entrega (mesa, domicilio,
+   * llevar), `canal` dice quien tomo el pedido del otro lado (WhatsApp, el
+   * sitio publico, alguien del mostrador). Un domicilio por WhatsApp y un
+   * domicilio tomado por telefono son el mismo `tipo` con distinto `canal`.
+   */
+  private Canal canal = Canal.PRESENCIAL;
+
+  /**
+   * Rastro de como se origino el pedido en un canal automatizado. Nulo cuando
+   * el canal no lo produce (mostrador, sitio publico de hoy).
+   */
+  private MetadataOrigen metadataOrigen;
 
   private ClienteExterno cliente;
 
@@ -538,6 +556,10 @@ public class Orden {
   public void setTipo(TipoPedido tipo) { this.tipo = tipo != null ? tipo : TipoPedido.MESA; }
   public EstadoPedido getEstadoPedido() { return estadoPedido; }
   public void setEstadoPedido(EstadoPedido estadoPedido) { this.estadoPedido = estadoPedido; }
+  public Canal getCanal() { return canal; }
+  public void setCanal(Canal canal) { this.canal = canal != null ? canal : Canal.PRESENCIAL; }
+  public MetadataOrigen getMetadataOrigen() { return metadataOrigen; }
+  public void setMetadataOrigen(MetadataOrigen metadataOrigen) { this.metadataOrigen = metadataOrigen; }
   public ClienteExterno getCliente() { return cliente; }
   public void setCliente(ClienteExterno cliente) { this.cliente = cliente; }
   public UbicacionEntrega getUbicacion() { return ubicacion; }

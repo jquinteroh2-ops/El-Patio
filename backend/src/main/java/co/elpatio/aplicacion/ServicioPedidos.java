@@ -2,6 +2,7 @@ package co.elpatio.aplicacion;
 
 import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.ajustes.Ajustes;
+import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.CalculadoraCuenta;
 import co.elpatio.dominio.comanda.EstadoOrden;
@@ -181,7 +182,17 @@ public class ServicioPedidos {
     Orden orden = new Orden();
     orden.setId(ids.nuevo("ord"));
     orden.setTipo(tipo);
-    orden.setEstadoPedido(EstadoPedido.NUEVO);
+    // El sitio publico de siempre no manda canal: es un pedido web como
+    // cualquier otro. Un canal automatizado (WhatsApp, telefono) si lo manda,
+    // porque para el es el unico dato que dice quien atendio al cliente.
+    Canal canal = datos.canal() == null ? Canal.WEB : datos.canal();
+    orden.setCanal(canal);
+    // Un canal automatizado cobra anticipo antes de que esto sea un pedido
+    // que recepcion pueda ver: nace en `borrador` y es `ServicioAnticipos`
+    // quien lo mueve a `esperando_anticipo`. El mostrador y el sitio publico
+    // de siempre no cobran anticipo, asi que entran directo en `nuevo`, que es
+    // donde este recorrido siempre empezo.
+    orden.setEstadoPedido(canal.esAutomatizado() ? EstadoPedido.BORRADOR : EstadoPedido.NUEVO);
     orden.setNumero(ajustes.siguienteConsecutivo());
     orden.setComensales(1);
     orden.setAbiertaEn(reloj.ahora());

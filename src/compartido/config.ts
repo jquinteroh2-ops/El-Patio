@@ -110,6 +110,11 @@ export const ETIQUETA_CANAL = {
 
 /** Los estados de un pedido, en el orden en que ocurren. */
 export const ESTADOS_PEDIDO = [
+  // Solo lo ocupan los canales automatizados (WhatsApp, y luego telefono) que
+  // cobran anticipo antes de mandar algo a cocina. Visible pero sin botones de
+  // accion: recepcion no tiene nada que hacer aqui, solo esperar el webhook
+  // del pago.
+  { estado: 'esperando_anticipo', etiqueta: 'Esperando pago' },
   { estado: 'nuevo', etiqueta: 'Nuevos' },
   { estado: 'aceptado', etiqueta: 'Aceptados' },
   { estado: 'en_preparacion', etiqueta: 'En preparación' },

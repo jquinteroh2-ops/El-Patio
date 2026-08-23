@@ -5,7 +5,11 @@ import co.elpatio.dominio.caja.CierreCaja;
 import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.Pago;
+import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.conversacion.Conversacion;
+import co.elpatio.dominio.pago.EstadoPagoOnline;
+import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.publicacion.Publicacion;
@@ -19,7 +23,9 @@ import co.elpatio.infraestructura.persistencia.dao.DaoCierres;
 import co.elpatio.infraestructura.persistencia.dao.DaoItemsCarta;
 import co.elpatio.infraestructura.persistencia.dao.DaoMesas;
 import co.elpatio.infraestructura.persistencia.dao.DaoOrdenes;
+import co.elpatio.infraestructura.persistencia.dao.DaoConversaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
+import co.elpatio.infraestructura.persistencia.dao.DaoPagosOnline;
 import co.elpatio.infraestructura.persistencia.dao.DaoPublicaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoReservas;
 import co.elpatio.infraestructura.persistencia.dao.DaoUsuarios;
@@ -30,7 +36,9 @@ import co.elpatio.infraestructura.persistencia.filas.FilaCierreCaja;
 import co.elpatio.infraestructura.persistencia.filas.FilaItemCarta;
 import co.elpatio.infraestructura.persistencia.filas.FilaMesa;
 import co.elpatio.infraestructura.persistencia.filas.FilaOrden;
+import co.elpatio.infraestructura.persistencia.filas.FilaConversacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
+import co.elpatio.infraestructura.persistencia.filas.FilaPagoOnline;
 import co.elpatio.infraestructura.persistencia.filas.FilaPublicacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaReserva;
 import co.elpatio.infraestructura.persistencia.filas.FilaUsuario;
@@ -274,6 +282,70 @@ public final class Adaptadores {
     @Override
     public Pago guardar(Pago pago) {
       return dao.save(FilaPago.deDominio(pago)).aDominio();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class PagosOnline implements Repositorios.DePagosOnline {
+    private final DaoPagosOnline dao;
+
+    public PagosOnline(DaoPagosOnline dao) {
+      this.dao = dao;
+    }
+
+    @Override
+    public Optional<PagoOnline> porId(String id) {
+      return dao.findById(id).map(FilaPagoOnline::aDominio);
+    }
+
+    @Override
+    public Optional<PagoOnline> porReferencia(String referencia) {
+      return dao.findByReferencia(referencia).map(FilaPagoOnline::aDominio);
+    }
+
+    @Override
+    public List<PagoOnline> pendientesVencidosAntesDe(Instant instante) {
+      return dao.findByEstadoAndExpiraEnBefore(EstadoPagoOnline.PENDIENTE.codigo(), instante).stream()
+          .map(FilaPagoOnline::aDominio)
+          .toList();
+    }
+
+    @Override
+    public PagoOnline guardar(PagoOnline pago) {
+      return dao.save(FilaPagoOnline.deDominio(pago)).aDominio();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class Conversaciones implements Repositorios.DeConversaciones {
+    private final DaoConversaciones dao;
+
+    public Conversaciones(DaoConversaciones dao) {
+      this.dao = dao;
+    }
+
+    @Override
+    public Optional<Conversacion> porId(String id) {
+      return dao.findById(id).map(FilaConversacion::aDominio);
+    }
+
+    @Override
+    public Optional<Conversacion> abiertaPara(Canal canal, String identificadorExterno) {
+      return dao
+          .findByCanalAndIdentificadorExternoOrderByIniciadaEnDesc(canal.codigo(), identificadorExterno)
+          .stream()
+          .map(FilaConversacion::aDominio)
+          .filter(c -> !c.getEstado().esFinal())
+          .findFirst();
+    }
+
+    @Override
+    public Conversacion guardar(Conversacion conversacion) {
+      return dao.save(FilaConversacion.deDominio(conversacion)).aDominio();
     }
   }
 

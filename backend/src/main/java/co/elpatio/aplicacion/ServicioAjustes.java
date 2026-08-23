@@ -47,6 +47,13 @@ public class ServicioAjustes {
     }
     if (cambios.domiciliosDesde() != null) actuales.setDomiciliosDesde(cambios.domiciliosDesde());
     if (cambios.domiciliosHasta() != null) actuales.setDomiciliosHasta(cambios.domiciliosHasta());
+    if (cambios.porcentajeAnticipo() != null) {
+      int anticipo = cambios.porcentajeAnticipo();
+      if (anticipo < 0 || anticipo > 100) {
+        throw new ReglaDeNegocioError("El anticipo debe estar entre 0 y 100");
+      }
+      actuales.setPorcentajeAnticipo(anticipo);
+    }
 
     if (actuales.getDomiciliosDesde().isAfter(actuales.getDomiciliosHasta())) {
       throw new ReglaDeNegocioError("La hora de apertura de domicilios va antes que la de cierre");
@@ -66,6 +73,7 @@ public class ServicioAjustes {
         valor.getFechaConsecutivo(),
         valor.isDomiciliosPausados(),
         valor.getDomiciliosDesde(),
-        valor.getDomiciliosHasta());
+        valor.getDomiciliosHasta(),
+        valor.getPorcentajeAnticipo());
   }
 }

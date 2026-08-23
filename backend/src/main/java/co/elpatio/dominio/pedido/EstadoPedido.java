@@ -12,6 +12,10 @@ import java.util.List;
  * `servida`, porque son dos relojes que miden cosas distintas.
  */
 public enum EstadoPedido {
+  BORRADOR,
+  PENDIENTE_VERIFICACION,
+  ESPERANDO_ANTICIPO,
+  ANTICIPO_PAGADO,
   NUEVO,
   ACEPTADO,
   EN_PREPARACION,
@@ -19,7 +23,8 @@ public enum EstadoPedido {
   DESPACHADO,
   ENTREGADO,
   RECHAZADO,
-  CANCELADO;
+  CANCELADO,
+  EXPIRADO;
 
   @JsonValue
   public String codigo() { return name().toLowerCase(); }
@@ -27,27 +32,56 @@ public enum EstadoPedido {
   @JsonCreator
   public static EstadoPedido de(String valor) { return valueOf(valor.toUpperCase()); }
 
-  /** Secuencia normal. Los dos finales de excepcion quedan fuera a proposito. */
+  /**
+   * Secuencia normal. Los finales de excepcion quedan fuera a proposito.
+   *
+   * Los primeros cuatro pasos (`borrador` a `anticipo_pagado`) solo los
+   * recorren los canales automatizados que cobran anticipo; un pedido tomado
+   * en el mostrador o por el sitio publico entra directo en `nuevo`, que es
+   * donde siempre empezo este recorrido.
+   */
   private static final List<EstadoPedido> RECORRIDO =
-      List.of(NUEVO, ACEPTADO, EN_PREPARACION, LISTO, DESPACHADO, ENTREGADO);
+      List.of(
+          BORRADOR,
+          PENDIENTE_VERIFICACION,
+          ESPERANDO_ANTICIPO,
+          ANTICIPO_PAGADO,
+          NUEVO,
+          ACEPTADO,
+          EN_PREPARACION,
+          LISTO,
+          DESPACHADO,
+          ENTREGADO);
+
+  /** Los pasos del recorrido que un canal puede saltarse sin que sea un salto ilegal. */
+  public boolean esOpcional() {
+    return this == PENDIENTE_VERIFICACION;
+  }
 
   public boolean esFinal() {
-    return this == ENTREGADO || this == RECHAZADO || this == CANCELADO;
+    return this == ENTREGADO || this == RECHAZADO || this == CANCELADO || this == EXPIRADO;
   }
 
   /**
    * Si se puede pasar de este estado al siguiente.
    *
-   * El recorrido no se puede saltar ni devolver: un pedido no puede quedar
-   * `entregado` sin haber pasado por `despachado`, porque entonces nadie sabria
-   * quien lo llevo. Rechazar y cancelar si son posibles desde cualquier punto
-   * que no sea final, porque la realidad del salon las impone.
+   * El recorrido no se puede saltar ni devolver, salvo por los pasos marcados
+   * como opcionales: un pedido no puede quedar `entregado` sin haber pasado
+   * por `despachado`, porque entonces nadie sabria quien lo llevo, pero si
+   * puede ir de `esperando_anticipo` a `anticipo_pagado` sin pasar por
+   * `pendiente_verificacion` porque WhatsApp nunca lo usa. Rechazar, cancelar
+   * y expirar son posibles desde cualquier punto que no sea final, porque la
+   * realidad del salon y del pago las impone.
    */
   public boolean puedePasarA(EstadoPedido siguiente) {
     if (esFinal()) return false;
-    if (siguiente == RECHAZADO || siguiente == CANCELADO) return true;
+    if (siguiente == RECHAZADO || siguiente == CANCELADO || siguiente == EXPIRADO) return true;
     int actual = RECORRIDO.indexOf(this);
     int destino = RECORRIDO.indexOf(siguiente);
-    return actual >= 0 && destino == actual + 1;
+    if (actual < 0 || destino <= actual) return false;
+    for (int i = actual + 1; i < destino; i++) {
+      if (!RECORRIDO.get(i).esOpcional()) return false;
+    }
+    return true;
   }
 }

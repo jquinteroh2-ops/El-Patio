@@ -1,6 +1,7 @@
 package co.elpatio.aplicacion;
 
 import co.elpatio.aplicacion.dto.Dtos;
+import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.error.NoEncontradoError;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
@@ -50,6 +51,7 @@ public class ServicioReservas {
     reserva.setOcasion(datos.ocasion());
     reserva.setNotas(datos.notas());
     reserva.setEstado(EstadoReserva.SOLICITADA);
+    reserva.setCanal(datos.canal() == null ? Canal.WEB : datos.canal());
 
     Reserva guardada = reservas.guardar(reserva);
     eventos.publicar(List.of("reservas"));

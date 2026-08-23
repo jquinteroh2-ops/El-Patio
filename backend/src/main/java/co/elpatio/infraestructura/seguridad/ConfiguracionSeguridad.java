@@ -64,6 +64,10 @@ public class ConfiguracionSeguridad {
                     .requestMatchers(HttpMethod.GET, "/api/acceso/demostracion").permitAll()
                     .requestMatchers("/salud", "/salud/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
+                    // Los webhooks de proveedores externos (Wompi, y mas
+                    // adelante Meta) no tienen sesion de nadie: se autentican
+                    // con su propia firma, verificada dentro del controlador.
+                    .requestMatchers("/webhooks/**").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                     // La carta y las reservas las consulta el sitio publico sin

@@ -1,5 +1,6 @@
 package co.elpatio.infraestructura.persistencia.filas;
 
+import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.reserva.EstadoReserva;
 import co.elpatio.dominio.reserva.Ocasion;
 import co.elpatio.dominio.reserva.Reserva;
@@ -32,6 +33,9 @@ public class FilaReserva {
   @Column(name = "mesa_asignada_id")
   private String mesaAsignadaId;
 
+  @Column(nullable = false)
+  private String canal = "presencial";
+
   public Reserva aDominio() {
     Reserva reserva = new Reserva();
     reserva.setId(id);
@@ -43,6 +47,7 @@ public class FilaReserva {
     reserva.setEstado(EstadoReserva.de(estado));
     reserva.setNotas(notas);
     reserva.setMesaAsignadaId(mesaAsignadaId);
+    reserva.setCanal(canal == null ? Canal.PRESENCIAL : Canal.de(canal));
     return reserva;
   }
 
@@ -57,6 +62,7 @@ public class FilaReserva {
     fila.estado = reserva.getEstado().codigo();
     fila.notas = reserva.getNotas();
     fila.mesaAsignadaId = reserva.getMesaAsignadaId();
+    fila.canal = reserva.getCanal().codigo();
     return fila;
   }
 }

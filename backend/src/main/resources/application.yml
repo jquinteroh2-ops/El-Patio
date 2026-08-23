@@ -108,6 +108,43 @@ elpatio:
     # Lista separada por comas. Nunca `*`: el navegador envía el token.
     origenes: ${ELPATIO_CORS_ORIGENES:http://localhost:5173}
 
+  # Los anticipos de los canales automatizados (WhatsApp, y luego teléfono),
+  # cobrados con un link de pago de Wompi.
+  #
+  # La URL base es la que decide sandbox o producción: por defecto apunta al
+  # ambiente de pruebas, con llaves de prueba que Wompi entrega sin costo. El
+  # secreto de eventos NO es el mismo que el de integridad del widget: es el
+  # que Wompi muestra junto a la URL del webhook, y firma cada aviso que manda.
+  # Ninguno de los dos se escribe aquí ni en ningún archivo del repositorio.
+  wompi:
+    url-base: ${ELPATIO_WOMPI_URL_BASE:https://sandbox.wompi.co/v1}
+    llave-privada: ${ELPATIO_WOMPI_LLAVE_PRIVADA:}
+    secreto-eventos: ${ELPATIO_WOMPI_SECRETO_EVENTOS:}
+
+  # El bot de WhatsApp, contra la Graph API de Meta directa (sin BSP).
+  #
+  # `verify-token` es el que se escribe en el panel de Meta al configurar la
+  # URL del webhook: lo inventa uno mismo, no lo entrega Meta. `app-secret` si
+  # lo entrega Meta, en la App creada en developers.facebook.com, y es lo que
+  # firma cada evento que manda. Ninguno de los dos se escribe aquí ni en
+  # ningún archivo del repositorio.
+  whatsapp:
+    url-base: ${ELPATIO_WHATSAPP_URL_BASE:https://graph.facebook.com/v21.0}
+    phone-number-id: ${ELPATIO_WHATSAPP_PHONE_NUMBER_ID:}
+    token-acceso: ${ELPATIO_WHATSAPP_TOKEN_ACCESO:}
+    verify-token: ${ELPATIO_WHATSAPP_VERIFY_TOKEN:}
+    app-secret: ${ELPATIO_WHATSAPP_APP_SECRET:}
+
+  # El interprete de pedidos en texto libre (WhatsApp, fase 4).
+  #
+  # Solo se le pasa el menu real (id y nombre, nunca precios): el backend es
+  # quien busca el precio y arma el total con lo que el interprete devuelve.
+  # El modelo es configuracion: se puede bajar a uno mas barato sin tocar
+  # codigo si el volumen de mensajes lo justifica.
+  ia:
+    llave: ${ELPATIO_ANTHROPIC_LLAVE:}
+    modelo: ${ELPATIO_ANTHROPIC_MODELO:claude-opus-5}
+
   # Cuentas de demostración con clave conocida, para enseñar el sistema.
   #
   # Vacío es lo correcto en producción: sin esto el modo no existe. Con esto

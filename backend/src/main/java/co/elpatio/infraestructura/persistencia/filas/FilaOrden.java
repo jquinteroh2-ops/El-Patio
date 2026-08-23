@@ -1,5 +1,7 @@
 package co.elpatio.infraestructura.persistencia.filas;
 
+import co.elpatio.dominio.canal.Canal;
+import co.elpatio.dominio.canal.MetadataOrigen;
 import co.elpatio.dominio.comanda.CargoAdicional;
 import co.elpatio.dominio.comanda.EstadoOrden;
 import co.elpatio.dominio.comanda.ItemOrden;
@@ -77,6 +79,18 @@ public class FilaOrden {
   @Column(name = "estado_pedido")
   private String estadoPedido;
 
+  @Column(nullable = false)
+  private String canal = "presencial";
+
+  @Column(name = "origen_id_conversacion")
+  private String origenIdConversacion;
+
+  @Column(name = "origen_transcripcion")
+  private String origenTranscripcion;
+
+  @Column(name = "origen_url_audio")
+  private String origenUrlAudio;
+
   @Column(name = "cliente_nombre")
   private String clienteNombre;
 
@@ -152,6 +166,13 @@ public class FilaOrden {
     orden.setOrdenReemplazoId(ordenReemplazoId);
     orden.setTipo(tipo == null ? TipoPedido.MESA : TipoPedido.de(tipo));
     orden.setEstadoPedido(estadoPedido == null ? null : EstadoPedido.de(estadoPedido));
+    orden.setCanal(canal == null ? Canal.PRESENCIAL : Canal.de(canal));
+    // La metadata solo existe si hay algo que contar: un pedido presencial no
+    // trae conversacion detras y no tiene por que cargar un objeto vacio.
+    orden.setMetadataOrigen(
+        origenIdConversacion == null && origenTranscripcion == null && origenUrlAudio == null
+            ? null
+            : new MetadataOrigen(origenIdConversacion, origenTranscripcion, origenUrlAudio));
     // El cliente solo existe si hay algo que guardar: una orden de mesa no
     // lleva datos de contacto y no tiene por que cargar un objeto vacio.
     orden.setCliente(
@@ -200,6 +221,11 @@ public class FilaOrden {
     this.ordenReemplazoId = orden.getOrdenReemplazoId();
     this.tipo = orden.getTipo().codigo();
     this.estadoPedido = orden.getEstadoPedido() == null ? null : orden.getEstadoPedido().codigo();
+    this.canal = orden.getCanal().codigo();
+    MetadataOrigen metadata = orden.getMetadataOrigen();
+    this.origenIdConversacion = metadata == null ? null : metadata.idConversacion();
+    this.origenTranscripcion = metadata == null ? null : metadata.transcripcion();
+    this.origenUrlAudio = metadata == null ? null : metadata.urlAudio();
     ClienteExterno cliente = orden.getCliente();
     this.clienteNombre = cliente == null ? null : cliente.nombre();
     this.clienteTelefono = cliente == null ? null : cliente.telefono();

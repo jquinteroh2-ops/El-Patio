@@ -2,10 +2,13 @@ package co.elpatio.dominio.puertos;
 
 import co.elpatio.dominio.ajustes.Ajustes;
 import co.elpatio.dominio.caja.CierreCaja;
+import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.conversacion.Conversacion;
+import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.publicacion.Publicacion;
@@ -119,6 +122,32 @@ public final class Repositorios {
     List<CierreCaja> listar();
 
     CierreCaja guardar(CierreCaja cierre);
+  }
+
+  public interface DeConversaciones {
+    Optional<Conversacion> porId(String id);
+
+    /**
+     * La conversacion abierta con ese identificador en ese canal, si hay una.
+     *
+     * Un mismo telefono puede tener charlas viejas ya finalizadas; esto solo
+     * busca la que sigue activa, que es con la que un mensaje nuevo continua.
+     */
+    Optional<Conversacion> abiertaPara(Canal canal, String identificadorExterno);
+
+    Conversacion guardar(Conversacion conversacion);
+  }
+
+  public interface DePagosOnline {
+    Optional<PagoOnline> porId(String id);
+
+    /** Con lo que llega el webhook: es como Wompi identifica de que pedido habla. */
+    Optional<PagoOnline> porReferencia(String referencia);
+
+    /** Los que el job de expiracion tiene que revisar. */
+    List<PagoOnline> pendientesVencidosAntesDe(Instant instante);
+
+    PagoOnline guardar(PagoOnline pago);
   }
 
   public interface DeAjustes {

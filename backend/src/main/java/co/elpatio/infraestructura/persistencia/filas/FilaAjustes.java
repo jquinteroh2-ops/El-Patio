@@ -36,6 +36,9 @@ public class FilaAjustes {
   @Column(name = "domicilios_hasta")
   private LocalTime domiciliosHasta;
 
+  @Column(name = "porcentaje_anticipo")
+  private int porcentajeAnticipo;
+
   public Ajustes aDominio() {
     Ajustes ajustes = new Ajustes();
     ajustes.setPorcentajeInc(porcentajeInc);
@@ -44,6 +47,7 @@ public class FilaAjustes {
     ajustes.setDomiciliosPausados(domiciliosPausados);
     ajustes.setDomiciliosDesde(domiciliosDesde);
     ajustes.setDomiciliosHasta(domiciliosHasta);
+    ajustes.setPorcentajeAnticipo(porcentajeAnticipo);
     return ajustes;
   }
 
@@ -55,6 +59,7 @@ public class FilaAjustes {
     this.domiciliosPausados = ajustes.isDomiciliosPausados();
     this.domiciliosDesde = ajustes.getDomiciliosDesde();
     this.domiciliosHasta = ajustes.getDomiciliosHasta();
+    this.porcentajeAnticipo = ajustes.getPorcentajeAnticipo();
   }
 
   public int getConsecutivoOrden() { return consecutivoOrden; }

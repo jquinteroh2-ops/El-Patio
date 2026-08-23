@@ -25,6 +25,14 @@ public class Ajustes {
   private LocalTime domiciliosDesde;
   private LocalTime domiciliosHasta;
 
+  /**
+   * Que porcentaje del total se cobra como anticipo en un canal automatizado
+   * antes de mandar el pedido a cocina. Cero significa que ese canal no cobra
+   * anticipo. Es del establecimiento, no una constante del codigo: cada
+   * restaurante que use este sistema decide su propio riesgo.
+   */
+  private int porcentajeAnticipo;
+
   public Ajustes() {}
 
   public int getPorcentajeInc() { return porcentajeInc; }
@@ -39,6 +47,8 @@ public class Ajustes {
   public void setDomiciliosDesde(LocalTime valor) { this.domiciliosDesde = valor; }
   public LocalTime getDomiciliosHasta() { return domiciliosHasta; }
   public void setDomiciliosHasta(LocalTime valor) { this.domiciliosHasta = valor; }
+  public int getPorcentajeAnticipo() { return porcentajeAnticipo; }
+  public void setPorcentajeAnticipo(int valor) { this.porcentajeAnticipo = valor; }
 
   /**
    * Si en este momento se pueden recibir pedidos.

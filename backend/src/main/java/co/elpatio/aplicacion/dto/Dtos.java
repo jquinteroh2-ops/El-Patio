@@ -1,6 +1,7 @@
 package co.elpatio.aplicacion.dto;
 
 import co.elpatio.dominio.caja.Turno;
+import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.DivisionPago;
@@ -105,14 +106,23 @@ public final class Dtos {
       LocalDate fechaConsecutivo,
       boolean domiciliosPausados,
       LocalTime domiciliosDesde,
-      LocalTime domiciliosHasta) {}
+      LocalTime domiciliosHasta,
+      int porcentajeAnticipo) {}
 
   /** Cambios parciales de ajustes: lo que venga en null se deja como esta. */
   public record CambiosAjustes(
       Integer porcentajeInc,
       Boolean domiciliosPausados,
       LocalTime domiciliosDesde,
-      LocalTime domiciliosHasta) {}
+      LocalTime domiciliosHasta,
+      Integer porcentajeAnticipo) {}
+
+  // -------------------------------------------------------------------------
+  // Anticipos (Wompi)
+  // -------------------------------------------------------------------------
+
+  /** Lo que necesita el bot para mandarle al cliente el link de pago. */
+  public record AnticipoCreado(String pagoOnlineId, String urlPago, long montoCentavos, Instant expiraEn) {}
 
   // -------------------------------------------------------------------------
   // Salon
@@ -252,7 +262,12 @@ public final class Dtos {
       Double latitud,
       Double longitud,
       Integer precisionMetros,
-      List<NuevoItem> items) {}
+      List<NuevoItem> items,
+      /**
+       * Por donde llego el pedido. Nulo cuando lo manda el sitio publico de
+       * siempre, que no necesita decirlo: el servicio lo completa con `WEB`.
+       */
+      Canal canal) {}
 
   /** Lo que se le muestra al cliente al confirmar: su numero y cuanto tarda. */
   public record PedidoCreado(String id, int numero, Integer minutosEstimados, Cuenta cuenta) {}
@@ -333,7 +348,9 @@ public final class Dtos {
       Instant fechaHora,
       int personas,
       co.elpatio.dominio.reserva.Ocasion ocasion,
-      String notas) {}
+      String notas,
+      /** Nulo cuando la manda el sitio publico de siempre; el servicio lo completa con `WEB`. */
+      Canal canal) {}
 
   public record CambioEstadoReserva(
       co.elpatio.dominio.reserva.EstadoReserva estado, String mesaAsignadaId) {}
