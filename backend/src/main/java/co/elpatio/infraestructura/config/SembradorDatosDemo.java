@@ -33,6 +33,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Llena el sistema de actividad para poder enseñarlo.
@@ -158,6 +160,7 @@ public class SembradorDatosDemo implements ApplicationRunner {
   private final Repositorios.DeZonasDomicilio zonas;
   private final Reloj reloj;
   private final JdbcTemplate jdbc;
+  private final TransactionTemplate transacciones;
 
   private Random azar = new Random(SEMILLA);
 
@@ -173,7 +176,8 @@ public class SembradorDatosDemo implements ApplicationRunner {
       Repositorios.DeAjustes ajustes,
       Repositorios.DeZonasDomicilio zonas,
       Reloj reloj,
-      JdbcTemplate jdbc) {
+      JdbcTemplate jdbc,
+      PlatformTransactionManager transacciones) {
     this.demostracion = demostracion;
     this.usuarios = usuarios;
     this.mesas = mesas;
@@ -186,12 +190,23 @@ public class SembradorDatosDemo implements ApplicationRunner {
     this.zonas = zonas;
     this.reloj = reloj;
     this.jdbc = jdbc;
+    this.transacciones = new TransactionTemplate(transacciones);
   }
 
+  /**
+   * Cada tramo va en su propia transaccion, y por eso `run` no lleva
+   * `@Transactional`.
+   *
+   * Con una sola transaccion para todo, el `catch` de aqui abajo era papel
+   * mojado: al primer error Spring marcaba la transaccion `rollback-only`, y
+   * aunque la excepcion quedara atrapada, el commit del final reventaba con
+   * `UnexpectedRollbackException` y el arranque se caia igual. La promesa de
+   * "el sistema arranca igual" solo se sostiene si lo que falla se revierte
+   * solo, sin arrastrar lo demas.
+   */
   @Override
-  @Transactional
   public void run(ApplicationArguments argumentos) {
-    int retiradas = limpiar();
+    int retiradas = enTransaccion(this::limpiar);
 
     if (!demostracion.activo()) {
       if (retiradas > 0) {
@@ -202,7 +217,11 @@ public class SembradorDatosDemo implements ApplicationRunner {
 
     azar = new Random(SEMILLA);
     try {
-      sembrar();
+      enTransaccion(
+          () -> {
+            sembrar();
+            return null;
+          });
     } catch (RuntimeException error) {
       // Los datos de demostracion son un adorno; el sistema no lo es. Si algo
       // falla al sembrar se anota y se arranca igual: un restaurante sin
@@ -213,6 +232,10 @@ public class SembradorDatosDemo implements ApplicationRunner {
           error.toString(),
           error);
     }
+  }
+
+  private <T> T enTransaccion(Supplier<T> tramo) {
+    return transacciones.execute(estado -> tramo.get());
   }
 
   // ---------------------------------------------------------------------------

@@ -432,10 +432,12 @@ public final class Adaptadores {
   @Repository
   public static class AjustesRepo implements Repositorios.DeAjustes {
     private final DaoAjustes dao;
+    private final DaoOrdenes ordenes;
     private final Reloj reloj;
 
-    public AjustesRepo(DaoAjustes dao, Reloj reloj) {
+    public AjustesRepo(DaoAjustes dao, DaoOrdenes ordenes, Reloj reloj) {
       this.dao = dao;
+      this.ordenes = ordenes;
       this.reloj = reloj;
     }
 
@@ -461,12 +463,21 @@ public final class Adaptadores {
      * transaccion que crea la comanda. Una secuencia de PostgreSQL seria mas
      * simple pero dejaria huecos cuando una transaccion se revierte, y el
      * consecutivo del comprobante no puede tener saltos.
+     *
+     * El numero sale del mayor entre lo que dice el contador y lo que de verdad
+     * hay en la base. Fiarse solo del contador costaba caro: cuando el dia
+     * cambiaba volvia a 1, y si ese dia ya tenia comandas —una real que
+     * sobrevivio al retiro de los datos de demostracion, un respaldo
+     * restaurado— la llave (dia_operativo, numero) rechazaba el insert. En el
+     * arranque eso tumbaba el sistema entero; en plena venta habria dejado al
+     * restaurante sin poder abrir una comanda.
      */
     @Override
     public int siguienteConsecutivo() {
       FilaAjustes fila = dao.bloquearParaConsecutivo(FilaAjustes.UNICA);
       LocalDate hoy = reloj.hoy();
-      int siguiente = hoy.equals(fila.getFechaConsecutivo()) ? fila.getConsecutivoOrden() + 1 : 1;
+      int contador = hoy.equals(fila.getFechaConsecutivo()) ? fila.getConsecutivoOrden() : 0;
+      int siguiente = Math.max(contador, ordenes.maximoNumeroDe(hoy)) + 1;
       fila.setFechaConsecutivo(hoy);
       fila.setConsecutivoOrden(siguiente);
       dao.saveAndFlush(fila);
