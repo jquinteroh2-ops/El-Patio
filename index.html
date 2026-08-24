@@ -44,11 +44,18 @@
       franja del centro. El día que haya una imagen apaisada de 1200x630 —una
       foto del local, por ejemplo— se cambia a `summary_large_image`.
     -->
-    <meta property="og:image" content="/logo.png" />
+    <!--
+      La URL va ABSOLUTA y con el dominio escrito. Las rutas relativas no
+      sirven aquí: quien lee esta etiqueta es el robot de WhatsApp o de
+      Facebook, que no tiene página de referencia contra la cual resolver un
+      «/logo.png», y simplemente no muestra imagen. Es el error que hace que un
+      enlace se comparta sin nada.
+    -->
+    <meta property="og:image" content="https://restauranteelpatio.com/logo-og.png" />
     <meta property="og:image:width" content="320" />
     <meta property="og:image:height" content="320" />
     <meta property="og:image:alt" content="Logo del Restaurante El Patio" />
-    <meta name="twitter:image" content="/logo.png" />
+    <meta name="twitter:image" content="https://restauranteelpatio.com/logo-og.png" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Restaurante El Patio · Turbaco, Bolívar" />
     <meta

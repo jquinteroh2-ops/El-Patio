@@ -8,20 +8,24 @@ import java.io.File;
 /**
  * Prepara el logo del restaurante para el sitio.
  *
- * El archivo que entregó el restaurante es un JPG de 150x150 con un margen
- * crema alrededor. Este programa hace tres cosas con él:
+ * El restaurante entregó un JPG de 150x150: el arco con la monstera y la
+ * orquídea sobre «EL PATIO», dibujado en negro sobre un fondo crema.
  *
- *   1. Le recorta el margen sobrante, para que el dibujo llene el cuadro y no
- *      se vea diminuto dentro de un marco vacío al ponerlo en el encabezado.
- *   2. Lo pasa a PNG. El JPG comprime por bloques y en un dibujo de líneas
- *      finas sobre fondo plano eso deja un halo sucio alrededor de cada trazo.
- *   3. Saca los tamaños que necesita el sitio: el del encabezado, el de la
- *      pestaña y el del icono de iOS.
+ * <p><b>El problema que resuelve este programa.</b> El sitio es oscuro. Pegar
+ * ese JPG tal cual en el encabezado pone un recuadro claro sobre un fondo casi
+ * negro, y se ve exactamente como lo que es: una foto pegada encima, no un
+ * logo. Lo que hace falta es lo que en imprenta se llama la versión en
+ * negativo: el mismo dibujo con el trazo claro y sin fondo.
  *
- * SE EJECUTA A MANO Y UNA SOLA VEZ. No es parte de la compilación: el logo
- * cambia cada varios años, y montar una tarea de construcción para eso sería
- * más máquina que trabajo. Cuando el restaurante entregue el vectorial —que es
- * lo que hay que pedirle—, este archivo deja de hacer falta.
+ * <p>Como el logo es un dibujo de líneas de un solo color, esa versión se puede
+ * derivar del original sin perder nada: lo oscuro de la imagen es el trazo y lo
+ * claro es el fondo, así que basta con leer cuánta tinta hay en cada punto y
+ * usar ESO como transparencia, pintando encima el color que convenga. No es un
+ * recorte a mano ni una aproximación: cada trazo conserva su suavizado.
+ *
+ * <p>SE EJECUTA A MANO, no en la compilación: el logo cambia cada varios años.
+ * Cuando el restaurante entregue el vectorial —que sigue siendo lo que hay que
+ * pedirle— este archivo deja de hacer falta.
  *
  *   cd scripts && javac -d . PrepararLogo.java && java -cp . PrepararLogo
  */
@@ -32,6 +36,12 @@ public class PrepararLogo {
 
   /** Aire que se deja alrededor del dibujo tras recortar, en píxeles. */
   private static final int MARGEN = 4;
+
+  /** El crema de la casa (crema-100). Es el color del trazo sobre lo oscuro. */
+  private static final Color CREMA = new Color(0xF5, 0xEE, 0xE1);
+
+  /** El fondo del sitio (onix-950), para la imagen que se comparte. */
+  private static final Color ONIX = new Color(0x0A, 0x09, 0x08);
 
   public static void main(String[] argumentos) throws Exception {
     File entrada = new File(System.getProperty("user.home"), "Desktop/Logo el patio.jpg");
@@ -44,31 +54,90 @@ public class PrepararLogo {
     System.out.println("Original: " + original.getWidth() + "x" + original.getHeight());
 
     BufferedImage recortado = recortarMargen(original);
-    System.out.println("Recortado: " + recortado.getWidth() + "x" + recortado.getHeight());
+    BufferedImage emblema = recortarEmblema(recortado);
+    System.out.println("Logo: " + recortado.getWidth() + "  ·  Emblema: " + emblema.getWidth());
 
     File destino = new File("../public");
 
-    // El logo completo, con su texto. Va donde el logo aparece solo: la imagen
-    // que se ve al compartir el enlace, y el icono de la pantalla de inicio.
-    escribir(recortado, 320, new File(destino, "logo.png"));
-    escribir(recortado, 180, new File(destino, "logo-180.png"));
-
-    // El emblema sin el texto, para el encabezado.
+    // ---- El emblema, en claro y sin fondo ----
     //
-    // Hace falta porque el logo YA dice «EL PATIO» y en el encabezado el nombre
-    // vuelve a estar como texto al lado: usar el logo completo ahí pondría el
-    // nombre dos veces, una encima de otra. Recortar la parte de arriba deja el
-    // arco con las plantas, que es lo que acompaña bien a un nombre escrito.
-    BufferedImage emblema = recortarEmblema(recortado);
-    System.out.println("Emblema: " + emblema.getWidth() + "x" + emblema.getHeight());
-    escribir(emblema, 256, new File(destino, "emblema.png"));
+    // Es el que va en el encabezado y en la pestaña, sobre oscuro. Sale sin
+    // fondo para que se integre con lo que tenga detrás en vez de recortarse
+    // contra ello.
+    escribir(aNegativo(emblema, CREMA), 256, new File(destino, "emblema.png"));
+    escribir(aNegativo(emblema, CREMA), 32, new File(destino, "favicon-32.png"));
 
-    // La pestaña del navegador. Se usa el emblema y no el logo completo: a 32
-    // píxeles el texto «EL PATIO» es una mancha ilegible que solo ensucia el
-    // dibujo. Un icono a ese tamaño tiene que ser una silueta reconocible.
-    escribir(emblema, 32, new File(destino, "favicon-32.png"));
+    // ---- El logo completo, en claro y sin fondo ----
+    //
+    // Con su texto. Va donde el logo aparece solo y en grande.
+    escribir(aNegativo(recortado, CREMA), 320, new File(destino, "logo.png"));
+
+    // ---- Los dos con fondo sólido ----
+    //
+    // La imagen que se ve al compartir el enlace y el icono de iOS NO pueden
+    // ser transparentes: WhatsApp y la pantalla de inicio ponen detrás el color
+    // que les parezca —a veces blanco—, y un logo crema sobre blanco desaparece.
+    // Se les hornea el fondo oscuro de la casa.
+    escribir(sobreFondo(aNegativo(recortado, CREMA), ONIX), 320, new File(destino, "logo-og.png"));
+    escribir(sobreFondo(aNegativo(emblema, CREMA), ONIX), 180, new File(destino, "logo-180.png"));
 
     System.out.println("Listo. Los archivos quedaron en public/");
+  }
+
+  /**
+   * Convierte el dibujo en su versión en negativo: trazo del color pedido,
+   * fondo transparente.
+   *
+   * La clave es de dónde sale la transparencia. No se recorta por un umbral
+   * —eso dejaría los bordes dentados—, sino que se usa la propia oscuridad del
+   * píxel: donde el original es negro del todo, el resultado es opaco; donde es
+   * el crema del fondo, es transparente; y en los bordes suavizados de cada
+   * trazo queda la media tinta que les corresponde. El dibujo conserva sus
+   * líneas finas intactas.
+   */
+  private static BufferedImage aNegativo(BufferedImage origen, Color tinta) {
+    Color fondo = new Color(origen.getRGB(0, 0));
+    // Cuánto puede oscurecerse un píxel respecto al fondo. Es el recorrido
+    // completo de tinta y sirve para llevar la oscuridad a una escala de 0 a 1.
+    float recorrido = luminancia(fondo);
+    if (recorrido <= 0) recorrido = 1;
+
+    BufferedImage salida =
+        new BufferedImage(origen.getWidth(), origen.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+    for (int y = 0; y < origen.getHeight(); y++) {
+      for (int x = 0; x < origen.getWidth(); x++) {
+        Color pixel = new Color(origen.getRGB(x, y));
+        float oscuridad = (recorrido - luminancia(pixel)) / recorrido;
+        int alfa = Math.max(0, Math.min(255, Math.round(oscuridad * 255)));
+        salida.setRGB(
+            x, y, (alfa << 24) | (tinta.getRed() << 16) | (tinta.getGreen() << 8) | tinta.getBlue());
+      }
+    }
+    return salida;
+  }
+
+  /** Pone la imagen transparente sobre un fondo sólido. */
+  private static BufferedImage sobreFondo(BufferedImage origen, Color fondo) {
+    BufferedImage salida =
+        new BufferedImage(origen.getWidth(), origen.getHeight(), BufferedImage.TYPE_INT_RGB);
+    Graphics2D lienzo = salida.createGraphics();
+    lienzo.setColor(fondo);
+    lienzo.fillRect(0, 0, salida.getWidth(), salida.getHeight());
+    lienzo.drawImage(origen, 0, 0, null);
+    lienzo.dispose();
+    return salida;
+  }
+
+  /**
+   * Cuánta luz tiene un color, con los pesos con que el ojo la percibe.
+   *
+   * No es el promedio de los tres canales: el ojo es mucho más sensible al
+   * verde que al azul, y promediando a partes iguales un trazo verde saldría
+   * más claro de lo que se ve.
+   */
+  private static float luminancia(Color color) {
+    return 0.2126f * color.getRed() + 0.7152f * color.getGreen() + 0.0722f * color.getBlue();
   }
 
   /**
@@ -148,7 +217,6 @@ public class PrepararLogo {
     // Cortando al principio, las astas de la «E» y la «L» —que suben un poco
     // más que el resto— asoman por abajo como dos manchas sin explicación.
     int lado = Math.min((inicioVacio + finVacio) / 2, alto);
-    // Centrado horizontalmente: el arco es más angosto que el cuadro completo.
     int x0 = Math.max(0, (logo.getWidth() - lado) / 2);
     lado = Math.min(lado, logo.getWidth() - x0);
     return logo.getSubimage(x0, 0, lado, lado);
@@ -167,14 +235,27 @@ public class PrepararLogo {
         && Math.abs(pixel.getBlue() - fondo.getBlue()) < TOLERANCIA;
   }
 
+  /**
+   * Escala y guarda como PNG.
+   *
+   * Conserva el canal de transparencia si lo hay. No se reduce a paleta: con
+   * transparencia, una paleta obliga a elegir entre bordes dentados o tramado,
+   * y estos archivos ya son pequeños porque casi todo el cuadro está vacío.
+   */
   private static void escribir(BufferedImage origen, int lado, File destino) throws Exception {
-    BufferedImage salida = new BufferedImage(lado, lado, BufferedImage.TYPE_INT_RGB);
+    BufferedImage salida =
+        new BufferedImage(
+            lado,
+            lado,
+            origen.getColorModel().hasAlpha()
+                ? BufferedImage.TYPE_INT_ARGB
+                : BufferedImage.TYPE_INT_RGB);
+
     Graphics2D lienzo = salida.createGraphics();
     lienzo.setRenderingHint(
         RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
     lienzo.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-    lienzo.setRenderingHint(
-        RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    lienzo.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     lienzo.drawImage(origen, 0, 0, lado, lado, null);
     lienzo.dispose();
 

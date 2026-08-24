@@ -1,22 +1,23 @@
 /**
  * La marca del restaurante: el emblema junto al nombre.
  *
- * El emblema es el logo real del restaurante —el arco con la monstera y la
- * orquídea—, recortado sin el texto. El logo completo sí lleva «EL PATIO»
- * escrito, pero aquí el nombre ya va al lado como texto: usar el logo entero
- * pondría el nombre dos veces, una junto a otra.
+ * El emblema es el arco con la monstera y la orquídea del logo real, recortado
+ * sin el texto. El logo completo sí lleva «EL PATIO» escrito, pero aquí el
+ * nombre ya va al lado como texto: usar el logo entero pondría el nombre dos
+ * veces, una junto a otra.
  *
- * Los archivos los prepara `scripts/PrepararLogo.java` a partir del original.
+ * ── Por qué no se usa el archivo tal cual ────────────────────────────────────
+ * El logo viene dibujado en negro sobre crema y el sitio es oscuro. Pegado tal
+ * cual, es un recuadro claro sobre fondo casi negro: se ve como una foto pegada
+ * encima, no como un logo. `scripts/PrepararLogo.java` deriva del original la
+ * versión en negativo —trazo claro, sin fondo—, que es la que se usa aquí. El
+ * arco flota sobre el encabezado en vez de recortarse contra él.
  *
- * ── Sobre el resplandor ──────────────────────────────────────────────────────
- * El logo viene sobre fondo crema y el encabezado del sitio es casi negro. Un
- * cuadro claro sobre negro se ve como un recorte pegado encima, así que en vez
- * de disimularlo se asume: el emblema va en un disco, y detrás del disco y del
- * nombre hay un halo dorado que los integra al fondo en vez de dejarlos
- * flotando. Es el mismo dorado de la casa, muy abierto y muy tenue.
+ * El resplandor dorado detrás del emblema y del nombre es lo que los ata al
+ * fondo y hace que se lean como una sola marca.
  *
- * Sigue haciendo falta el archivo VECTORIAL del logo. Este viene de un JPG de
- * 150 px: alcanza para el tamaño del encabezado y no para nada más grande.
+ * Sigue haciendo falta el archivo VECTORIAL. Este sale de un JPG de 150 px:
+ * alcanza para el encabezado y no para nada más grande.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -36,8 +37,8 @@ export function Emblema({ tamano = 34, className = '' }: Props) {
           duro, para que se lea como luz y no como un segundo elemento. */}
       <span
         aria-hidden
-        className="pointer-events-none absolute rounded-full bg-oro-400/40 blur-md"
-        style={{ width: tamano * 1.4, height: tamano * 1.4 }}
+        className="pointer-events-none absolute rounded-full bg-oro-400/30 blur-lg"
+        style={{ width: tamano * 1.5, height: tamano * 1.5 }}
       />
       <img
         src="/emblema.png"
@@ -57,11 +58,11 @@ export function Emblema({ tamano = 34, className = '' }: Props) {
         width={tamano}
         height={tamano}
         /*
-         * Esquinas redondeadas y NO un círculo: el emblema es un arco, y un
-         * recorte circular le come las dos esquinas de abajo, justo donde el
-         * arco apoya. Con el cuadrado redondeado la forma se conserva entera.
+         * Sin recuadro, sin borde y sin recorte: el emblema ya viene sin fondo,
+         * así que se dibuja directamente sobre el encabezado. Meterlo en un
+         * disco o en una caja sería devolverle el marco que se le quitó.
          */
-        className="relative rounded-lg object-cover ring-1 ring-oro-400/25"
+        className="relative"
         style={{ width: tamano, height: tamano }}
       />
     </span>
