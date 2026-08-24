@@ -84,6 +84,35 @@ public final class Adaptadores {
 
   private Adaptadores() {}
 
+  /**
+   * Un filtro exacto como patron LIKE. Sin filtro, el comodin que lo acepta todo.
+   *
+   * Las bandejas de PQR y postulaciones combinan filtros opcionales, y el
+   * `(:x is null or columna = :x)` de manual no funciona contra PostgreSQL: un
+   * parametro que no toca ninguna columna no tiene tipo deducible y la consulta
+   * falla entera antes de ejecutarse. Con LIKE, el tipo lo da la columna.
+   */
+  private static String comodinSi(String valor) {
+    return valor == null || valor.isBlank() ? "%" : valor;
+  }
+
+  /**
+   * El texto que escribio el usuario, como patron de busqueda.
+   *
+   * Se pasa a minusculas aqui y no en la consulta porque la consulta ya aplica
+   * `lower()` a la columna: hacerlo tambien al parametro lo dejaria sin tipo.
+   *
+   * Los comodines que venga escribiendo el usuario se escapan con `!`, que es
+   * el caracter declarado en el `escape` de la consulta. Sin eso, buscar «100%»
+   * devuelve la tabla entera y un `_` suelto casa con cualquier letra.
+   */
+  private static String patronDeBusqueda(String busqueda) {
+    if (busqueda == null || busqueda.isBlank()) return "%";
+    String limpio =
+        busqueda.trim().toLowerCase().replace("!", "!!").replace("%", "!%").replace("_", "!_");
+    return "%" + limpio + "%";
+  }
+
   // -------------------------------------------------------------------------
 
   @Repository
@@ -425,16 +454,16 @@ public final class Adaptadores {
     public Pagina<Postulacion> buscar(FiltroPostulaciones filtro) {
       Page<FilaPostulacion> pagina =
           dao.buscar(
-              // Cadena vacía y no null: con null, PostgreSQL no puede deducir
-              // el tipo del parámetro y la consulta revienta entera.
-              filtro.estado() == null ? "" : filtro.estado().name(),
-              filtro.cargo() == null ? "" : filtro.cargo().name(),
+              // Patrones LIKE, no valores sueltos: es lo que permite a
+              // PostgreSQL deducir el tipo del parámetro. Ver la nota del DAO.
+              comodinSi(filtro.estado() == null ? null : filtro.estado().name()),
+              comodinSi(filtro.cargo() == null ? null : filtro.cargo().name()),
               filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA).toInstant(),
               // Exclusivo por arriba: el dia `hasta` entra completo.
               filtro.hasta() == null
                   ? null
                   : filtro.hasta().plusDays(1).atStartOfDay(ZONA).toInstant(),
-              filtro.busqueda() == null ? "" : filtro.busqueda(),
+              patronDeBusqueda(filtro.busqueda()),
               PageRequest.of(filtro.pagina(), filtro.tamano()));
 
       return new Pagina<>(
@@ -504,14 +533,14 @@ public final class Adaptadores {
     public Pagina<SolicitudPqr> buscar(FiltroPqr filtro) {
       Page<FilaSolicitudPqr> pagina =
           dao.buscar(
-              // Ver la nota del DAO: cadena vacía, nunca null.
-              filtro.tipo() == null ? "" : filtro.tipo().name(),
-              filtro.estado() == null ? "" : filtro.estado().name(),
+              // Ver la nota del DAO: patrones LIKE, nunca valores sueltos.
+              comodinSi(filtro.tipo() == null ? null : filtro.tipo().name()),
+              comodinSi(filtro.estado() == null ? null : filtro.estado().name()),
               filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA_PQR).toInstant(),
               filtro.hasta() == null
                   ? null
                   : filtro.hasta().plusDays(1).atStartOfDay(ZONA_PQR).toInstant(),
-              filtro.busqueda() == null ? "" : filtro.busqueda(),
+              patronDeBusqueda(filtro.busqueda()),
               PageRequest.of(filtro.pagina(), filtro.tamano()));
 
       return new Pagina<>(

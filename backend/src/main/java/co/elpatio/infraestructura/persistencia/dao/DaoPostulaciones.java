@@ -17,12 +17,12 @@ public interface DaoPostulaciones extends JpaRepository<FilaPostulacion, String>
    * Va paginada y no completa: la lista de aspirantes solo crece, y una
    * pantalla que traiga todo funciona el primer mes y deja de funcionar al año.
    *
-   * <p><b>Los filtros vacíos van como cadena vacía y NUNCA como null.</b> Con
-   * un null, PostgreSQL no tiene de dónde deducir el tipo del parámetro, lo
-   * toma por `bytea` y revienta con «function lower(bytea) does not exist»: la
-   * pantalla entera devuelve 500 aunque nadie esté buscando nada. Con la cadena
-   * vacía el tipo queda claro y filtra igual, porque ningún valor real es una
-   * cadena vacía.
+   * <p><b>Todos los filtros de texto son patrones LIKE, y «sin filtro» es el
+   * comodín `%`.</b> Es lo que permite a PostgreSQL deducir el tipo de cada
+   * parámetro: suelto —contra null o contra una cadena vacía— no lo puede
+   * inferir y la consulta muere antes de ejecutarse; a la derecha de un LIKE
+   * sobre una columna de texto, el tipo lo da la columna. Ver la misma nota en
+   * `DaoSolicitudesPqr`.
    *
    * <p>La busqueda mira nombre y documento, que es como de verdad se busca a
    * alguien: «el muchacho que se llama Andres» o con la cedula en la mano.
@@ -30,13 +30,12 @@ public interface DaoPostulaciones extends JpaRepository<FilaPostulacion, String>
   @Query(
       """
       select p from FilaPostulacion p
-      where (:estado = '' or p.estado = :estado)
-        and (:cargo = '' or p.cargoInteres = :cargo)
+      where p.estado like :estado
+        and p.cargoInteres like :cargo
         and (:desde is null or p.fechaPostulacion >= :desde)
         and (:hasta is null or p.fechaPostulacion < :hasta)
-        and (:busqueda = ''
-             or lower(p.nombreCompleto) like lower(concat('%', :busqueda, '%'))
-             or p.numeroDocumento like concat('%', :busqueda, '%'))
+        and (lower(p.nombreCompleto) like :busqueda escape '!'
+             or lower(p.numeroDocumento) like :busqueda escape '!')
       order by p.fechaPostulacion desc
       """)
   Page<FilaPostulacion> buscar(

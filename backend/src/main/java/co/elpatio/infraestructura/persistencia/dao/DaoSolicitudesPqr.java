@@ -34,12 +34,18 @@ public interface DaoSolicitudesPqr extends JpaRepository<FilaSolicitudPqr, Strin
   /**
    * La bandeja del administrador.
    *
-   * <p><b>Los filtros vacíos van como cadena vacía y NUNCA como null.</b> Con
-   * un null, PostgreSQL no tiene de dónde deducir el tipo del parámetro, lo
-   * toma por `bytea` y revienta con «function lower(bytea) does not exist»: la
-   * pantalla entera devuelve 500 aunque nadie esté buscando nada. Con la cadena
-   * vacía el tipo queda claro y la comparación filtra igual, porque ningún
-   * valor real es una cadena vacía.
+   * <p><b>Todos los filtros de texto son patrones LIKE, y «sin filtro» es el
+   * comodín `%`.</b> No es un capricho de estilo: es lo único que hace que
+   * PostgreSQL pueda deducir de qué tipo es cada parámetro.
+   *
+   * <p>Un parámetro suelto —comparado con null o con una cadena vacía— no le
+   * dice nada al motor sobre su tipo, y la consulta muere antes de ejecutarse
+   * («function lower(bytea) does not exist», «could not determine data type»).
+   * En cambio, a la derecha de un LIKE cuyo lado izquierdo es una columna de
+   * texto, el tipo queda determinado por la columna y no hay nada que adivinar.
+   *
+   * <p>Por eso el patrón de búsqueda se arma en Java, ya en minúsculas y con
+   * sus comodines, en vez de construirlo aquí con `concat` y `lower`.
    *
    * El orden por defecto es por fecha limite ascendente: lo que primero vence,
    * primero. Ordenar por fecha de radicacion —lo natural— dejaria una queja a
@@ -51,14 +57,13 @@ public interface DaoSolicitudesPqr extends JpaRepository<FilaSolicitudPqr, Strin
   @Query(
       """
       select s from FilaSolicitudPqr s
-      where (:tipo = '' or s.tipo = :tipo)
-        and (:estado = '' or s.estado = :estado)
+      where s.tipo like :tipo
+        and s.estado like :estado
         and (:desde is null or s.fechaRadicacion >= :desde)
         and (:hasta is null or s.fechaRadicacion < :hasta)
-        and (:busqueda = ''
-             or lower(s.nombreCompleto) like lower(concat('%', :busqueda, '%'))
-             or lower(s.radicado) like lower(concat('%', :busqueda, '%'))
-             or lower(s.asunto) like lower(concat('%', :busqueda, '%')))
+        and (lower(s.nombreCompleto) like :busqueda escape '!'
+             or lower(s.radicado) like :busqueda escape '!'
+             or lower(s.asunto) like :busqueda escape '!')
       order by
         case when s.estado in ('RADICADA', 'EN_TRAMITE') then 0 else 1 end asc,
         s.fechaLimiteRespuesta asc nulls last,
