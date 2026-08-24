@@ -1,4 +1,4 @@
-import { ErrorApi, borrarCredenciales, guardarCredenciales, pedir, pedirOpcional, subirArchivo, tokenDeRefresco } from './cliente'
+import { ErrorApi, borrarCredenciales, descargarArchivo, guardarCredenciales, pedir, pedirOpcional, subirArchivo, tokenDeRefresco } from './cliente'
 import { URL_API } from './config'
 import {
   SinConexionError,
@@ -1087,6 +1087,27 @@ export async function conciliacionErp(
 export async function reintentarEnvioErp(envioId: string): Promise<void> {
   return contra(() =>
     pedir<void>(`/api/erp/envios/${envioId}/reintentar`, { metodo: 'POST' }),
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Exportacion de reportes
+// ---------------------------------------------------------------------------
+
+/**
+ * Baja un reporte en Excel o PDF.
+ *
+ * Un solo camino para todos los reportes. El servidor decide el nombre del
+ * archivo y comprueba el permiso: que el boton no aparezca en pantalla no es
+ * control de acceso, solo evita ofrecer algo que iba a fallar.
+ */
+export async function descargarReporte(
+  tipo: string,
+  formato: 'xlsx' | 'pdf',
+  filtros: Record<string, string | number | boolean | undefined>,
+): Promise<void> {
+  return contra(() =>
+    descargarArchivo(`/api/reportes/exportar/${tipo}`, { formato, ...filtros }),
   )
 }
 

@@ -76,6 +76,29 @@
       <version>3.9.0</version>
     </dependency>
 
+    <!--
+      Exportacion de reportes.
+
+      POI para .xlsx: el contador va a filtrar y hacer formulas encima, asi que
+      tiene que ser una hoja de datos real y no una tabla dibujada. Se usa
+      SXSSFWorkbook -streaming-, no XSSFWorkbook: este ultimo arma el libro
+      entero en memoria y un reporte de un mes tumbaria el contenedor.
+
+      OpenPDF en vez de iText: iText pasó a AGPL en su version 7 y eso obliga a
+      publicar el codigo de quien lo use. OpenPDF es el fork que se quedo en
+      LGPL/MPL, con la misma API de la version 4.
+    -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>2.0.3</version>
+    </dependency>
+
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>

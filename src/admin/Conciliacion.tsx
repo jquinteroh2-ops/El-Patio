@@ -11,6 +11,7 @@ import { useSyncedState } from '@/compartido/useSyncedState'
 import { Boton } from '@/componentes/ui/Boton'
 import { Cargando } from '@/componentes/ui/Cargando'
 import { Insignia } from '@/componentes/ui/Insignia'
+import { MenuExportar } from '@/componentes/ui/MenuExportar'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { useAvisos } from '@/componentes/ui/Avisos'
 
@@ -149,6 +150,10 @@ export default function Conciliacion() {
               {etiqueta}
             </button>
           ))}
+
+          {/* Este es el reporte que más va a usar el contador: el respaldo de
+              que el mes cuadra, o la lista de lo que falta para que cuadre. */}
+          <MenuExportar tipo="conciliacion" desde={desde} hasta={hasta} />
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { MenuExportar } from '@/componentes/ui/MenuExportar'
 import { MapPin, Receipt } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { VentaHistorica } from '@/compartido/mockApi'
@@ -109,6 +110,17 @@ export default function Ventas() {
             ))}
           </select>
         </label>
+
+        {/* Baja lo mismo que se está viendo, con los mismos filtros: un archivo
+            cuyas cifras no cuadren con la pantalla no lo usa nadie dos veces. */}
+        <div className="flex items-end">
+          <MenuExportar
+            tipo="ventas"
+            desde={desde}
+            hasta={hasta}
+            parametros={{ metodo: metodo === 'todos' ? undefined : metodo }}
+          />
+        </div>
       </section>
 
       {/* ---------- Totales del filtro ---------- */}

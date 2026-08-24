@@ -3,7 +3,8 @@ import { BarChart3, Table2 } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { Reportes as DatosReportes } from '@/compartido/mockApi'
 import { UMBRALES_COCINA } from '@/compartido/config'
-import { formatoCOP, formatoCOPCorto, formatoFecha } from '@/compartido/formato'
+import { claveDia, formatoCOP, formatoCOPCorto, formatoFecha } from '@/compartido/formato'
+import { MenuExportar } from '@/componentes/ui/MenuExportar'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import { BarrasHora, BarrasHorizontales, Tabla, Tarjeta } from './Graficas'
 import { ETIQUETA_TIPO_PEDIDO } from '@/compartido/estados'
@@ -18,6 +19,9 @@ const VACIO: DatosReportes = {
 }
 
 const DIAS = [7, 10, 30]
+
+/** El rango en fechas concretas, que es lo que entiende el exportador. */
+const haceDias = (dias: number): string => claveDia(new Date(Date.now() - dias * 86400000))
 
 export default function Reportes() {
   const [dias, setDias] = useState(10)
@@ -57,14 +61,22 @@ export default function Reportes() {
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setComoTabla((v) => !v)}
-          className="flex min-h-[40px] items-center gap-2 rounded-xl border border-noche-700 bg-noche-900 px-3.5 text-sm font-medium text-noche-300 transition hover:bg-noche-800"
-        >
-          {comoTabla ? <BarChart3 className="h-4 w-4" aria-hidden /> : <Table2 className="h-4 w-4" aria-hidden />}
-          {comoTabla ? 'Ver gráficas' : 'Ver tablas'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setComoTabla((v) => !v)}
+            className="flex min-h-[40px] items-center gap-2 rounded-xl border border-noche-700 bg-noche-900 px-3.5 text-sm font-medium text-noche-300 transition hover:bg-noche-800"
+          >
+            {comoTabla ? <BarChart3 className="h-4 w-4" aria-hidden /> : <Table2 className="h-4 w-4" aria-hidden />}
+            {comoTabla ? 'Ver gráficas' : 'Ver tablas'}
+          </button>
+
+          {/* El rango de esta pantalla son «los últimos N días», así que se
+              traduce a fechas concretas antes de mandarlo: el archivo lleva
+              impreso el periodo exacto, no un «últimos 10 días» que dentro de
+              un mes ya no significa lo mismo. */}
+          <MenuExportar tipo="productos" desde={haceDias(dias)} hasta={claveDia()} />
+        </div>
       </div>
 
       {cargando ? (

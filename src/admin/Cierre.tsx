@@ -14,11 +14,12 @@ import {
 import * as api from '@/compartido/mockApi'
 import type { ResumenTurno } from '@/compartido/mockApi'
 import { useSesionActiva } from '@/compartido/auth'
-import { formatoCOP, formatoFecha, formatoFechaHora } from '@/compartido/formato'
+import { claveDia, formatoCOP, formatoFecha, formatoFechaHora } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type { CierreCaja } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
+import { MenuExportar } from '@/componentes/ui/MenuExportar'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { imprimir } from '@/impresion/impresora'
@@ -251,7 +252,17 @@ export default function Cierre() {
 
         {/* ---------- Cierres anteriores ---------- */}
         <section className="rounded-2xl border border-noche-800 bg-noche-900 p-3">
-          <h2 className="mb-2.5 text-sm font-semibold text-crema-100">Cierres anteriores</h2>
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-crema-100">Cierres anteriores</h2>
+            {/* Los últimos 90 días: es el rango con el que el contador arma la
+                declaración bimestral del INC sin quedarse corto. */}
+            <MenuExportar
+              tipo="cierres"
+              desde={claveDia(new Date(Date.now() - 90 * 86400000))}
+              hasta={claveDia()}
+              deshabilitado={cierres.length === 0}
+            />
+          </div>
           {cierres.length === 0 ? (
             <Vacio icono={Lock} titulo="Sin cierres registrados" />
           ) : (

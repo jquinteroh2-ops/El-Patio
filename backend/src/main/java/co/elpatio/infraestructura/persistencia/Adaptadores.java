@@ -317,6 +317,13 @@ public final class Adaptadores {
     }
 
     @Override
+    public List<PagoOnline> creadosEntre(Instant desde, Instant hasta) {
+      return dao.findByCreadaEnBetweenOrderByCreadaEnDesc(desde, hasta).stream()
+          .map(FilaPagoOnline::aDominio)
+          .toList();
+    }
+
+    @Override
     public PagoOnline guardar(PagoOnline pago) {
       return dao.save(FilaPagoOnline.deDominio(pago)).aDominio();
     }

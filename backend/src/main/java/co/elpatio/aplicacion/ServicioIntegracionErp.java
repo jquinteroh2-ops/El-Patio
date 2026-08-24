@@ -18,8 +18,11 @@ import co.elpatio.dominio.puertos.Repositorios;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -276,21 +279,71 @@ public class ServicioIntegracionErp {
     envios.guardar(envio);
   }
 
-  /** Los envios de un periodo, para cruzarlos contra la contabilidad. */
+  /** Los envios de un periodo, sin resolver. */
   @Transactional(readOnly = true)
   public List<EnvioErp> conciliacion(Instant desde, Instant hasta) {
     return envios.entre(desde, hasta);
   }
 
-  /** El pago de un envio, para poder mostrar de que venta se trata. */
+  /**
+   * Los envios del periodo con su venta y su comanda ya resueltas.
+   *
+   * Lo consumen la pantalla de conciliacion y el reporte descargable, y por eso
+   * vive aqui una sola vez: el estado de una venta no puede leerse de una forma
+   * en la pantalla y de otra en el archivo que se manda al contador.
+   *
+   * Los pagos y las comandas se cargan de una sola vez y se cruzan en memoria.
+   * Preguntar por cada uno dentro del bucle son dos consultas por venta, y un
+   * mes de operacion son miles: eso no se nota probando con el dia de hoy y se
+   * nota mucho el dia que alguien pide el cierre del mes.
+   */
   @Transactional(readOnly = true)
-  public Pago pagoDe(EnvioErp envio) {
-    return pagos.porId(envio.getPagoId()).orElse(null);
+  public List<VentaConciliada> conciliacionDetallada(Instant desde, Instant hasta) {
+    List<EnvioErp> lista = envios.entre(desde, hasta);
+
+    Map<String, Pago> porPago =
+        pagos.entre(desde, hasta).stream()
+            .collect(Collectors.toMap(Pago::getId, p -> p, (a, b) -> a));
+    Map<String, Orden> porOrden =
+        ordenes.listar().stream().collect(Collectors.toMap(Orden::getId, o -> o, (a, b) -> a));
+
+    List<VentaConciliada> resultado = new ArrayList<>(lista.size());
+    for (EnvioErp envio : lista) {
+      // El pago puede faltar en el mapa si su fecha cae fuera del rango aunque
+      // el envio no: se busca uno a uno solo en ese caso, que es el raro.
+      Pago pago =
+          porPago.containsKey(envio.getPagoId())
+              ? porPago.get(envio.getPagoId())
+              : pagos.porId(envio.getPagoId()).orElse(null);
+      Orden orden = pago == null ? null : porOrden.get(pago.getOrdenId());
+      resultado.add(new VentaConciliada(envio, pago, orden));
+    }
+    return resultado;
   }
 
-  /** La comanda de un envio, para el numero que el restaurante reconoce. */
-  @Transactional(readOnly = true)
-  public Orden ordenDe(Pago pago) {
-    return pago == null ? null : ordenes.porId(pago.getOrdenId()).orElse(null);
+  /** Un envio con la venta y la comanda a las que corresponde. */
+  public record VentaConciliada(EnvioErp envio, Pago pago, Orden orden) {
+
+    public int numeroComanda() {
+      return orden == null ? 0 : orden.getNumero();
+    }
+
+    public long total() {
+      return pago == null ? 0 : pago.getTotal();
+    }
+
+    public Instant fechaVenta() {
+      return pago == null ? envio.getCreadoEn() : pago.getFechaHora();
+    }
+
+    /** El estado dicho para quien concilia, no para quien programa. */
+    public String estadoLegible() {
+      return switch (envio.getEstado()) {
+        case FACTURADA_ERP -> "Facturada";
+        case ERROR_ERP -> "Con error";
+        case ENVIADA_ERP -> "Sin documento";
+        case PENDIENTE_ENVIO_ERP -> "Sin enviar";
+      };
+    }
   }
 }

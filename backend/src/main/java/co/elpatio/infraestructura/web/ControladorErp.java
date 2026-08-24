@@ -2,8 +2,6 @@ package co.elpatio.infraestructura.web;
 
 import co.elpatio.aplicacion.ServicioIntegracionErp;
 import co.elpatio.aplicacion.dto.Dtos;
-import co.elpatio.dominio.cobro.Pago;
-import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.erp.EnvioErp;
 import co.elpatio.dominio.erp.EstadoEnvioErp;
 import co.elpatio.dominio.puertos.FacturacionExterna;
@@ -54,8 +52,8 @@ public class ControladorErp {
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
 
-    List<EnvioErp> envios =
-        servicio.conciliacion(
+    List<ServicioIntegracionErp.VentaConciliada> ventas =
+        servicio.conciliacionDetallada(
             desde.atStartOfDay(ZONA).toInstant(),
             // Exclusivo por arriba: el dia `hasta` entra completo.
             hasta.plusDays(1).atStartOfDay(ZONA).toInstant());
@@ -67,10 +65,9 @@ public class ControladorErp {
     int sinConciliar = 0;
     int conError = 0;
 
-    for (EnvioErp envio : envios) {
-      Pago pago = servicio.pagoDe(envio);
-      Orden orden = servicio.ordenDe(pago);
-      long total = pago == null ? 0 : pago.getTotal();
+    for (ServicioIntegracionErp.VentaConciliada venta : ventas) {
+      EnvioErp envio = venta.envio();
+      long total = venta.total();
       montoTotal += total;
 
       switch (envio.getEstado()) {
@@ -91,8 +88,8 @@ public class ControladorErp {
           new Dtos.FilaConciliacion(
               envio.getId(),
               envio.getPagoId(),
-              orden == null ? 0 : orden.getNumero(),
-              pago == null ? envio.getCreadoEn() : pago.getFechaHora(),
+              venta.numeroComanda(),
+              venta.fechaVenta(),
               total,
               envio.getEstado(),
               envio.getDocumentoExterno(),
@@ -103,7 +100,7 @@ public class ControladorErp {
     }
 
     return new Dtos.ResumenConciliacion(
-        envios.size(),
+        ventas.size(),
         montoTotal,
         facturadas,
         sinConciliar,

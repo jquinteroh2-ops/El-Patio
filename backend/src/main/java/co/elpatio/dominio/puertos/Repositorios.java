@@ -148,6 +148,9 @@ public final class Repositorios {
     /** Los que el job de expiracion tiene que revisar. */
     List<PagoOnline> pendientesVencidosAntesDe(Instant instante);
 
+    /** Los cobrados en un periodo, para el reporte de anticipos. */
+    List<PagoOnline> creadosEntre(Instant desde, Instant hasta);
+
     PagoOnline guardar(PagoOnline pago);
   }
 

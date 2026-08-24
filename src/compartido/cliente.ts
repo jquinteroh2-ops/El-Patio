@@ -332,3 +332,71 @@ export async function subirArchivo<T>(ruta: string, campo: string, archivo: File
   const texto = await respuesta.text()
   return (texto ? JSON.parse(texto) : undefined) as T
 }
+
+/**
+ * Descarga un archivo generado por el servidor.
+ *
+ * Va aparte de `pedir` porque lo que vuelve no es JSON sino bytes, y porque la
+ * descarga no puede ser un enlace normal: el token viaja en la cabecera
+ * `Authorization`, y un `<a href>` no la lleva. Sin esto habria que pasar la
+ * credencial en la URL, donde queda escrita en el historial del navegador y en
+ * los registros del servidor.
+ *
+ * El nombre del archivo lo pone el servidor en `Content-Disposition`. Se lee de
+ * ahi y no se arma aqui para que el nombre sea el mismo que el reporte declara.
+ */
+export async function descargarArchivo(
+  ruta: string,
+  consulta: Record<string, string | number | boolean | undefined>,
+): Promise<void> {
+  if (!hayConexion()) throw new SinConexionError()
+
+  const url = new URL(`${URL_API}${ruta}`)
+  for (const [clave, valor] of Object.entries(consulta)) {
+    if (valor !== undefined && valor !== '') url.searchParams.set(clave, String(valor))
+  }
+
+  const pedirlo = async (token: string | null) =>
+    fetch(url.toString(), {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+
+  let respuesta: Response
+  try {
+    respuesta = await pedirlo(await tokenVigente())
+  } catch {
+    throw new SinConexionError('No hay conexión con el servidor')
+  }
+
+  // Un reporte grande tarda, y la sesion puede vencerse mientras se genera.
+  if (respuesta.status === 401) {
+    const nuevo = await renovar()
+    if (!nuevo) {
+      anunciarExpiracion()
+      throw new ErrorApi('La sesión expiró: vuelva a ingresar', 401)
+    }
+    respuesta = await pedirlo(nuevo)
+  }
+
+  if (!respuesta.ok) throw new ErrorApi(await mensajeDeError(respuesta), respuesta.status)
+
+  const blob = await respuesta.blob()
+  const enlace = document.createElement('a')
+  const objeto = URL.createObjectURL(blob)
+  enlace.href = objeto
+  enlace.download = nombreDeLaRespuesta(respuesta) ?? 'reporte'
+  document.body.appendChild(enlace)
+  enlace.click()
+  enlace.remove()
+  // Sin revocar, el blob se queda en memoria hasta recargar la pagina. Con un
+  // reporte de varios megas y unas cuantas descargas seguidas, se nota.
+  URL.revokeObjectURL(objeto)
+}
+
+/** El nombre que el servidor puso en `Content-Disposition`, si lo puso. */
+function nombreDeLaRespuesta(respuesta: Response): string | null {
+  const cabecera = respuesta.headers.get('Content-Disposition')
+  if (!cabecera) return null
+  const coincidencia = /filename="?([^"]+)"?/i.exec(cabecera)
+  return coincidencia ? coincidencia[1] : null
+}
