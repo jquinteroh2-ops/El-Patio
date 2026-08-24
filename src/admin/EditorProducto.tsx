@@ -282,7 +282,7 @@ export function EditorProducto({
         {/* ---------- Precio promocional ----------
             El descuento se pone como PRECIO, no como rebaja sobre la cuenta.
             Así la venta ocurre a este valor y el impuesto al consumo, la
-            propina y el documento ante la DIAN se calculan sobre él sin
+            propina y lo que se le reporta al ERP se calculan sobre él sin
             ninguna regla aparte. */}
         <div className="rounded-xl border border-noche-800 bg-noche-900/60 p-3">
           <div className="mb-2.5 flex items-center justify-between">

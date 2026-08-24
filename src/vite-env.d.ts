@@ -15,6 +15,13 @@ interface ImportMetaEnv {
   readonly VITE_URL_API?: string
   /** URL del WebSocket. Si falta, se deduce de la del API. */
   readonly VITE_URL_WS?: string
+  /**
+   * `'true'` enciende la emision de documentos fiscales desde El Patio.
+   *
+   * Ausente o cualquier otro valor la deja apagada, que es lo correcto mientras
+   * Globalsoft sea quien factura. Ver `FACTURACION_INTERNA_HABILITADA`.
+   */
+  readonly VITE_FACTURACION_INTERNA_HABILITADA?: string
 }
 
 interface ImportMeta {

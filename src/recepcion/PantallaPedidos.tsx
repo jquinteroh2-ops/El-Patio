@@ -33,9 +33,6 @@ import type { EstadoPedido } from '@/compartido/tipos'
 import { habilitarSonido, useAvisoNuevaComanda } from '@/cocina/avisoNuevaComanda'
 import { imprimir } from '@/impresion/impresora'
 import { ComprobanteTermico } from '@/impresion/ComprobanteTermico'
-import { FacturaTermica } from '@/impresion/FacturaTermica'
-import { emisor } from '@/facturacion/emisor'
-import { NOMBRE_MEDIO_PAGO } from '@/facturacion/catalogos'
 import { Boton } from '@/componentes/ui/Boton'
 import { Campo, CampoArea } from '@/componentes/ui/Campo'
 import { Contador } from '@/componentes/ui/Contador'
@@ -208,57 +205,28 @@ export default function PantallaPedidos() {
     )
 
   /**
-   * Saca el documento que se va con el pedido.
+   * Saca el comprobante interno que se va con el pedido.
    *
    * Un domicilio es una venta como la de una mesa y le corresponde el mismo
-   * documento: si el papel que viaja en la bolsa fuera distinto del que se
-   * entrega en el salón, el restaurante tendría dos formatos según el canal y
-   * uno de los dos estaría mal.
+   * papel: si el que viaja en la bolsa fuera distinto del que se entrega en el
+   * salón, el restaurante tendría dos formatos según el canal y uno de los dos
+   * estaría mal.
    *
-   * Se emite a consumidor final. El nombre y la dirección del pedido sirven
-   * para entregarlo, no identifican fiscalmente a nadie: para eso hace falta
-   * documento de identidad, y no se le pide la cédula a quien pide un domicilio
-   * por WhatsApp. Si el cliente quiere factura a su nombre, hay que capturarlo
-   * antes, en la pantalla del pedido.
+   * No es un documento fiscal. El de esta venta lo emite Globalsoft, y no se
+   * espera aquí: la comida se enfría mientras un ERP responde.
    */
-  const imprimirComprobante = async (pedido: PedidoEnRecepcion) => {
+  const imprimirComprobante = (pedido: PedidoEnRecepcion) => {
     // Lo que el cliente dijo que iba a pagar, que es todo lo que se sabe cuando
     // el papel se imprime: el cobro ocurre en la puerta, media hora despues. Si
-    // al final paga distinto, el documento ya salio y lo que corrige eso es el
-    // cierre de caja, no reimprimir —reimprimir devuelve el mismo documento.
-    const metodo = pedido.orden.metodoPagoPrevisto ?? 'efectivo'
-    try {
-      const documento = await emisor.emitir({
-        orden: pedido.orden,
-        cuenta: pedido.cuenta,
-        metodo,
-      })
-      imprimir(
-        <FacturaTermica
-          documento={documento}
-          etiqueta={pedido.etiqueta}
-          atendidoPor="Recepción"
-          medioPagoLegible={NOMBRE_MEDIO_PAGO[metodo]}
-        />,
-      )
-    } catch (e) {
-      // Si el documento no sale, el pedido tiene que salir igual: la comida se
-      // enfría. Va el comprobante interno, que dice lo que es.
-      mostrar(
-        e instanceof Error
-          ? `Documento pendiente: ${e.message}`
-          : 'El documento electrónico quedó pendiente',
-        'error',
-      )
-      imprimir(
-        <ComprobanteTermico
-          orden={pedido.orden}
-          cuenta={pedido.cuenta}
-          etiqueta={pedido.etiqueta}
-          atendidoPor="Recepción"
-        />,
-      )
-    }
+    // al final paga distinto, lo que corrige eso es el cierre de caja.
+    imprimir(
+      <ComprobanteTermico
+        orden={pedido.orden}
+        cuenta={pedido.cuenta}
+        etiqueta={pedido.etiqueta}
+        atendidoPor="Recepción"
+      />,
+    )
   }
 
   if (cargando) {

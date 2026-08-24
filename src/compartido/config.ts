@@ -178,6 +178,31 @@ export const DATOS_FISCALES = {
 // ---------------------------------------------------------------------------
 
 /**
+ * Si El Patio emite documentos fiscales por su cuenta.
+ *
+ * Esta en `false` y esa es la postura del sistema desde que el restaurante
+ * adopto Globalsoft como ERP: **El Patio no factura**. No numera, no calcula
+ * impuestos fiscales, no reporta a la DIAN. Globalsoft hace todo eso, y tener
+ * dos sistemas emitiendo contra el mismo NIT es peor que no tener ninguno.
+ *
+ * Lo que El Patio sigue haciendo es cobrar: la cuenta de la mesa, el anticipo
+ * de un pedido, el comprobante interno que se le entrega al cliente. Nada de
+ * eso es un documento fiscal ni se llama factura en ninguna pantalla.
+ *
+ * El modulo de `src/facturacion/` se conserva completo detras de este
+ * interruptor. No es codigo muerto por descuido: es la salida si Globalsoft no
+ * llega a ofrecer integracion y el restaurante tiene que emitir por su cuenta.
+ * Volver a encenderlo es cambiar esta variable, no reescribir nada.
+ *
+ * Vive en el navegador y no en el backend porque la emision siempre estuvo del
+ * lado del navegador. Poner ademas una copia en `application.yml` seria tener
+ * dos fuentes de verdad para un mismo interruptor, y descubrir la diferencia el
+ * dia que una de las dos se cambie sola.
+ */
+export const FACTURACION_INTERNA_HABILITADA =
+  (import.meta.env.VITE_FACTURACION_INTERNA_HABILITADA ?? 'false') === 'true'
+
+/**
  * La resolucion de numeracion que autoriza la DIAN.
  *
  * Esta VACIA a proposito y el sistema depende de que lo siga estando hasta que
@@ -244,6 +269,11 @@ export const PROVEEDOR_TECNOLOGICO = {
  * Un solo lugar decide esto, y decide en contra por defecto. Mientras falte
  * cualquier pieza del tramite, el papel sale con la banda de prueba.
  *
+ * La primera pieza es el interruptor maestro: con la facturacion interna
+ * apagada no hay nada que discutir sobre resoluciones ni ambientes, porque este
+ * sistema no emite. Las condiciones que siguen solo importan el dia que el
+ * restaurante decida volver a emitir por su cuenta.
+ *
  * El ambiente cuenta como una pieza mas, y no es un detalle: un documento
  * emitido contra habilitacion NO tiene efecto fiscal aunque la resolucion este
  * completa y aunque el QR se vea igual. Sin esta condicion, llenar los datos de
@@ -253,6 +283,7 @@ export const PROVEEDOR_TECNOLOGICO = {
  */
 export function facturacionHabilitada(): boolean {
   return (
+    FACTURACION_INTERNA_HABILITADA &&
     AMBIENTE_DIAN === 'produccion' &&
     NUMERACION_DIAN.resolucion !== '' &&
     NUMERACION_DIAN.claveTecnicaPuesta &&
