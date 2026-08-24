@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, BookOpen, CalendarClock, FileCheck2, LayoutDashboard, Megaphone, Receipt, Settings, Users, Wallet } from 'lucide-react'
+import { BarChart3, BookOpen, CalendarClock, FileCheck2, LayoutDashboard, Megaphone, Receipt, MessageSquare, Settings, Users, Wallet } from 'lucide-react'
 import { useSesionActiva } from '@/compartido/auth'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
 
@@ -16,6 +16,9 @@ const SECCIONES = [
   { ruta: '/admin/conciliacion', etiqueta: 'Conciliación', icono: FileCheck2, exacta: false, soloAdmin: true },
   // Hojas de vida: datos personales de gente que confio en el restaurante. Solo el dueno.
   { ruta: '/admin/postulaciones', etiqueta: 'Postulaciones', icono: Users, exacta: false, soloAdmin: true },
+  // PQR: lleva nombre, correo y a veces telefono de un cliente, ademas de lo
+  // que opina del servicio. No es informacion para cualquiera con acceso.
+  { ruta: '/admin/pqr', etiqueta: 'PQR', icono: MessageSquare, exacta: false, soloAdmin: true },
   { ruta: '/admin/reportes', etiqueta: 'Reportes', icono: BarChart3, exacta: false, soloAdmin: true },
   { ruta: '/admin/configuracion', etiqueta: 'Configuración', icono: Settings, exacta: false, soloAdmin: true },
 ]

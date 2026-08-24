@@ -1260,3 +1260,121 @@ export async function eliminarPostulacion(id: string): Promise<void> {
 export async function descargarHojaDeVida(id: string): Promise<void> {
   return contra(() => descargarArchivo(`/api/admin/postulaciones/${id}/hoja-de-vida`, {}))
 }
+
+// ---------------------------------------------------------------------------
+// PQR
+// ---------------------------------------------------------------------------
+
+export type TipoSolicitud = 'peticion' | 'queja' | 'reclamo' | 'sugerencia' | 'felicitacion'
+
+export type EstadoPqr = 'radicada' | 'en_tramite' | 'resuelta' | 'cerrada'
+
+export interface SolicitudPqr {
+  id: string
+  radicado: string
+  tipo: TipoSolicitud
+  nombreCompleto: string
+  email: string
+  telefono?: string
+  fechaVisita?: string
+  asunto: string
+  descripcion: string
+  tieneAdjunto: boolean
+  estado: EstadoPqr
+  fechaRadicacion: string
+  fechaLimiteRespuesta?: string
+  fechaRespuesta?: string
+  respuesta?: string
+  respondidoPor?: string
+  notasInternas?: string
+  /** Negativo si ya se pasó del plazo. */
+  diasHabilesRestantes: number
+  vencida: boolean
+  porVencer: boolean
+}
+
+/** Lo que el cliente ve al consultar su radicado. Deliberadamente escueto. */
+export interface ConsultaPqr {
+  radicado: string
+  tipo: TipoSolicitud
+  asunto: string
+  estado: EstadoPqr
+  fechaRadicacion: string
+  fechaLimiteRespuesta?: string
+  fechaRespuesta?: string
+  respuesta?: string
+}
+
+export interface ConfiguracionPqr {
+  tipos: { id: TipoSolicitud; etiqueta: string }[]
+  diasHabilesDeRespuesta: number
+}
+
+export interface Radicada {
+  radicado: string
+  fechaLimiteRespuesta?: string
+  mensaje: string
+}
+
+/** Los tipos y el plazo los manda el servidor: el plazo es configurable. */
+export async function configuracionPqr(): Promise<ConfiguracionPqr> {
+  return contra(() => pedir<ConfiguracionPqr>('/api/public/pqr/tipos', { sinSesion: true }))
+}
+
+export async function radicarPqr(datos: FormData): Promise<Radicada> {
+  return contra(() => enviarFormulario<Radicada>('/api/public/pqr', datos))
+}
+
+/**
+ * Consulta el estado de una solicitud.
+ *
+ * Exige radicado Y correo. Con el numero suelto cualquiera podria recorrerlos
+ * en orden y leer las quejas de todo el mundo.
+ */
+export async function consultarPqr(radicado: string, email: string): Promise<ConsultaPqr> {
+  return contra(() =>
+    pedir<ConsultaPqr>('/api/public/pqr/consulta', {
+      consulta: { radicado, email },
+      sinSesion: true,
+    }),
+  )
+}
+
+export async function listarPqr(filtros: {
+  tipo?: string
+  estado?: string
+  desde?: string
+  hasta?: string
+  busqueda?: string
+  pagina?: number
+  tamano?: number
+}): Promise<PaginaDe<SolicitudPqr>> {
+  return contra(() => pedir<PaginaDe<SolicitudPqr>>('/api/admin/pqr', { consulta: filtros }))
+}
+
+export async function pqrAbiertas(): Promise<number> {
+  return contra(() => pedir<number>('/api/admin/pqr/abiertas'))
+}
+
+export async function cambiarEstadoPqr(id: string, estado: EstadoPqr): Promise<SolicitudPqr> {
+  return contra(() =>
+    pedir<SolicitudPqr>(`/api/admin/pqr/${id}/estado`, { metodo: 'PATCH', cuerpo: { estado } }),
+  )
+}
+
+/** Registra la respuesta y se la manda al cliente por correo. */
+export async function responderPqr(id: string, texto: string): Promise<SolicitudPqr> {
+  return contra(() =>
+    pedir<SolicitudPqr>(`/api/admin/pqr/${id}/respuesta`, { metodo: 'POST', cuerpo: { texto } }),
+  )
+}
+
+export async function anotarPqr(id: string, notas: string): Promise<SolicitudPqr> {
+  return contra(() =>
+    pedir<SolicitudPqr>(`/api/admin/pqr/${id}/notas`, { metodo: 'PATCH', cuerpo: { notas } }),
+  )
+}
+
+export async function descargarAdjuntoPqr(id: string): Promise<void> {
+  return contra(() => descargarArchivo(`/api/admin/pqr/${id}/adjunto`, {}))
+}

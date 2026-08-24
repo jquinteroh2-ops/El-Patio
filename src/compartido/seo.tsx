@@ -59,6 +59,13 @@ const PUBLICAS: Record<string, Ficha> = {
       ' domicilios y más. Envío en línea, respuesta si su perfil encaja con una vacante.',
     indexable: true,
   },
+  '/pqr': {
+    titulo: `Peticiones, quejas y sugerencias · ${RESTAURANTE.nombreCompleto}`,
+    descripcion:
+      'Radique una petición, queja, reclamo, sugerencia o felicitación en el Restaurante El' +
+      ' Patio, Turbaco. Recibe número de radicado y respuesta dentro del plazo de ley.',
+    indexable: true,
+  },
   // La política se enlaza desde el formulario y tiene que abrir, pero no es
   // contenido que nadie busque: aparecer en Google no le sirve a nadie.
   '/politica-de-datos': {

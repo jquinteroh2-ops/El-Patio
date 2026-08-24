@@ -129,6 +129,14 @@ export default function LayoutPublico() {
               >
                 Trabaja con nosotros
               </Link>
+              {/* PQR va en el pie y NO en el encabezado: es un canal de
+                  servicio, no un llamado a la accion comercial. */}
+              <Link
+                to="/pqr"
+                className="text-xs uppercase tracking-[0.18em] text-crema-100/50 transition hover:text-oro-300"
+              >
+                PQR
+              </Link>
               <Link
                 to="/politica-de-datos"
                 className="text-xs uppercase tracking-[0.18em] text-crema-100/35 transition hover:text-oro-300"
