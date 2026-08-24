@@ -17,19 +17,24 @@ public interface DaoPostulaciones extends JpaRepository<FilaPostulacion, String>
    * Va paginada y no completa: la lista de aspirantes solo crece, y una
    * pantalla que traiga todo funciona el primer mes y deja de funcionar al año.
    *
-   * Los filtros nulos no filtran, que es como se combinan sin escribir una
-   * consulta por combinacion. La busqueda mira nombre y documento, que es como
-   * de verdad se busca a alguien: «el muchacho que se llama Andres» o con la
-   * cedula en la mano.
+   * <p><b>Los filtros vacíos van como cadena vacía y NUNCA como null.</b> Con
+   * un null, PostgreSQL no tiene de dónde deducir el tipo del parámetro, lo
+   * toma por `bytea` y revienta con «function lower(bytea) does not exist»: la
+   * pantalla entera devuelve 500 aunque nadie esté buscando nada. Con la cadena
+   * vacía el tipo queda claro y filtra igual, porque ningún valor real es una
+   * cadena vacía.
+   *
+   * <p>La busqueda mira nombre y documento, que es como de verdad se busca a
+   * alguien: «el muchacho que se llama Andres» o con la cedula en la mano.
    */
   @Query(
       """
       select p from FilaPostulacion p
-      where (:estado is null or p.estado = :estado)
-        and (:cargo is null or p.cargoInteres = :cargo)
+      where (:estado = '' or p.estado = :estado)
+        and (:cargo = '' or p.cargoInteres = :cargo)
         and (:desde is null or p.fechaPostulacion >= :desde)
         and (:hasta is null or p.fechaPostulacion < :hasta)
-        and (:busqueda is null
+        and (:busqueda = ''
              or lower(p.nombreCompleto) like lower(concat('%', :busqueda, '%'))
              or p.numeroDocumento like concat('%', :busqueda, '%'))
       order by p.fechaPostulacion desc

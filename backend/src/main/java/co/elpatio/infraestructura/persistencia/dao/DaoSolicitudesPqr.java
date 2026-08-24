@@ -34,6 +34,13 @@ public interface DaoSolicitudesPqr extends JpaRepository<FilaSolicitudPqr, Strin
   /**
    * La bandeja del administrador.
    *
+   * <p><b>Los filtros vacíos van como cadena vacía y NUNCA como null.</b> Con
+   * un null, PostgreSQL no tiene de dónde deducir el tipo del parámetro, lo
+   * toma por `bytea` y revienta con «function lower(bytea) does not exist»: la
+   * pantalla entera devuelve 500 aunque nadie esté buscando nada. Con la cadena
+   * vacía el tipo queda claro y la comparación filtra igual, porque ningún
+   * valor real es una cadena vacía.
+   *
    * El orden por defecto es por fecha limite ascendente: lo que primero vence,
    * primero. Ordenar por fecha de radicacion —lo natural— dejaria una queja a
    * punto de vencer enterrada bajo diez felicitaciones recientes.
@@ -44,11 +51,11 @@ public interface DaoSolicitudesPqr extends JpaRepository<FilaSolicitudPqr, Strin
   @Query(
       """
       select s from FilaSolicitudPqr s
-      where (:tipo is null or s.tipo = :tipo)
-        and (:estado is null or s.estado = :estado)
+      where (:tipo = '' or s.tipo = :tipo)
+        and (:estado = '' or s.estado = :estado)
         and (:desde is null or s.fechaRadicacion >= :desde)
         and (:hasta is null or s.fechaRadicacion < :hasta)
-        and (:busqueda is null
+        and (:busqueda = ''
              or lower(s.nombreCompleto) like lower(concat('%', :busqueda, '%'))
              or lower(s.radicado) like lower(concat('%', :busqueda, '%'))
              or lower(s.asunto) like lower(concat('%', :busqueda, '%')))

@@ -425,14 +425,16 @@ public final class Adaptadores {
     public Pagina<Postulacion> buscar(FiltroPostulaciones filtro) {
       Page<FilaPostulacion> pagina =
           dao.buscar(
-              filtro.estado() == null ? null : filtro.estado().name(),
-              filtro.cargo() == null ? null : filtro.cargo().name(),
+              // Cadena vacía y no null: con null, PostgreSQL no puede deducir
+              // el tipo del parámetro y la consulta revienta entera.
+              filtro.estado() == null ? "" : filtro.estado().name(),
+              filtro.cargo() == null ? "" : filtro.cargo().name(),
               filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA).toInstant(),
               // Exclusivo por arriba: el dia `hasta` entra completo.
               filtro.hasta() == null
                   ? null
                   : filtro.hasta().plusDays(1).atStartOfDay(ZONA).toInstant(),
-              filtro.busqueda(),
+              filtro.busqueda() == null ? "" : filtro.busqueda(),
               PageRequest.of(filtro.pagina(), filtro.tamano()));
 
       return new Pagina<>(
@@ -502,13 +504,14 @@ public final class Adaptadores {
     public Pagina<SolicitudPqr> buscar(FiltroPqr filtro) {
       Page<FilaSolicitudPqr> pagina =
           dao.buscar(
-              filtro.tipo() == null ? null : filtro.tipo().name(),
-              filtro.estado() == null ? null : filtro.estado().name(),
+              // Ver la nota del DAO: cadena vacía, nunca null.
+              filtro.tipo() == null ? "" : filtro.tipo().name(),
+              filtro.estado() == null ? "" : filtro.estado().name(),
               filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA_PQR).toInstant(),
               filtro.hasta() == null
                   ? null
                   : filtro.hasta().plusDays(1).atStartOfDay(ZONA_PQR).toInstant(),
-              filtro.busqueda(),
+              filtro.busqueda() == null ? "" : filtro.busqueda(),
               PageRequest.of(filtro.pagina(), filtro.tamano()));
 
       return new Pagina<>(
