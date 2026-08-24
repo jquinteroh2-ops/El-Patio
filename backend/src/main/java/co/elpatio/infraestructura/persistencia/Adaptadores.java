@@ -106,6 +106,24 @@ public final class Adaptadores {
    * el caracter declarado en el `escape` de la consulta. Sin eso, buscar «100%»
    * devuelve la tabla entera y un `_` suelto casa con cualquier letra.
    */
+  /**
+   * El inicio del rango, o el principio de los tiempos si no hay filtro.
+   *
+   * Por la misma razon que `comodinSi`: un parametro null no tiene tipo
+   * deducible para PostgreSQL y tumba la consulta entera. Un instante concreto
+   * comparado contra la columna si lo tiene.
+   */
+  private static Instant desdeOSiempre(LocalDate desde, ZoneId zona) {
+    return desde == null ? Instant.EPOCH : desde.atStartOfDay(zona).toInstant();
+  }
+
+  /** El fin del rango, o una fecha que ninguna fila va a alcanzar. */
+  private static Instant hastaOSiempre(LocalDate hasta, ZoneId zona) {
+    return hasta == null
+        ? LocalDate.of(3000, 1, 1).atStartOfDay(zona).toInstant()
+        : hasta.plusDays(1).atStartOfDay(zona).toInstant();
+  }
+
   private static String patronDeBusqueda(String busqueda) {
     if (busqueda == null || busqueda.isBlank()) return "%";
     String limpio =
@@ -458,11 +476,9 @@ public final class Adaptadores {
               // PostgreSQL deducir el tipo del parámetro. Ver la nota del DAO.
               comodinSi(filtro.estado() == null ? null : filtro.estado().name()),
               comodinSi(filtro.cargo() == null ? null : filtro.cargo().name()),
-              filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA).toInstant(),
+              desdeOSiempre(filtro.desde(), ZONA),
               // Exclusivo por arriba: el dia `hasta` entra completo.
-              filtro.hasta() == null
-                  ? null
-                  : filtro.hasta().plusDays(1).atStartOfDay(ZONA).toInstant(),
+              hastaOSiempre(filtro.hasta(), ZONA),
               patronDeBusqueda(filtro.busqueda()),
               PageRequest.of(filtro.pagina(), filtro.tamano()));
 
@@ -536,10 +552,8 @@ public final class Adaptadores {
               // Ver la nota del DAO: patrones LIKE, nunca valores sueltos.
               comodinSi(filtro.tipo() == null ? null : filtro.tipo().name()),
               comodinSi(filtro.estado() == null ? null : filtro.estado().name()),
-              filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA_PQR).toInstant(),
-              filtro.hasta() == null
-                  ? null
-                  : filtro.hasta().plusDays(1).atStartOfDay(ZONA_PQR).toInstant(),
+              desdeOSiempre(filtro.desde(), ZONA_PQR),
+              hastaOSiempre(filtro.hasta(), ZONA_PQR),
               patronDeBusqueda(filtro.busqueda()),
               PageRequest.of(filtro.pagina(), filtro.tamano()));
 

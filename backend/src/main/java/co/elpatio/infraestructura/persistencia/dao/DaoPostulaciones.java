@@ -32,8 +32,8 @@ public interface DaoPostulaciones extends JpaRepository<FilaPostulacion, String>
       select p from FilaPostulacion p
       where p.estado like :estado
         and p.cargoInteres like :cargo
-        and (:desde is null or p.fechaPostulacion >= :desde)
-        and (:hasta is null or p.fechaPostulacion < :hasta)
+        and p.fechaPostulacion >= :desde
+        and p.fechaPostulacion < :hasta
         and (lower(p.nombreCompleto) like :busqueda escape '!'
              or lower(p.numeroDocumento) like :busqueda escape '!')
       order by p.fechaPostulacion desc

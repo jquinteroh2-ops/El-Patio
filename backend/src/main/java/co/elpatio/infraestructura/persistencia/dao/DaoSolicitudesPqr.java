@@ -47,6 +47,10 @@ public interface DaoSolicitudesPqr extends JpaRepository<FilaSolicitudPqr, Strin
    * <p>Por eso el patrón de búsqueda se arma en Java, ya en minúsculas y con
    * sus comodines, en vez de construirlo aquí con `concat` y `lower`.
    *
+   * <p>Las fechas van por lo mismo: sin rango, en vez de un `is null`, se
+   * mandan los extremos del calendario. Comparadas contra la columna tienen
+   * tipo; sueltas contra un null, no.
+   *
    * El orden por defecto es por fecha limite ascendente: lo que primero vence,
    * primero. Ordenar por fecha de radicacion —lo natural— dejaria una queja a
    * punto de vencer enterrada bajo diez felicitaciones recientes.
@@ -59,8 +63,8 @@ public interface DaoSolicitudesPqr extends JpaRepository<FilaSolicitudPqr, Strin
       select s from FilaSolicitudPqr s
       where s.tipo like :tipo
         and s.estado like :estado
-        and (:desde is null or s.fechaRadicacion >= :desde)
-        and (:hasta is null or s.fechaRadicacion < :hasta)
+        and s.fechaRadicacion >= :desde
+        and s.fechaRadicacion < :hasta
         and (lower(s.nombreCompleto) like :busqueda escape '!'
              or lower(s.radicado) like :busqueda escape '!'
              or lower(s.asunto) like :busqueda escape '!')
