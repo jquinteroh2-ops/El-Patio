@@ -71,6 +71,17 @@ elpatio:
   # El día operativo y el turno se calculan en esta zona, nunca en UTC.
   zona-horaria: ${ELPATIO_ZONA:America/Bogota}
 
+  documentos:
+    # Hojas de vida y adjuntos de PQR.
+    #
+    # EN RAILWAY TIENE QUE APUNTAR A UN VOLUMEN, por lo mismo que las imágenes:
+    # el sistema de archivos del contenedor se borra en cada despliegue, y ahí
+    # se irían las hojas de vida de quienes se postularon esta semana.
+    #
+    # Ojo el día del respaldo: `respaldar.sh` vuelca la base, y estos archivos
+    # no están en la base. Un respaldo completo tiene que llevarse la carpeta.
+    ruta: ${ELPATIO_RUTA_DOCUMENTOS:./datos/documentos}
+
   erp:
     # Por dónde sale la venta hacia el ERP que la factura (hoy Globalsoft).
     #
