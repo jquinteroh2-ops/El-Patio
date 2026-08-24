@@ -8,6 +8,7 @@ import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.conversacion.Conversacion;
+import co.elpatio.dominio.erp.EnvioErp;
 import co.elpatio.dominio.pago.EstadoPagoOnline;
 import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
@@ -24,6 +25,7 @@ import co.elpatio.infraestructura.persistencia.dao.DaoItemsCarta;
 import co.elpatio.infraestructura.persistencia.dao.DaoMesas;
 import co.elpatio.infraestructura.persistencia.dao.DaoOrdenes;
 import co.elpatio.infraestructura.persistencia.dao.DaoConversaciones;
+import co.elpatio.infraestructura.persistencia.dao.DaoEnviosErp;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagosOnline;
 import co.elpatio.infraestructura.persistencia.dao.DaoPublicaciones;
@@ -37,6 +39,7 @@ import co.elpatio.infraestructura.persistencia.filas.FilaItemCarta;
 import co.elpatio.infraestructura.persistencia.filas.FilaMesa;
 import co.elpatio.infraestructura.persistencia.filas.FilaOrden;
 import co.elpatio.infraestructura.persistencia.filas.FilaConversacion;
+import co.elpatio.infraestructura.persistencia.filas.FilaEnvioErp;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
 import co.elpatio.infraestructura.persistencia.filas.FilaPagoOnline;
 import co.elpatio.infraestructura.persistencia.filas.FilaPublicacion;
@@ -48,6 +51,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -315,6 +319,53 @@ public final class Adaptadores {
     @Override
     public PagoOnline guardar(PagoOnline pago) {
       return dao.save(FilaPagoOnline.deDominio(pago)).aDominio();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class EnviosErp implements Repositorios.DeEnviosErp {
+    private final DaoEnviosErp dao;
+
+    public EnviosErp(DaoEnviosErp dao) {
+      this.dao = dao;
+    }
+
+    @Override
+    public Optional<EnvioErp> porId(String id) {
+      return dao.findById(id).map(FilaEnvioErp::aDominio);
+    }
+
+    @Override
+    public Optional<EnvioErp> porPago(String pagoId) {
+      return dao.findByPagoId(pagoId).map(FilaEnvioErp::aDominio);
+    }
+
+    @Override
+    public List<EnvioErp> pendientesListos(Instant ahora, int limite) {
+      return dao.pendientesListos(ahora, Limit.of(limite)).stream()
+          .map(FilaEnvioErp::aDominio)
+          .toList();
+    }
+
+    @Override
+    public List<EnvioErp> entre(Instant desde, Instant hasta) {
+      return dao.entre(desde, hasta).stream().map(FilaEnvioErp::aDominio).toList();
+    }
+
+    /**
+     * Guarda sobre la fila existente si la hay.
+     *
+     * Un `save` con la fila reconstruida desde cero funcionaria, pero perderia
+     * las columnas que el dominio no expone el dia que se agregue alguna. Leer
+     * y volcar deja esa puerta cerrada.
+     */
+    @Override
+    public EnvioErp guardar(EnvioErp envio) {
+      FilaEnvioErp fila = dao.findById(envio.getId()).orElseGet(FilaEnvioErp::new);
+      fila.volcar(envio);
+      return dao.save(fila).aDominio();
     }
   }
 

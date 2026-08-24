@@ -11,6 +11,7 @@ import co.elpatio.dominio.comanda.EstadoItem;
 import co.elpatio.dominio.comanda.ItemOrden;
 import co.elpatio.dominio.comanda.ModificadorSeleccionado;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.erp.EstadoEnvioErp;
 import co.elpatio.dominio.cobro.Cuenta;
 import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
@@ -462,6 +463,49 @@ public final class Dtos {
   public record VentaPorDia(String dia, long total) {}
 
   public record Alerta(String id, String tipo, String mensaje, int minutos, String mesaId) {}
+
+  // -------------------------------------------------------------------------
+  // Conciliacion con el ERP
+  // -------------------------------------------------------------------------
+
+  /**
+   * Una venta y en que va su viaje al ERP.
+   *
+   * Lleva el numero de comanda y no solo el identificador del pago porque es lo
+   * que el restaurante reconoce: quien mira esta pantalla busca «la comanda 47»,
+   * no `pg_a1b2c3`.
+   */
+  public record FilaConciliacion(
+      String envioId,
+      String pagoId,
+      int numeroComanda,
+      Instant fechaVenta,
+      long total,
+      EstadoEnvioErp estado,
+      /** El numero que devolvio el ERP. Vacio mientras no confirme. */
+      String documentoExterno,
+      int intentos,
+      Instant proximoIntento,
+      String error,
+      String adaptador) {}
+
+  /**
+   * El resumen del periodo, que es lo primero que mira el contador.
+   *
+   * `sinConciliar` junta pendientes y enviadas sin confirmar: para quien cierra
+   * el mes son lo mismo —ventas sin documento— aunque por dentro esten en
+   * estados distintos.
+   */
+  public record ResumenConciliacion(
+      int totalVentas,
+      long montoTotal,
+      int facturadas,
+      int sinConciliar,
+      int conError,
+      long montoSinConciliar,
+      /** Que adaptador esta configurado. Cambia lo que el usuario debe esperar. */
+      String adaptador,
+      List<FilaConciliacion> filas) {}
 
   // -------------------------------------------------------------------------
   // Errores

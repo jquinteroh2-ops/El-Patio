@@ -71,6 +71,37 @@ elpatio:
   # El día operativo y el turno se calculan en esta zona, nunca en UTC.
   zona-horaria: ${ELPATIO_ZONA:America/Bogota}
 
+  erp:
+    # Por dónde sale la venta hacia el ERP que la factura (hoy Globalsoft).
+    #
+    #   manual  — no transmite. Deja la venta marcada para que alguien la digite
+    #             en Globalsoft, y la pantalla de conciliación muestra cuáles
+    #             faltan. Es el valor por defecto y el único que se puede usar
+    #             hoy con seguridad, porque nadie ha visto la documentación de
+    #             integración de Globalsoft.
+    #   archivo — deposita un plano por venta en una carpeta para que Globalsoft
+    #             lo importe. Es el camino más probable con un ERP instalado en
+    #             la máquina del restaurante: un archivo cruza esa frontera, una
+    #             conexión HTTP desde la nube no.
+    #   rest    — manda la venta por HTTP. INCOMPLETO: falta el contrato real.
+    #             No lo active todavía.
+    #
+    # Si alguien se equivoca escribiendo esto, arranca el adaptador manual, que
+    # es el que no puede hacer daño.
+    adaptador: ${ELPATIO_ERP_ADAPTADOR:manual}
+
+    archivo:
+      # Solo la usa el adaptador `archivo`. En Railway tiene que apuntar a un
+      # volumen, por lo mismo que las imágenes: el disco del contenedor se borra
+      # en cada despliegue, y ahí se irían las ventas sin reportar.
+      carpeta: ${ELPATIO_ERP_CARPETA:./datos/erp}
+
+    rest:
+      # Vacías mientras no haya integración. El adaptador rest falla en claro si
+      # se activa sin URL, en vez de intentar contra una dirección vacía.
+      url: ${ELPATIO_ERP_URL:}
+      token: ${ELPATIO_ERP_TOKEN:}
+
   imagenes:
     # Dónde se guardan las fotos de promociones, eventos y galería.
     #

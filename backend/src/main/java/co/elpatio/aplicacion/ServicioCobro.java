@@ -27,6 +27,7 @@ public class ServicioCobro {
   private final GeneradorIds ids;
   private final Reloj reloj;
   private final PublicadorEventos eventos;
+  private final ServicioIntegracionErp integracionErp;
 
   public ServicioCobro(
       Repositorios.DeOrdenes ordenes,
@@ -36,7 +37,8 @@ public class ServicioCobro {
       Repositorios.DeAjustes ajustes,
       GeneradorIds ids,
       Reloj reloj,
-      PublicadorEventos eventos) {
+      PublicadorEventos eventos,
+      ServicioIntegracionErp integracionErp) {
     this.ordenes = ordenes;
     this.pagos = pagos;
     this.mesas = mesas;
@@ -45,6 +47,7 @@ public class ServicioCobro {
     this.ids = ids;
     this.reloj = reloj;
     this.eventos = eventos;
+    this.integracionErp = integracionErp;
   }
 
   /**
@@ -94,6 +97,18 @@ public class ServicioCobro {
       mesa.liberar();
       mesas.guardar(mesa);
     }
+
+    // La venta entra a la bandeja de salida hacia el ERP DENTRO de esta misma
+    // transaccion. No es un detalle de orden: si se hiciera despues de
+    // confirmarla, entre una cosa y otra hay una ventana —un reinicio, un corte
+    // de luz, una excepcion— en la que la venta queda cobrada y sin reportar, y
+    // esas son las que nadie encuentra hasta el cierre contable.
+    //
+    // Encolar no puede tumbar el cobro. El metodo no lanza: si algo sale mal
+    // deja el rastro en la bitacora y la pantalla de conciliacion muestra la
+    // venta como faltante, que es un problema que se resuelve mirando, no uno
+    // que deba impedir cobrar una mesa.
+    integracionErp.encolar(guardado, orden);
 
     eventos.publicar(List.of("ordenes", "mesas", "pagos", "pedidos"));
     return guardado;

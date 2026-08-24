@@ -101,6 +101,9 @@ public class ConfiguracionSeguridad {
                     .requestMatchers("/api/cobro/**").hasAnyRole("MESERO", "CAJERO", "ADMINISTRADOR")
                     .requestMatchers("/api/caja/**").hasAnyRole("CAJERO", "ADMINISTRADOR")
                     .requestMatchers("/api/reportes/**").hasRole("ADMINISTRADOR")
+                    // La conciliacion muestra la venta completa del periodo:
+                    // es informacion de cierre contable, no de operacion.
+                    .requestMatchers("/api/erp/**").hasRole("ADMINISTRADOR")
                     .requestMatchers("/api/usuarios/**").hasRole("ADMINISTRADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/ajustes").hasRole("ADMINISTRADOR")
                     .requestMatchers("/api/carta/**").hasRole("ADMINISTRADOR")

@@ -8,6 +8,7 @@ import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.conversacion.Conversacion;
+import co.elpatio.dominio.erp.EnvioErp;
 import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
@@ -148,6 +149,28 @@ public final class Repositorios {
     List<PagoOnline> pendientesVencidosAntesDe(Instant instante);
 
     PagoOnline guardar(PagoOnline pago);
+  }
+
+  /** La bandeja de salida de ventas hacia el ERP externo. */
+  public interface DeEnviosErp {
+    Optional<EnvioErp> porId(String id);
+
+    /** Un pago se reporta una sola vez; esto es lo que lo comprueba. */
+    Optional<EnvioErp> porPago(String pagoId);
+
+    /**
+     * Los que ya les toca salir, de a tandas.
+     *
+     * El limite no es una optimizacion: tras una caida larga del ERP hay
+     * cientos esperando, y mandarlos todos de golpe contra un servidor que
+     * acaba de levantarse lo vuelve a tumbar.
+     */
+    List<EnvioErp> pendientesListos(Instant ahora, int limite);
+
+    /** Lo del periodo, para conciliar contra la contabilidad. */
+    List<EnvioErp> entre(Instant desde, Instant hasta);
+
+    EnvioErp guardar(EnvioErp envio);
   }
 
   public interface DeAjustes {
