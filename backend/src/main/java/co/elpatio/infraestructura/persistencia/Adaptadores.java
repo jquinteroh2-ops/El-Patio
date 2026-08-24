@@ -14,6 +14,10 @@ import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.publicacion.Publicacion;
+import co.elpatio.dominio.reclutamiento.EstadoPostulacion;
+import co.elpatio.dominio.reclutamiento.FiltroPostulaciones;
+import co.elpatio.dominio.reclutamiento.Pagina;
+import co.elpatio.dominio.reclutamiento.Postulacion;
 import co.elpatio.dominio.puertos.Reloj;
 import co.elpatio.dominio.puertos.Repositorios;
 import co.elpatio.dominio.reserva.Reserva;
@@ -28,6 +32,7 @@ import co.elpatio.infraestructura.persistencia.dao.DaoConversaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoEnviosErp;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagosOnline;
+import co.elpatio.infraestructura.persistencia.dao.DaoPostulaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoPublicaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoReservas;
 import co.elpatio.infraestructura.persistencia.dao.DaoUsuarios;
@@ -42,16 +47,20 @@ import co.elpatio.infraestructura.persistencia.filas.FilaConversacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaEnvioErp;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
 import co.elpatio.infraestructura.persistencia.filas.FilaPagoOnline;
+import co.elpatio.infraestructura.persistencia.filas.FilaPostulacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaPublicacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaReserva;
 import co.elpatio.infraestructura.persistencia.filas.FilaUsuario;
 import co.elpatio.infraestructura.persistencia.filas.FilaZonaDomicilio;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -373,6 +382,84 @@ public final class Adaptadores {
       FilaEnvioErp fila = dao.findById(envio.getId()).orElseGet(FilaEnvioErp::new);
       fila.volcar(envio);
       return dao.save(fila).aDominio();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class Postulaciones implements Repositorios.DePostulaciones {
+    private static final ZoneId ZONA = ZoneId.of("America/Bogota");
+
+    private final DaoPostulaciones dao;
+
+    public Postulaciones(DaoPostulaciones dao) {
+      this.dao = dao;
+    }
+
+    @Override
+    public Optional<Postulacion> porId(String id) {
+      return dao.findById(id).map(FilaPostulacion::aDominio);
+    }
+
+    /**
+     * Traduce el filtro del dominio a lo que entiende Spring Data.
+     *
+     * Los enum viajan a la consulta como su `name()` porque asi se guardan en
+     * la columna. Las fechas locales se convierten a instantes en la zona del
+     * restaurante: quien filtra por «el 24 de agosto» quiere el dia del local,
+     * no una ventana UTC que le corte la noche.
+     */
+    @Override
+    public Pagina<Postulacion> buscar(FiltroPostulaciones filtro) {
+      Page<FilaPostulacion> pagina =
+          dao.buscar(
+              filtro.estado() == null ? null : filtro.estado().name(),
+              filtro.cargo() == null ? null : filtro.cargo().name(),
+              filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA).toInstant(),
+              // Exclusivo por arriba: el dia `hasta` entra completo.
+              filtro.hasta() == null
+                  ? null
+                  : filtro.hasta().plusDays(1).atStartOfDay(ZONA).toInstant(),
+              filtro.busqueda(),
+              PageRequest.of(filtro.pagina(), filtro.tamano()));
+
+      return new Pagina<>(
+          pagina.getContent().stream().map(FilaPostulacion::aDominio).toList(),
+          filtro.pagina(),
+          filtro.tamano(),
+          pagina.getTotalElements());
+    }
+
+    @Override
+    public long sinRevisar() {
+      return dao.countByEstado(EstadoPostulacion.RECIBIDA.name());
+    }
+
+    @Override
+    public List<Postulacion> delDocumentoDesde(String numeroDocumento, Instant desde) {
+      return dao.findByNumeroDocumentoAndFechaPostulacionAfter(numeroDocumento, desde).stream()
+          .map(FilaPostulacion::aDominio)
+          .toList();
+    }
+
+    @Override
+    public List<Postulacion> entre(Instant desde, Instant hasta) {
+      return dao.findByFechaPostulacionBetweenOrderByFechaPostulacionDesc(desde, hasta).stream()
+          .map(FilaPostulacion::aDominio)
+          .toList();
+    }
+
+    @Override
+    public Postulacion guardar(Postulacion postulacion) {
+      FilaPostulacion fila = dao.findById(postulacion.getId()).orElseGet(FilaPostulacion::new);
+      fila.volcar(postulacion);
+      return dao.save(fila).aDominio();
+    }
+
+    @Override
+    public void eliminar(String id) {
+      dao.deleteById(id);
     }
   }
 

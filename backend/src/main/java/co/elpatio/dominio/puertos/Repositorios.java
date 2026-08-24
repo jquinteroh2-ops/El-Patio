@@ -13,6 +13,9 @@ import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.publicacion.Publicacion;
+import co.elpatio.dominio.reclutamiento.FiltroPostulaciones;
+import co.elpatio.dominio.reclutamiento.Pagina;
+import co.elpatio.dominio.reclutamiento.Postulacion;
 import co.elpatio.dominio.reserva.Reserva;
 import co.elpatio.dominio.salon.Mesa;
 import java.time.Instant;
@@ -174,6 +177,40 @@ public final class Repositorios {
     List<EnvioErp> entre(Instant desde, Instant hasta);
 
     EnvioErp guardar(EnvioErp envio);
+  }
+
+  /** Las hojas de vida que llegan por el sitio publico. */
+  public interface DePostulaciones {
+    Optional<Postulacion> porId(String id);
+
+    /** La bandeja, paginada y con sus filtros. */
+    Pagina<Postulacion> buscar(FiltroPostulaciones filtro);
+
+    /** Cuantas hay sin revisar. Es el contador del menu. */
+    long sinRevisar();
+
+    /**
+     * Envios recientes del mismo documento.
+     *
+     * Sirve para no llenar la bandeja con la misma hoja de vida cinco veces:
+     * pasa sin mala intencion, cuando la pagina tarda y la gente vuelve a
+     * pulsar el boton.
+     */
+    List<Postulacion> delDocumentoDesde(String numeroDocumento, Instant desde);
+
+    /** Las del periodo, para el reporte. */
+    List<Postulacion> entre(Instant desde, Instant hasta);
+
+    Postulacion guardar(Postulacion postulacion);
+
+    /**
+     * La borra de la base.
+     *
+     * Es el derecho de supresion de la Ley 1581. El archivo de la hoja de vida
+     * lo borra el servicio, aparte: borrar solo la fila dejaria el PDF con los
+     * datos de la persona tirado en el volumen.
+     */
+    void eliminar(String id);
   }
 
   public interface DeAjustes {

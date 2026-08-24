@@ -81,6 +81,16 @@ public class ConfiguracionSeguridad {
                     .requestMatchers(HttpMethod.GET, "/api/publicaciones/imagenes/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/reservas").permitAll()
 
+                    // «Trabaja con nosotros». Quien busca empleo no tiene ni va
+                    // a crear una cuenta aqui, asi que el formulario es publico
+                    // por diseño. Lo que lo defiende no es la sesion sino el
+                    // limite por IP, el señuelo y el control de repetidos, que
+                    // viven en el controlador. Todo lo que sea LEER hojas de
+                    // vida vive bajo /api/admin y exige administrador.
+                    .requestMatchers(HttpMethod.GET, "/api/public/postulaciones/cargos").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/public/postulaciones").permitAll()
+                    .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
+
                     // El cliente pide desde su celular sin tener usuario. Son las
                     // dos unicas rutas del canal abiertas, y las dos escriben o
                     // leen solo lo que ese cliente necesita para pedir.

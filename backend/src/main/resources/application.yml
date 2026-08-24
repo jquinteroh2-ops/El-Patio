@@ -71,6 +71,21 @@ elpatio:
   # El día operativo y el turno se calculan en esta zona, nunca en UTC.
   zona-horaria: ${ELPATIO_ZONA:America/Bogota}
 
+  reclutamiento:
+    # A quién se le avisa cuando llega una hoja de vida nueva.
+    #
+    # Vacío = no se avisa. Y hoy da igual lo que se ponga: el proyecto no tiene
+    # proveedor de correo, así que el aviso solo queda escrito en la bitácora.
+    # La variable existe ya para que el día que haya proveedor no haya que
+    # tocar código.
+    correo-administrador: ${ELPATIO_CORREO_ADMIN:}
+
+    # Días durante los cuales no se acepta otra hoja de vida del mismo
+    # documento. No es sospecha de fraude: la gente vuelve a pulsar el botón
+    # cuando la página tarda. Quien se postuló hace tres meses y no tuvo
+    # respuesta sí tiene derecho a volver a intentarlo.
+    dias-sin-repetir: ${ELPATIO_DIAS_SIN_REPETIR:30}
+
   documentos:
     # Hojas de vida y adjuntos de PQR.
     #

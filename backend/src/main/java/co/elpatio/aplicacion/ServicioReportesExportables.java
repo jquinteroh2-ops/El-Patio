@@ -6,6 +6,7 @@ import co.elpatio.dominio.cobro.MetodoPago;
 import co.elpatio.dominio.erp.EnvioErp;
 import co.elpatio.dominio.error.NoEncontradoError;
 import co.elpatio.dominio.puertos.Reloj;
+import co.elpatio.dominio.reclutamiento.EstadoPostulacion;
 import co.elpatio.dominio.puertos.Repositorios;
 import co.elpatio.dominio.reporte.ColumnaReporte;
 import co.elpatio.dominio.reporte.DefinicionReporte;
@@ -42,6 +43,7 @@ public class ServicioReportesExportables {
   private final Repositorios.DeCierres cierres;
   private final Repositorios.DePagosOnline anticipos;
   private final Repositorios.DeOrdenes ordenes;
+  private final Repositorios.DePostulaciones postulaciones;
   private final Reloj reloj;
 
   public ServicioReportesExportables(
@@ -50,12 +52,14 @@ public class ServicioReportesExportables {
       Repositorios.DeCierres cierres,
       Repositorios.DePagosOnline anticipos,
       Repositorios.DeOrdenes ordenes,
+      Repositorios.DePostulaciones postulaciones,
       Reloj reloj) {
     this.administracion = administracion;
     this.integracionErp = integracionErp;
     this.cierres = cierres;
     this.anticipos = anticipos;
     this.ordenes = ordenes;
+    this.postulaciones = postulaciones;
     this.reloj = reloj;
   }
 
@@ -79,7 +83,64 @@ public class ServicioReportesExportables {
       case "cierres" -> cierresDeCaja(desde, hasta, generadoPor);
       case "conciliacion" -> conciliacion(desde, hasta, generadoPor);
       case "anticipos" -> anticiposRecibidos(desde, hasta, generadoPor);
+      case "postulaciones" -> postulacionesRecibidas(desde, hasta, generadoPor);
       default -> throw new NoEncontradoError("No existe el reporte «" + tipo + "»");
+    };
+  }
+
+  /**
+   * Las postulaciones del periodo, SIN las hojas de vida.
+   *
+   * Solo los datos de contacto y el estado, que es lo que se necesita para
+   * repartir el trabajo de revision. Los PDF se descargan uno a uno desde la
+   * bandeja, con su registro: un archivo con doscientas hojas de vida es un
+   * incidente de datos personales esperando a que alguien lo reenvie.
+   */
+  private ReporteListo postulacionesRecibidas(
+      LocalDate desde, LocalDate hasta, String generadoPor) {
+
+    List<FilaReporte> filas =
+        postulaciones
+            .entre(desde.atStartOfDay(ZONA).toInstant(), hasta.plusDays(1).atStartOfDay(ZONA).toInstant())
+            .stream()
+            .map(
+                p ->
+                    FilaReporte.de(
+                        p.getFechaPostulacion(),
+                        p.getNombreCompleto(),
+                        p.getTipoDocumento().name() + " " + p.getNumeroDocumento(),
+                        p.getTelefono(),
+                        p.getEmail(),
+                        p.getCargoInteres().etiqueta(),
+                        etiquetaEstado(p.getEstado())))
+            .toList();
+
+    return new ReporteListo(
+        new DefinicionReporte(
+            "Postulaciones recibidas",
+            "postulaciones",
+            List.of(
+                ColumnaReporte.fechaHora("Fecha"),
+                ColumnaReporte.texto("Nombre", 28),
+                ColumnaReporte.texto("Documento", 18),
+                ColumnaReporte.texto("Teléfono", 16),
+                ColumnaReporte.texto("Correo", 28),
+                ColumnaReporte.texto("Cargo", 20),
+                ColumnaReporte.texto("Estado", 16)),
+            desde,
+            hasta,
+            List.of("Sin las hojas de vida: solo los datos de contacto"),
+            generadoPor),
+        filas);
+  }
+
+  private String etiquetaEstado(EstadoPostulacion estado) {
+    return switch (estado) {
+      case RECIBIDA -> "Recibida";
+      case EN_REVISION -> "En revisión";
+      case CONTACTADO -> "Contactado";
+      case SELECCIONADO -> "Seleccionado";
+      case DESCARTADO -> "Descartado";
     };
   }
 
