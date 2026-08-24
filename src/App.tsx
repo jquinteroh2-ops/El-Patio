@@ -14,6 +14,8 @@ import Carta from '@/publico/Carta'
 import Reservar from '@/publico/Reservar'
 import Pedir from '@/publico/Pedir'
 import Acceso from '@/publico/Acceso'
+import Trabaja from '@/publico/Trabaja'
+import PoliticaDatos from '@/publico/PoliticaDatos'
 import MapaMesas from '@/comandera/MapaMesas'
 import OrdenMesa from '@/comandera/OrdenMesa'
 import SelectorProductos from '@/comandera/SelectorProductos'
@@ -29,6 +31,7 @@ import Publicaciones from '@/admin/Publicaciones'
 import Ventas from '@/admin/Ventas'
 import Cierre from '@/admin/Cierre'
 import Conciliacion from '@/admin/Conciliacion'
+import Postulaciones from '@/admin/Postulaciones'
 import Reportes from '@/admin/Reportes'
 import Configuracion from '@/admin/Configuracion'
 
@@ -56,6 +59,8 @@ export default function App() {
               <Route path="/carta" element={<Carta />} />
               <Route path="/reservar" element={<Reservar />} />
               <Route path="/pedir" element={<Pedir />} />
+              <Route path="/trabaja-con-nosotros" element={<Trabaja />} />
+              <Route path="/politica-de-datos" element={<PoliticaDatos />} />
             </Route>
             <Route path="/acceso" element={<Acceso />} />
 
@@ -146,6 +151,14 @@ export default function App() {
               <Route path="publicaciones" element={<Publicaciones />} />
               <Route path="ventas" element={<Ventas />} />
               <Route path="cierre" element={<Cierre />} />
+              <Route
+                path="postulaciones"
+                element={
+                  <GuardaRuta roles={['administrador']}>
+                    <Postulaciones />
+                  </GuardaRuta>
+                }
+              />
               <Route
                 path="conciliacion"
                 element={

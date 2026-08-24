@@ -49,6 +49,25 @@ const PUBLICAS: Record<string, Ficha> = {
       ' La Esmeralda y más barrios.',
     indexable: true,
   },
+  // Sí se indexa, y a propósito: «trabajo en restaurante en Turbaco» es una
+  // búsqueda real, y esta página es la respuesta. Que la encuentre quien la
+  // necesita le ahorra al restaurante publicar la vacante en otro lado.
+  '/trabaja-con-nosotros': {
+    titulo: `Trabaja con nosotros · ${RESTAURANTE.nombreCompleto}, ${RESTAURANTE.ciudad}`,
+    descripcion:
+      'Deje su hoja de vida en el Restaurante El Patio, Turbaco. Meseros, cocina, caja,' +
+      ' domicilios y más. Envío en línea, respuesta si su perfil encaja con una vacante.',
+    indexable: true,
+  },
+  // La política se enlaza desde el formulario y tiene que abrir, pero no es
+  // contenido que nadie busque: aparecer en Google no le sirve a nadie.
+  '/politica-de-datos': {
+    titulo: `Política de tratamiento de datos · ${RESTAURANTE.nombreCompleto}`,
+    descripcion:
+      'Cómo trata el Restaurante El Patio los datos personales que usted entrega, conforme' +
+      ' a la Ley 1581 de 2012.',
+    indexable: false,
+  },
 }
 
 const INTERNA: Ficha = {

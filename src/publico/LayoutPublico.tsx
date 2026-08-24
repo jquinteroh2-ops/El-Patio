@@ -37,6 +37,20 @@ export default function LayoutPublico() {
             >
               Pedir
             </NavLink>
+            {/* «Trabaja con nosotros» va en el menú pero SIN el borde del botón:
+                el llamado a la acción del restaurante es reservar, no contratar.
+                En móvil se esconde y queda en el pie, donde lo busca quien lo
+                busca a propósito. */}
+            <NavLink
+              to="/trabaja-con-nosotros"
+              className={({ isActive }) =>
+                `hidden transition hover:text-oro-300 sm:inline ${
+                  isActive ? 'text-oro-300' : 'text-crema-100/70'
+                }`
+              }
+            >
+              Trabaja con nosotros
+            </NavLink>
             <NavLink
               to="/reservar"
               className={({ isActive }) =>
@@ -108,6 +122,20 @@ export default function LayoutPublico() {
             <span className="text-xs text-crema-100/35">
               {RESTAURANTE.nombreCompleto} · NIT {DATOS_FISCALES.nitCompleto}
             </span>
+            <div className="flex items-center gap-4">
+              <Link
+                to="/trabaja-con-nosotros"
+                className="text-xs uppercase tracking-[0.18em] text-crema-100/50 transition hover:text-oro-300"
+              >
+                Trabaja con nosotros
+              </Link>
+              <Link
+                to="/politica-de-datos"
+                className="text-xs uppercase tracking-[0.18em] text-crema-100/35 transition hover:text-oro-300"
+              >
+                Política de datos
+              </Link>
+            </div>
             {/* Acceso del personal: existe, pero no compite con la carta ni la reserva. */}
             <Link
               to="/acceso"

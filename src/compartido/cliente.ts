@@ -400,3 +400,30 @@ function nombreDeLaRespuesta(respuesta: Response): string | null {
   const coincidencia = /filename="?([^"]+)"?/i.exec(cabecera)
   return coincidencia ? coincidencia[1] : null
 }
+
+/**
+ * Manda un formulario con archivo SIN sesion.
+ *
+ * Va aparte de `subirArchivo` porque aquel exige credencial, y los formularios
+ * publicos —«Trabaja con nosotros», y luego PQR— los llena gente que no tiene
+ * ni va a crear una cuenta en el sistema del restaurante. Lo que los defiende
+ * no es la sesion sino el limite por IP y el señuelo, que viven en el servidor.
+ *
+ * El `Content-Type` lo pone el navegador a proposito: `FormData` necesita que
+ * la cabecera lleve la frontera del multipart, y ponerla a mano —como hace
+ * `pedir` con JSON— produce un cuerpo que el servidor no puede separar.
+ */
+export async function enviarFormulario<T>(ruta: string, cuerpo: FormData): Promise<T> {
+  if (!hayConexion()) throw new SinConexionError()
+
+  let respuesta: Response
+  try {
+    respuesta = await fetch(`${URL_API}${ruta}`, { method: 'POST', body: cuerpo })
+  } catch {
+    throw new SinConexionError('No hay conexión con el servidor')
+  }
+
+  if (!respuesta.ok) throw new ErrorApi(await mensajeDeError(respuesta), respuesta.status)
+  const texto = await respuesta.text()
+  return (texto ? JSON.parse(texto) : undefined) as T
+}

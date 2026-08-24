@@ -1,4 +1,4 @@
-import { ErrorApi, borrarCredenciales, descargarArchivo, guardarCredenciales, pedir, pedirOpcional, subirArchivo, tokenDeRefresco } from './cliente'
+import { ErrorApi, borrarCredenciales, descargarArchivo, enviarFormulario, guardarCredenciales, pedir, pedirOpcional, subirArchivo, tokenDeRefresco } from './cliente'
 import { URL_API } from './config'
 import {
   SinConexionError,
@@ -1140,4 +1140,123 @@ export { SinConexionError }
 /** Cola de envios pendientes, para el indicador de la comandera. */
 export function pendientesDeEnvio(): number {
   return leerCola().length
+}
+
+// ---------------------------------------------------------------------------
+// Trabaja con nosotros
+// ---------------------------------------------------------------------------
+
+export type TipoDocumento = 'CC' | 'CE' | 'PEP' | 'PPT' | 'TI'
+
+export type EstadoPostulacion =
+  | 'recibida'
+  | 'en_revision'
+  | 'contactado'
+  | 'seleccionado'
+  | 'descartado'
+
+export interface Postulacion {
+  id: string
+  nombreCompleto: string
+  tipoDocumento: TipoDocumento
+  numeroDocumento: string
+  email: string
+  telefono: string
+  cargoInteres: string
+  mensaje?: string
+  hojaDeVidaNombreOriginal?: string
+  estado: EstadoPostulacion
+  fechaPostulacion: string
+  autorizacionDatos: boolean
+  autorizacionFecha: string
+  autorizacionIp?: string
+  notasInternas?: string
+  actualizadoEn: string
+}
+
+export interface PaginaDe<T> {
+  contenido: T[]
+  pagina: number
+  tamano: number
+  total: number
+}
+
+export interface CargoDeInteres {
+  id: string
+  etiqueta: string
+}
+
+/**
+ * Los cargos los manda el servidor.
+ *
+ * Podrian estar escritos aqui y no deberian: si el restaurante abre una vacante
+ * nueva, el cambio tiene que ocurrir en un solo sitio y no en dos que se
+ * desincronizan.
+ */
+export async function cargosDeInteres(): Promise<CargoDeInteres[]> {
+  return contra(() =>
+    pedir<CargoDeInteres[]>('/api/public/postulaciones/cargos', { sinSesion: true }),
+  )
+}
+
+/** Envia una hoja de vida. Publico: quien busca empleo no tiene cuenta aqui. */
+export async function enviarPostulacion(datos: FormData): Promise<{ id: string; mensaje: string }> {
+  return contra(() =>
+    enviarFormulario<{ id: string; mensaje: string }>('/api/public/postulaciones', datos),
+  )
+}
+
+export async function listarPostulaciones(filtros: {
+  estado?: string
+  cargo?: string
+  desde?: string
+  hasta?: string
+  busqueda?: string
+  pagina?: number
+  tamano?: number
+}): Promise<PaginaDe<Postulacion>> {
+  return contra(() =>
+    pedir<PaginaDe<Postulacion>>('/api/admin/postulaciones', { consulta: filtros }),
+  )
+}
+
+export async function postulacionesSinRevisar(): Promise<number> {
+  return contra(() => pedir<number>('/api/admin/postulaciones/sin-revisar'))
+}
+
+export async function cambiarEstadoPostulacion(
+  id: string,
+  estado: EstadoPostulacion,
+): Promise<Postulacion> {
+  return contra(() =>
+    pedir<Postulacion>(`/api/admin/postulaciones/${id}/estado`, {
+      metodo: 'PATCH',
+      cuerpo: { estado },
+    }),
+  )
+}
+
+export async function anotarPostulacion(id: string, notas: string): Promise<Postulacion> {
+  return contra(() =>
+    pedir<Postulacion>(`/api/admin/postulaciones/${id}/notas`, {
+      metodo: 'PATCH',
+      cuerpo: { notas },
+    }),
+  )
+}
+
+/**
+ * Borra la postulacion y su archivo.
+ *
+ * Es el derecho de supresion de la Ley 1581, no una limpieza de bandeja: no hay
+ * papelera y no debe haberla, porque una papelera es justo lo que hace que un
+ * dato «borrado» siga existiendo.
+ */
+export async function eliminarPostulacion(id: string): Promise<void> {
+  return contra(() => pedir<void>(`/api/admin/postulaciones/${id}`, { metodo: 'DELETE' }))
+}
+
+/** Baja la hoja de vida por el endpoint autenticado, nunca por una URL publica. */
+export async function descargarHojaDeVida(id: string): Promise<void> {
+  return contra(() => descargarArchivo(`/api/admin/postulaciones/${id}/hoja-de-vida`, {}))
 }
