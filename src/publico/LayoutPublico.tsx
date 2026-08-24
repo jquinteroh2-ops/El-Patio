@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Instagram, MapPin, MessageCircle, Phone } from 'lucide-react'
 import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
-import { Marca } from './Marca'
+import { Emblema, MarcaConNombre } from './Marca'
 
 const SALUDO_WHATSAPP = `Hola, quisiera información sobre ${RESTAURANTE.nombreCompleto}.`
 
@@ -23,11 +23,7 @@ export default function LayoutPublico() {
             to="/"
             className="group flex items-center gap-2.5 text-crema-100 transition hover:text-oro-300 sm:gap-3"
           >
-            {/* En móvil el símbolo baja de tamaño; el nombre se mantiene, que es
-                lo que de verdad identifica al restaurante para quien no conoce
-                todavía la marca gráfica. */}
-            <Marca className="h-6 w-6 sm:h-7 sm:w-7" />
-            <span className="font-marca text-base tracking-[0.3em] sm:text-lg">EL PATIO</span>
+            <MarcaConNombre />
           </Link>
 
           <div className="flex items-center gap-5 text-xs uppercase tracking-[0.16em] sm:gap-7">
@@ -85,7 +81,7 @@ export default function LayoutPublico() {
         <div className="mx-auto grid max-w-5xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div>
             <p className="flex items-center gap-2.5 font-marca text-lg tracking-[0.28em] text-crema-100">
-              <Marca className="h-6 w-6" />
+              <Emblema tamano={28} />
               EL PATIO
             </p>
             <p className="mt-3 text-sm leading-relaxed text-crema-100/60">

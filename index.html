@@ -33,7 +33,23 @@
       property="og:description"
       content="Cocina de fusión y coctelería de autor. Reserve su mesa, vea la carta o pida a domicilio."
     />
-    <meta name="twitter:card" content="summary_large_image" />
+    <!--
+      Lo que se ve al pegar el enlace en WhatsApp.
+
+      Va el logo COMPLETO —con su texto— porque aquí aparece solo, sin nada al
+      lado que diga de quién es.
+
+      La tarjeta es `summary` y no `summary_large_image`: el logo es cuadrado, y
+      la tarjeta grande lo recortaría por arriba y por abajo hasta dejar una
+      franja del centro. El día que haya una imagen apaisada de 1200x630 —una
+      foto del local, por ejemplo— se cambia a `summary_large_image`.
+    -->
+    <meta property="og:image" content="/logo.png" />
+    <meta property="og:image:width" content="320" />
+    <meta property="og:image:height" content="320" />
+    <meta property="og:image:alt" content="Logo del Restaurante El Patio" />
+    <meta name="twitter:image" content="/logo.png" />
+    <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Restaurante El Patio · Turbaco, Bolívar" />
     <meta
       name="twitter:description"
@@ -47,8 +63,20 @@
     <meta name="geo.position" content="10.3390034;-75.4225372" />
     <meta name="ICBM" content="10.3390034, -75.4225372" />
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <!--
+      El icono de la pestaña es el emblema del restaurante: el arco con la
+      monstera y la orquídea, sin el texto. A 32 píxeles las letras «EL PATIO»
+      son una mancha que solo ensucia el dibujo; un icono a ese tamaño tiene que
+      ser una silueta reconocible.
+
+      Se declaran los dos tamaños en vez de uno solo: el navegador elige el que
+      le sirve y no reescala uno grande, que es donde se pierde el detalle de
+      las líneas finas.
+    -->
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/emblema.png" type="image/png" sizes="256x256" />
+    <!-- iOS usa este para la pantalla de inicio, y ahí sí cabe el logo completo. -->
+    <link rel="apple-touch-icon" href="/logo-180.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

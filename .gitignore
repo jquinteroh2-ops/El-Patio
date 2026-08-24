@@ -9,3 +9,6 @@ dist-ssr
 tsconfig.tsbuildinfo
 .env
 .env.local
+
+# Clases compiladas de los scripts sueltos de mantenimiento.
+*.class
