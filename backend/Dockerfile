@@ -40,7 +40,24 @@ WORKDIR /aplicacion
 RUN groupadd --system elpatio && useradd --system --gid elpatio elpatio
 
 COPY --from=construccion /obra/target/*.jar aplicacion.jar
-RUN chown elpatio:elpatio aplicacion.jar
+
+# Las carpetas de datos se crean AQUÍ y se le dan al usuario que ejecuta.
+#
+# Sin esto la aplicación no arranca: `/aplicacion` es de root, el proceso corre
+# como `elpatio`, y el almacén de documentos crea su carpeta al construirse. La
+# excepción sube durante el arranque de Spring y el contenedor entra en ciclo de
+# reinicio, con un error que no menciona los permisos por ningún lado.
+#
+# EN RAILWAY, EL VOLUMEN SE MONTA EN /aplicacion/datos. Si se monta en otra
+# ruta, hay que apuntar ahí ELPATIO_RUTA_DOCUMENTOS, ELPATIO_RUTA_IMAGENES y
+# ELPATIO_ERP_CARPETA; y si el volumen llega con dueño root, este chown no
+# alcanza porque el montaje ocurre después de construir la imagen: en ese caso
+# el arranque avisa en la bitácora y el resto del sistema sigue funcionando.
+RUN mkdir -p /aplicacion/datos/documentos \
+             /aplicacion/datos/imagenes \
+             /aplicacion/datos/erp \
+    && chown -R elpatio:elpatio /aplicacion
+
 USER elpatio
 
 # Railway inyecta PORT; el application.yml ya lo lee.
