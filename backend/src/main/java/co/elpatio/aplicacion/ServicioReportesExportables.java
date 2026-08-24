@@ -5,6 +5,7 @@ import co.elpatio.dominio.caja.CierreCaja;
 import co.elpatio.dominio.cobro.MetodoPago;
 import co.elpatio.dominio.erp.EnvioErp;
 import co.elpatio.dominio.error.NoEncontradoError;
+import co.elpatio.dominio.pqr.EstadoPqr;
 import co.elpatio.dominio.puertos.Reloj;
 import co.elpatio.dominio.reclutamiento.EstadoPostulacion;
 import co.elpatio.dominio.puertos.Repositorios;
@@ -44,6 +45,7 @@ public class ServicioReportesExportables {
   private final Repositorios.DePagosOnline anticipos;
   private final Repositorios.DeOrdenes ordenes;
   private final Repositorios.DePostulaciones postulaciones;
+  private final Repositorios.DeSolicitudesPqr pqr;
   private final Reloj reloj;
 
   public ServicioReportesExportables(
@@ -53,6 +55,7 @@ public class ServicioReportesExportables {
       Repositorios.DePagosOnline anticipos,
       Repositorios.DeOrdenes ordenes,
       Repositorios.DePostulaciones postulaciones,
+      Repositorios.DeSolicitudesPqr pqr,
       Reloj reloj) {
     this.administracion = administracion;
     this.integracionErp = integracionErp;
@@ -60,6 +63,7 @@ public class ServicioReportesExportables {
     this.anticipos = anticipos;
     this.ordenes = ordenes;
     this.postulaciones = postulaciones;
+    this.pqr = pqr;
     this.reloj = reloj;
   }
 
@@ -84,7 +88,79 @@ public class ServicioReportesExportables {
       case "conciliacion" -> conciliacion(desde, hasta, generadoPor);
       case "anticipos" -> anticiposRecibidos(desde, hasta, generadoPor);
       case "postulaciones" -> postulacionesRecibidas(desde, hasta, generadoPor);
+      case "pqr" -> pqrDelPeriodo(desde, hasta, generadoPor);
       default -> throw new NoEncontradoError("No existe el reporte «" + tipo + "»");
+    };
+  }
+
+  /**
+   * Las PQR del periodo, con el cumplimiento del plazo.
+   *
+   * La columna que importa es la ultima: si se respondio dentro del termino.
+   * Es lo que el restaurante tendria que poder demostrar si alguien reclama
+   * ante la Superintendencia, y contarlo a mano sobre una lista de fechas es
+   * como se llega a una cifra que no cuadra.
+   */
+  private ReporteListo pqrDelPeriodo(LocalDate desde, LocalDate hasta, String generadoPor) {
+    LocalDate hoy = reloj.hoy();
+
+    List<FilaReporte> filas =
+        pqr
+            .entre(desde.atStartOfDay(ZONA).toInstant(), hasta.plusDays(1).atStartOfDay(ZONA).toInstant())
+            .stream()
+            .map(
+                s ->
+                    FilaReporte.de(
+                        s.getRadicado(),
+                        s.getFechaRadicacion(),
+                        s.getTipo().etiqueta(),
+                        s.getNombreCompleto(),
+                        s.getAsunto(),
+                        etiquetaEstadoPqr(s.getEstado()),
+                        s.getFechaLimiteRespuesta(),
+                        s.getFechaRespuesta(),
+                        cumplimiento(s.cumplioElPlazo(hoy))))
+            .toList();
+
+    return new ReporteListo(
+        new DefinicionReporte(
+            "PQR por periodo",
+            "pqr",
+            List.of(
+                ColumnaReporte.texto("Radicado", 18),
+                ColumnaReporte.fechaHora("Radicada"),
+                ColumnaReporte.texto("Tipo", 14),
+                ColumnaReporte.texto("Solicitante", 24),
+                ColumnaReporte.texto("Asunto", 34),
+                ColumnaReporte.texto("Estado", 14),
+                ColumnaReporte.fecha("Vence"),
+                ColumnaReporte.fechaHora("Respondida"),
+                ColumnaReporte.texto("Cumplió el plazo", 16)),
+            desde,
+            hasta,
+            List.of("Incluye el cumplimiento del término de respuesta"),
+            generadoPor),
+        filas);
+  }
+
+  /**
+   * Como se lee el cumplimiento.
+   *
+   * El nulo NO es «no cumplió»: significa que todavía queda plazo, o que es una
+   * felicitación y no tiene término. Escribir «No» ahí sería acusar al
+   * restaurante de un incumplimiento que no ocurrió.
+   */
+  private String cumplimiento(Boolean cumplio) {
+    if (cumplio == null) return "En término";
+    return cumplio ? "Sí" : "No";
+  }
+
+  private String etiquetaEstadoPqr(EstadoPqr estado) {
+    return switch (estado) {
+      case RADICADA -> "Radicada";
+      case EN_TRAMITE -> "En trámite";
+      case RESUELTA -> "Resuelta";
+      case CERRADA -> "Cerrada";
     };
   }
 

@@ -54,6 +54,16 @@ public class ServicioAjustes {
       }
       actuales.setPorcentajeAnticipo(anticipo);
     }
+    if (cambios.diasHabilesPqr() != null) {
+      int dias = cambios.diasHabilesPqr();
+      // El tope de sesenta no sale de ninguna norma: es una barandilla contra
+      // el dedo resbalado. Un plazo de mil dias no lo quiere nadie, y un cero
+      // haria vencer cada solicitud el mismo dia de radicarla.
+      if (dias < 1 || dias > 60) {
+        throw new ReglaDeNegocioError("El plazo de PQR debe estar entre 1 y 60 días hábiles");
+      }
+      actuales.setDiasHabilesPqr(dias);
+    }
 
     if (actuales.getDomiciliosDesde().isAfter(actuales.getDomiciliosHasta())) {
       throw new ReglaDeNegocioError("La hora de apertura de domicilios va antes que la de cierre");
@@ -74,6 +84,7 @@ public class ServicioAjustes {
         valor.isDomiciliosPausados(),
         valor.getDomiciliosDesde(),
         valor.getDomiciliosHasta(),
-        valor.getPorcentajeAnticipo());
+        valor.getPorcentajeAnticipo(),
+        valor.getDiasHabilesPqr());
   }
 }

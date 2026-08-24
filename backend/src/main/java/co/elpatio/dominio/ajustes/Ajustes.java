@@ -33,6 +33,16 @@ public class Ajustes {
    */
   private int porcentajeAnticipo;
 
+  /**
+   * Dias habiles para responder una PQR.
+   *
+   * Es configuracion y no una constante del codigo a proposito: el termino
+   * aplicable depende del tipo de solicitud y la normativa puede cambiar. Los
+   * quince de partida salen del Estatuto del Consumidor, pero es el asesor
+   * juridico del restaurante quien tiene que confirmarlos, no el desarrollo.
+   */
+  private int diasHabilesPqr = 15;
+
   public Ajustes() {}
 
   public int getPorcentajeInc() { return porcentajeInc; }
@@ -49,6 +59,8 @@ public class Ajustes {
   public void setDomiciliosHasta(LocalTime valor) { this.domiciliosHasta = valor; }
   public int getPorcentajeAnticipo() { return porcentajeAnticipo; }
   public void setPorcentajeAnticipo(int valor) { this.porcentajeAnticipo = valor; }
+  public int getDiasHabilesPqr() { return diasHabilesPqr; }
+  public void setDiasHabilesPqr(int valor) { this.diasHabilesPqr = valor; }
 
   /**
    * Si en este momento se pueden recibir pedidos.

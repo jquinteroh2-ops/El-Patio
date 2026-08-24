@@ -89,6 +89,14 @@ public class ConfiguracionSeguridad {
                     // vida vive bajo /api/admin y exige administrador.
                     .requestMatchers(HttpMethod.GET, "/api/public/postulaciones/cargos").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/public/postulaciones").permitAll()
+
+                    // PQR. Un canal de quejas que exige crear una cuenta no es
+                    // un canal de quejas. La consulta es publica pero exige
+                    // radicado Y correo, que es lo que impide recorrer los
+                    // numeros en orden y leer las quejas de todo el mundo.
+                    .requestMatchers(HttpMethod.GET, "/api/public/pqr/tipos").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/public/pqr/consulta").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/public/pqr").permitAll()
                     .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
 
                     // El cliente pide desde su celular sin tener usuario. Son las

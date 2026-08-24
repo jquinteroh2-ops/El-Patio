@@ -12,6 +12,9 @@ import co.elpatio.dominio.erp.EnvioErp;
 import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
+import co.elpatio.dominio.pqr.FiltroPqr;
+import co.elpatio.dominio.pqr.Radicado;
+import co.elpatio.dominio.pqr.SolicitudPqr;
 import co.elpatio.dominio.publicacion.Publicacion;
 import co.elpatio.dominio.reclutamiento.FiltroPostulaciones;
 import co.elpatio.dominio.reclutamiento.Pagina;
@@ -19,6 +22,7 @@ import co.elpatio.dominio.reclutamiento.Postulacion;
 import co.elpatio.dominio.reserva.Reserva;
 import co.elpatio.dominio.salon.Mesa;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -211,6 +215,45 @@ public final class Repositorios {
      * datos de la persona tirado en el volumen.
      */
     void eliminar(String id);
+  }
+
+  /** Las PQR de los clientes. */
+  public interface DeSolicitudesPqr {
+    Optional<SolicitudPqr> porId(String id);
+
+    /**
+     * La consulta publica: exige radicado Y correo.
+     *
+     * Las dos cosas, y no solo el numero: con el numero suelto cualquiera
+     * podria recorrer los radicados en orden y leer las quejas de todo el
+     * mundo, con nombre y telefono incluidos.
+     */
+    Optional<SolicitudPqr> porRadicadoYCorreo(String radicado, String email);
+
+    /** La bandeja, ordenada por lo que primero vence. */
+    Pagina<SolicitudPqr> buscar(FiltroPqr filtro);
+
+    /** Cuantas siguen abiertas. Es el contador del menu. */
+    long abiertas();
+
+    /** Las que vencen dentro del plazo de aviso y siguen sin responder. */
+    List<SolicitudPqr> porVencerHasta(LocalDate limite);
+
+    /** Las del periodo, para el reporte. */
+    List<SolicitudPqr> entre(Instant desde, Instant hasta);
+
+    SolicitudPqr guardar(SolicitudPqr solicitud);
+
+    /**
+     * Entrega el siguiente radicado del año tomando el bloqueo del contador.
+     *
+     * Se llama DENTRO de la transaccion que inserta la solicitud. Una secuencia
+     * de PostgreSQL seria mas simple y dejaria huecos al revertirse una
+     * transaccion, porque las secuencias no participan del rollback; y un
+     * radicado con huecos no sirve para lo unico que tiene que servir, que es
+     * demostrar cuantas solicitudes entraron.
+     */
+    Radicado siguienteRadicado(int ano);
   }
 
   public interface DeAjustes {

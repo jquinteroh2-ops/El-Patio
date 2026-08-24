@@ -108,7 +108,8 @@ public final class Dtos {
       boolean domiciliosPausados,
       LocalTime domiciliosDesde,
       LocalTime domiciliosHasta,
-      int porcentajeAnticipo) {}
+      int porcentajeAnticipo,
+      int diasHabilesPqr) {}
 
   /** Cambios parciales de ajustes: lo que venga en null se deja como esta. */
   public record CambiosAjustes(
@@ -116,7 +117,8 @@ public final class Dtos {
       Boolean domiciliosPausados,
       LocalTime domiciliosDesde,
       LocalTime domiciliosHasta,
-      Integer porcentajeAnticipo) {}
+      Integer porcentajeAnticipo,
+      Integer diasHabilesPqr) {}
 
   // -------------------------------------------------------------------------
   // Anticipos (Wompi)

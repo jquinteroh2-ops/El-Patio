@@ -13,6 +13,9 @@ import co.elpatio.dominio.pago.EstadoPagoOnline;
 import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
+import co.elpatio.dominio.pqr.FiltroPqr;
+import co.elpatio.dominio.pqr.Radicado;
+import co.elpatio.dominio.pqr.SolicitudPqr;
 import co.elpatio.dominio.publicacion.Publicacion;
 import co.elpatio.dominio.reclutamiento.EstadoPostulacion;
 import co.elpatio.dominio.reclutamiento.FiltroPostulaciones;
@@ -32,7 +35,9 @@ import co.elpatio.infraestructura.persistencia.dao.DaoConversaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoEnviosErp;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagosOnline;
+import co.elpatio.infraestructura.persistencia.dao.DaoConsecutivosPqr;
 import co.elpatio.infraestructura.persistencia.dao.DaoPostulaciones;
+import co.elpatio.infraestructura.persistencia.dao.DaoSolicitudesPqr;
 import co.elpatio.infraestructura.persistencia.dao.DaoPublicaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoReservas;
 import co.elpatio.infraestructura.persistencia.dao.DaoUsuarios;
@@ -47,7 +52,9 @@ import co.elpatio.infraestructura.persistencia.filas.FilaConversacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaEnvioErp;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
 import co.elpatio.infraestructura.persistencia.filas.FilaPagoOnline;
+import co.elpatio.infraestructura.persistencia.filas.FilaConsecutivoPqr;
 import co.elpatio.infraestructura.persistencia.filas.FilaPostulacion;
+import co.elpatio.infraestructura.persistencia.filas.FilaSolicitudPqr;
 import co.elpatio.infraestructura.persistencia.filas.FilaPublicacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaReserva;
 import co.elpatio.infraestructura.persistencia.filas.FilaUsuario;
@@ -58,6 +65,7 @@ import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -460,6 +468,101 @@ public final class Adaptadores {
     @Override
     public void eliminar(String id) {
       dao.deleteById(id);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class SolicitudesPqr implements Repositorios.DeSolicitudesPqr {
+    private static final ZoneId ZONA_PQR = ZoneId.of("America/Bogota");
+
+    private final DaoSolicitudesPqr dao;
+    private final DaoConsecutivosPqr consecutivos;
+
+    public SolicitudesPqr(DaoSolicitudesPqr dao, DaoConsecutivosPqr consecutivos) {
+      this.dao = dao;
+      this.consecutivos = consecutivos;
+    }
+
+    @Override
+    public Optional<SolicitudPqr> porId(String id) {
+      return dao.findById(id).map(FilaSolicitudPqr::aDominio);
+    }
+
+    @Override
+    public Optional<SolicitudPqr> porRadicadoYCorreo(String radicado, String email) {
+      return dao.porRadicadoYCorreo(radicado, email).map(FilaSolicitudPqr::aDominio);
+    }
+
+    @Override
+    public Pagina<SolicitudPqr> buscar(FiltroPqr filtro) {
+      Page<FilaSolicitudPqr> pagina =
+          dao.buscar(
+              filtro.tipo() == null ? null : filtro.tipo().name(),
+              filtro.estado() == null ? null : filtro.estado().name(),
+              filtro.desde() == null ? null : filtro.desde().atStartOfDay(ZONA_PQR).toInstant(),
+              filtro.hasta() == null
+                  ? null
+                  : filtro.hasta().plusDays(1).atStartOfDay(ZONA_PQR).toInstant(),
+              filtro.busqueda(),
+              PageRequest.of(filtro.pagina(), filtro.tamano()));
+
+      return new Pagina<>(
+          pagina.getContent().stream().map(FilaSolicitudPqr::aDominio).toList(),
+          filtro.pagina(),
+          filtro.tamano(),
+          pagina.getTotalElements());
+    }
+
+    @Override
+    public long abiertas() {
+      return dao.abiertas();
+    }
+
+    @Override
+    public List<SolicitudPqr> porVencerHasta(LocalDate limite) {
+      return dao.porVencerHasta(limite).stream().map(FilaSolicitudPqr::aDominio).toList();
+    }
+
+    @Override
+    public List<SolicitudPqr> entre(Instant desde, Instant hasta) {
+      return dao.findByFechaRadicacionBetweenOrderByFechaRadicacionDesc(desde, hasta).stream()
+          .map(FilaSolicitudPqr::aDominio)
+          .toList();
+    }
+
+    @Override
+    public SolicitudPqr guardar(SolicitudPqr solicitud) {
+      FilaSolicitudPqr fila = dao.findById(solicitud.getId()).orElseGet(FilaSolicitudPqr::new);
+      fila.volcar(solicitud);
+      return dao.save(fila).aDominio();
+    }
+
+    /**
+     * El siguiente radicado del año, bajo bloqueo del contador.
+     *
+     * El primer dia del año la fila no existe todavia y hay que crearla. Ese
+     * insert puede perder una carrera contra otra peticion simultanea —las dos
+     * ven que no hay fila y las dos insertan—, y la que pierde choca contra la
+     * clave primaria. Se atrapa y se reintenta una vez: para entonces la fila
+     * ya existe y el bloqueo funciona normalmente.
+     */
+    @Override
+    public Radicado siguienteRadicado(int ano) {
+      FilaConsecutivoPqr contador = consecutivos.bloquear(ano);
+      if (contador == null) {
+        try {
+          contador = consecutivos.saveAndFlush(new FilaConsecutivoPqr(ano, 0));
+        } catch (DataIntegrityViolationException carrera) {
+          contador = consecutivos.bloquear(ano);
+          if (contador == null) throw carrera;
+        }
+      }
+      int siguiente = contador.getUltimo() + 1;
+      contador.setUltimo(siguiente);
+      consecutivos.saveAndFlush(contador);
+      return new Radicado(ano, siguiente);
     }
   }
 
