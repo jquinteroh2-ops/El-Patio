@@ -34,6 +34,7 @@ import Cierre from '@/admin/Cierre'
 import Conciliacion from '@/admin/Conciliacion'
 import Postulaciones from '@/admin/Postulaciones'
 import PqrAdmin from '@/admin/Pqr'
+import InstitucionalAdmin from '@/admin/Institucional'
 import Reportes from '@/admin/Reportes'
 import Configuracion from '@/admin/Configuracion'
 
@@ -154,6 +155,14 @@ export default function App() {
               <Route path="publicaciones" element={<Publicaciones />} />
               <Route path="ventas" element={<Ventas />} />
               <Route path="cierre" element={<Cierre />} />
+              <Route
+                path="institucional"
+                element={
+                  <GuardaRuta roles={['administrador']}>
+                    <InstitucionalAdmin />
+                  </GuardaRuta>
+                }
+              />
               <Route
                 path="pqr"
                 element={

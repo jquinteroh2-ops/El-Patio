@@ -8,6 +8,7 @@ import type { Publicacion } from '@/compartido/tipos'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import { enlaceMapaEmbebido, enlaceRutaHacia } from './ubicacion'
 import { Filete, Ornamento } from './Ornamento'
+import Institucional from './Institucional'
 
 const SALUDO = `Hola, quisiera reservar una mesa en ${RESTAURANTE.nombreCompleto}.`
 
@@ -249,6 +250,12 @@ export default function Inicio() {
           generosas, servicio atento y una carta pensada para compartir.
         </p>
       </section>
+
+      {/* ---------------- Quiénes somos ----------------
+          Va después de «el lugar» y antes de los distintivos: quien llega al
+          sitio busca primero la carta y la reserva; lo institucional se lee
+          cuando ya decidió mirar. Ponerlo arriba estorbaría a la mayoría. */}
+      <Institucional />
 
       {/* ---------------- Distintivos ---------------- */}
       <section className="border-t border-oro-500/15 bg-onix-900/40">

@@ -1378,3 +1378,41 @@ export async function anotarPqr(id: string, notas: string): Promise<SolicitudPqr
 export async function descargarAdjuntoPqr(id: string): Promise<void> {
   return contra(() => descargarArchivo(`/api/admin/pqr/${id}/adjunto`, {}))
 }
+
+// ---------------------------------------------------------------------------
+// Contenido institucional
+// ---------------------------------------------------------------------------
+
+export interface ContenidoInstitucional {
+  clave: string
+  titulo: string
+  /** Texto plano con saltos de linea, nunca HTML. */
+  cuerpo: string
+  orden: number
+  visible: boolean
+  actualizadoEn: string
+}
+
+/** Lo que se pinta en el sitio: solo lo visible, en orden. Publico. */
+export async function contenidoInstitucional(): Promise<ContenidoInstitucional[]> {
+  return contra(() =>
+    pedir<ContenidoInstitucional[]>('/api/institucional', { sinSesion: true }),
+  )
+}
+
+/** Todos, incluidos los ocultos. Es lo que edita el dueno. */
+export async function contenidoInstitucionalCompleto(): Promise<ContenidoInstitucional[]> {
+  return contra(() => pedir<ContenidoInstitucional[]>('/api/admin/institucional'))
+}
+
+export async function editarContenidoInstitucional(
+  clave: string,
+  cambios: { titulo: string; cuerpo: string; visible: boolean },
+): Promise<ContenidoInstitucional> {
+  return contra(() =>
+    pedir<ContenidoInstitucional>(`/api/admin/institucional/${clave}`, {
+      metodo: 'PUT',
+      cuerpo: cambios,
+    }),
+  )
+}

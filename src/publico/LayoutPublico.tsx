@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Instagram, MapPin, MessageCircle, Phone } from 'lucide-react'
 import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
+import { Marca } from './Marca'
 
 const SALUDO_WHATSAPP = `Hola, quisiera información sobre ${RESTAURANTE.nombreCompleto}.`
 
@@ -13,11 +14,20 @@ export default function LayoutPublico() {
       <header className="sticky top-0 z-40 border-b border-oro-500/15 bg-onix-950/90 backdrop-blur">
         {/* Altura fija: la barra de categorías de la carta se pega debajo (top-16). */}
         <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
+          {/* El símbolo y el nombre son UN solo enlace al inicio, no dos: dos
+              enlaces contiguos al mismo sitio obligan a un lector de pantalla a
+              anunciarlo dos veces, y con el teclado hay que pasar dos veces por
+              lo mismo. El símbolo va marcado como decorativo porque el nombre
+              ya está ahí como texto. */}
           <Link
             to="/"
-            className="font-marca text-base tracking-[0.3em] text-crema-100 transition hover:text-oro-300 sm:text-lg"
+            className="group flex items-center gap-2.5 text-crema-100 transition hover:text-oro-300 sm:gap-3"
           >
-            EL PATIO
+            {/* En móvil el símbolo baja de tamaño; el nombre se mantiene, que es
+                lo que de verdad identifica al restaurante para quien no conoce
+                todavía la marca gráfica. */}
+            <Marca className="h-6 w-6 sm:h-7 sm:w-7" />
+            <span className="font-marca text-base tracking-[0.3em] sm:text-lg">EL PATIO</span>
           </Link>
 
           <div className="flex items-center gap-5 text-xs uppercase tracking-[0.16em] sm:gap-7">
@@ -74,7 +84,10 @@ export default function LayoutPublico() {
       <footer className="border-t border-oro-500/15 bg-onix-900">
         <div className="mx-auto grid max-w-5xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div>
-            <p className="font-marca text-lg tracking-[0.28em] text-crema-100">EL PATIO</p>
+            <p className="flex items-center gap-2.5 font-marca text-lg tracking-[0.28em] text-crema-100">
+              <Marca className="h-6 w-6" />
+              EL PATIO
+            </p>
             <p className="mt-3 text-sm leading-relaxed text-crema-100/60">
               {RESTAURANTE.descripcionCorta} en el corazón de {RESTAURANTE.ciudad}.
             </p>

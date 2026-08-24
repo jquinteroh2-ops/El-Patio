@@ -81,6 +81,11 @@ public class ConfiguracionSeguridad {
                     .requestMatchers(HttpMethod.GET, "/api/publicaciones/imagenes/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/reservas").permitAll()
 
+                    // El texto institucional visible es contenido de la pagina
+                    // de inicio: lo lee cualquiera que pase por el sitio. La
+                    // edicion vive bajo /api/admin y exige administrador.
+                    .requestMatchers(HttpMethod.GET, "/api/institucional").permitAll()
+
                     // «Trabaja con nosotros». Quien busca empleo no tiene ni va
                     // a crear una cuenta aqui, asi que el formulario es publico
                     // por diseño. Lo que lo defiende no es la sesion sino el

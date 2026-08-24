@@ -9,6 +9,7 @@ import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.conversacion.Conversacion;
 import co.elpatio.dominio.erp.EnvioErp;
+import co.elpatio.dominio.institucional.ContenidoInstitucional;
 import co.elpatio.dominio.pago.EstadoPagoOnline;
 import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
@@ -31,6 +32,7 @@ import co.elpatio.infraestructura.persistencia.dao.DaoCierres;
 import co.elpatio.infraestructura.persistencia.dao.DaoItemsCarta;
 import co.elpatio.infraestructura.persistencia.dao.DaoMesas;
 import co.elpatio.infraestructura.persistencia.dao.DaoOrdenes;
+import co.elpatio.infraestructura.persistencia.dao.DaoContenidoInstitucional;
 import co.elpatio.infraestructura.persistencia.dao.DaoConversaciones;
 import co.elpatio.infraestructura.persistencia.dao.DaoEnviosErp;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
@@ -48,6 +50,7 @@ import co.elpatio.infraestructura.persistencia.filas.FilaCierreCaja;
 import co.elpatio.infraestructura.persistencia.filas.FilaItemCarta;
 import co.elpatio.infraestructura.persistencia.filas.FilaMesa;
 import co.elpatio.infraestructura.persistencia.filas.FilaOrden;
+import co.elpatio.infraestructura.persistencia.filas.FilaContenidoInstitucional;
 import co.elpatio.infraestructura.persistencia.filas.FilaConversacion;
 import co.elpatio.infraestructura.persistencia.filas.FilaEnvioErp;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
@@ -563,6 +566,52 @@ public final class Adaptadores {
       contador.setUltimo(siguiente);
       consecutivos.saveAndFlush(contador);
       return new Radicado(ano, siguiente);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class ContenidoInstitucionalRepo
+      implements Repositorios.DeContenidoInstitucional {
+    private final DaoContenidoInstitucional dao;
+
+    public ContenidoInstitucionalRepo(DaoContenidoInstitucional dao) {
+      this.dao = dao;
+    }
+
+    @Override
+    public List<ContenidoInstitucional> listar() {
+      return dao.findAllByOrderByOrdenAsc().stream()
+          .map(FilaContenidoInstitucional::aDominio)
+          .toList();
+    }
+
+    @Override
+    public List<ContenidoInstitucional> visibles() {
+      return dao.findByVisibleTrueOrderByOrdenAsc().stream()
+          .map(FilaContenidoInstitucional::aDominio)
+          .toList();
+    }
+
+    @Override
+    public Optional<ContenidoInstitucional> porClave(String clave) {
+      return dao.findById(clave).map(FilaContenidoInstitucional::aDominio);
+    }
+
+    /**
+     * Guarda sobre la fila existente.
+     *
+     * Nunca crea claves nuevas por este camino: las secciones las define una
+     * migracion, no el formulario. Si alguien manda una clave desconocida, el
+     * servicio ya lo rechazo antes de llegar aqui.
+     */
+    @Override
+    public ContenidoInstitucional guardar(ContenidoInstitucional contenido) {
+      FilaContenidoInstitucional fila =
+          dao.findById(contenido.getClave()).orElseGet(FilaContenidoInstitucional::new);
+      fila.volcar(contenido);
+      return dao.save(fila).aDominio();
     }
   }
 

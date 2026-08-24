@@ -9,6 +9,7 @@ import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
 import co.elpatio.dominio.conversacion.Conversacion;
 import co.elpatio.dominio.erp.EnvioErp;
+import co.elpatio.dominio.institucional.ContenidoInstitucional;
 import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
 import co.elpatio.dominio.personal.Usuario;
@@ -254,6 +255,19 @@ public final class Repositorios {
      * demostrar cuantas solicitudes entraron.
      */
     Radicado siguienteRadicado(int ano);
+  }
+
+  /** El texto institucional del sitio, editable desde el panel. */
+  public interface DeContenidoInstitucional {
+    /** Todos, visibles u ocultos. Es lo que edita el dueño. */
+    List<ContenidoInstitucional> listar();
+
+    /** Solo los visibles, en orden. Es lo que se pinta en el sitio publico. */
+    List<ContenidoInstitucional> visibles();
+
+    Optional<ContenidoInstitucional> porClave(String clave);
+
+    ContenidoInstitucional guardar(ContenidoInstitucional contenido);
   }
 
   public interface DeAjustes {
