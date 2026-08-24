@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, BookOpen, CalendarClock, LayoutDashboard, Megaphone, Receipt, Settings, Wallet } from 'lucide-react'
+import { BarChart3, BookOpen, CalendarClock, FileCheck2, LayoutDashboard, Megaphone, Receipt, Settings, Wallet } from 'lucide-react'
 import { useSesionActiva } from '@/compartido/auth'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
 
@@ -12,6 +12,8 @@ const SECCIONES = [
   { ruta: '/admin/publicaciones', etiqueta: 'Publicaciones', icono: Megaphone, exacta: false, soloAdmin: true },
   { ruta: '/admin/ventas', etiqueta: 'Ventas', icono: Receipt, exacta: false, soloAdmin: false },
   { ruta: '/admin/cierre', etiqueta: 'Cierre de caja', icono: Wallet, exacta: false, soloAdmin: false },
+  // Muestra la venta completa del periodo: es informacion de cierre contable.
+  { ruta: '/admin/conciliacion', etiqueta: 'Conciliación', icono: FileCheck2, exacta: false, soloAdmin: true },
   { ruta: '/admin/reportes', etiqueta: 'Reportes', icono: BarChart3, exacta: false, soloAdmin: true },
   { ruta: '/admin/configuracion', etiqueta: 'Configuración', icono: Settings, exacta: false, soloAdmin: true },
 ]

@@ -28,6 +28,7 @@ import CartaAdmin from '@/admin/CartaAdmin'
 import Publicaciones from '@/admin/Publicaciones'
 import Ventas from '@/admin/Ventas'
 import Cierre from '@/admin/Cierre'
+import Conciliacion from '@/admin/Conciliacion'
 import Reportes from '@/admin/Reportes'
 import Configuracion from '@/admin/Configuracion'
 
@@ -145,6 +146,14 @@ export default function App() {
               <Route path="publicaciones" element={<Publicaciones />} />
               <Route path="ventas" element={<Ventas />} />
               <Route path="cierre" element={<Cierre />} />
+              <Route
+                path="conciliacion"
+                element={
+                  <GuardaRuta roles={['administrador']}>
+                    <Conciliacion />
+                  </GuardaRuta>
+                }
+              />
               <Route
                 path="reportes"
                 element={

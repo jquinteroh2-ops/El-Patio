@@ -1035,6 +1035,61 @@ export async function reportes(dias = 10): Promise<Reportes> {
   return contra(() => pedir<Reportes>('/api/reportes', { consulta: { dias } }))
 }
 
+// ---------------------------------------------------------------------------
+// Conciliacion con el ERP
+// ---------------------------------------------------------------------------
+
+/** En que va el viaje de una venta hacia el ERP que la factura. */
+export type EstadoEnvioErp =
+  | 'pendiente_envio_erp'
+  | 'enviada_erp'
+  | 'facturada_erp'
+  | 'error_erp'
+
+export interface FilaConciliacion {
+  envioId: string
+  pagoId: string
+  numeroComanda: number
+  fechaVenta: string
+  total: number
+  estado: EstadoEnvioErp
+  /** El numero del documento del ERP. Vacio mientras no confirme. */
+  documentoExterno?: string
+  intentos: number
+  proximoIntento?: string
+  error?: string
+  adaptador?: string
+}
+
+export interface ResumenConciliacion {
+  totalVentas: number
+  montoTotal: number
+  facturadas: number
+  sinConciliar: number
+  conError: number
+  montoSinConciliar: number
+  /** Que adaptador esta configurado: cambia lo que el usuario debe esperar. */
+  adaptador: string
+  filas: FilaConciliacion[]
+}
+
+/** Las ventas de un periodo y cuales tienen documento en el ERP. */
+export async function conciliacionErp(
+  desde: string,
+  hasta: string,
+): Promise<ResumenConciliacion> {
+  return contra(() =>
+    pedir<ResumenConciliacion>('/api/erp/conciliacion', { consulta: { desde, hasta } }),
+  )
+}
+
+/** Devuelve una venta a la cola de envio. Se usa tras arreglar la causa. */
+export async function reintentarEnvioErp(envioId: string): Promise<void> {
+  return contra(() =>
+    pedir<void>(`/api/erp/envios/${envioId}/reintentar`, { metodo: 'POST' }),
+  )
+}
+
 export interface Alerta {
   id: string
   tipo: 'demora' | 'cobro'
