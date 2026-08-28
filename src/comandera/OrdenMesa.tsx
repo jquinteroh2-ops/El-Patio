@@ -216,12 +216,29 @@ export default function OrdenMesa() {
         </div>
 
         <div className="grid grid-cols-3 gap-px border-t border-noche-800 bg-noche-800">
+          {/* Editable, y no solo al abrir la mesa: una pareja a la que se le
+              suman dos amigos es lo normal en un salon. Ademas de que el numero
+              quede bien en la comanda, es el que propone la division de la
+              cuenta, asi que dejarlo viejo descuadra el reparto. */}
           <div className="bg-noche-900 px-3 py-2">
             <p className="flex items-center gap-1 text-xs text-noche-400">
               <Users className="h-3 w-3" aria-hidden />
               Comensales
             </p>
-            <p className="text-base font-semibold text-crema-100">{orden.comensales}</p>
+            <div className="mt-1">
+              <Contador
+                valor={orden.comensales}
+                compacto
+                minimo={1}
+                maximo={20}
+                onCambiar={(v) =>
+                  ejecutar(async () => {
+                    await api.cambiarComensales(orden.id, v)
+                    return v === 1 ? '1 comensal' : `${v} comensales`
+                  })
+                }
+              />
+            </div>
           </div>
           <div className="bg-noche-900 px-3 py-2">
             <p className="flex items-center gap-1 text-xs text-noche-400">

@@ -32,7 +32,6 @@ import type {
   TipoPublicacion,
   EstadoPedido,
   Reserva,
-  Rol,
   Sesion,
   TipoPedido,
   Usuario,
@@ -421,11 +420,6 @@ export async function cambiarCantidad(ordenId: string, itemId: string, cantidad:
   )
 }
 
-export async function quitarItem(ordenId: string, itemId: string): Promise<void> {
-  return contra(() =>
-    pedir<void>(`/api/comandera/ordenes/${ordenId}/items/${itemId}`, { metodo: 'DELETE' }),
-  )
-}
 
 /** Anula un producto ya enviado. Queda registrado, nunca desaparece de la comanda. */
 export async function anularItem(ordenId: string, itemId: string, motivo: string): Promise<void> {
@@ -1125,22 +1119,10 @@ export async function alertas(umbralMinutos: number): Promise<Alerta[]> {
 }
 
 /** Roles autorizados en cada area. Lo consulta la guarda de rutas. */
-export const ACCESO_POR_AREA: Record<string, Rol[]> = {
-  comandera: ['mesero', 'administrador'],
-  cocina: ['cocina', 'administrador'],
-  // El cajero y el administrador tambien entran a recepcion: en un restaurante
-  // de este tamano la misma persona atiende el telefono y la caja.
-  recepcion: ['recepcion', 'cajero', 'administrador'],
-  admin: ['cajero', 'administrador'],
-  reportes: ['administrador'],
-}
 
 export { SinConexionError }
 
 /** Cola de envios pendientes, para el indicador de la comandera. */
-export function pendientesDeEnvio(): number {
-  return leerCola().length
-}
 
 // ---------------------------------------------------------------------------
 // Trabaja con nosotros
