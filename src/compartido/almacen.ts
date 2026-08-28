@@ -109,12 +109,6 @@ export function conectarCanal(): void {
   cliente.activate()
 }
 
-/** Cierra el canal. Solo hace falta al desmontar la aplicacion entera. */
-export function desconectarCanal(): void {
-  conectado = false
-  void cliente?.deactivate()
-  cliente = null
-}
 
 function avisarOyentes(evento: EventoSync): void {
   for (const oyente of oyentes) {

@@ -1,4 +1,4 @@
-import { format, formatDistanceToNowStrict, differenceInMinutes, isToday, isYesterday } from 'date-fns'
+import { format, formatDistanceToNowStrict, differenceInMinutes } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 /**
@@ -24,10 +24,6 @@ export function formatoCOPCorto(valor: number): string {
   return formatoCOP(valor)
 }
 
-/** Igual que formatoCOP pero sin el signo, para tablas densas. */
-export function formatoCOPSinSigno(valor: number): string {
-  return formatoCOP(valor).replace('$', '')
-}
 
 /** Telefono colombiano legible: +57 300 123 4567 */
 export function formatoTelefono(numero: string): string {
@@ -73,13 +69,6 @@ export function formatoFechaLarga(valor: string | Date): string {
   return format(aFecha(valor), "EEEE d 'de' MMMM", { locale: es })
 }
 
-/** "hoy", "ayer" o la fecha corta. */
-export function formatoDiaRelativo(valor: string | Date): string {
-  const fecha = aFecha(valor)
-  if (isToday(fecha)) return 'hoy'
-  if (isYesterday(fecha)) return 'ayer'
-  return formatoFecha(fecha)
-}
 
 /** "hace 12 minutos" */
 export function hace(valor: string | Date): string {
@@ -108,16 +97,5 @@ export function claveDia(valor: string | Date = new Date()): string {
   return format(aFecha(valor), 'yyyy-MM-dd')
 }
 
-/** Turno operativo segun la hora: antes de las 5 p. m. es almuerzo. */
-export function turnoDe(valor: string | Date = new Date()): 'almuerzo' | 'cena' {
-  return aFecha(valor).getHours() < 17 ? 'almuerzo' : 'cena'
-}
 
-/** Franja horaria para los reportes: "7 p. m." */
-export function franjaHoraria(valor: string | Date): string {
-  return conEspacioEnMeridiano(format(aFecha(valor), 'h aaaa', { locale: es }))
-}
 
-export function pluralizar(cantidad: number, singular: string, plural: string): string {
-  return `${cantidad} ${cantidad === 1 ? singular : plural}`
-}

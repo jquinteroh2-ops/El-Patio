@@ -87,9 +87,6 @@ export function marcarIntento(id: string): void {
   guardarCola(leerCola().map((e) => (e.id === id ? { ...e, intentos: e.intentos + 1 } : e)))
 }
 
-export function vaciarCola(): void {
-  guardarCola([])
-}
 
 /**
  * Envios en el orden en que se dictaron.

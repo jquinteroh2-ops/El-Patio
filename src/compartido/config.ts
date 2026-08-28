@@ -30,12 +30,6 @@ export const RESTAURANTE = {
   ],
 } as const
 
-/**
- * A los restaurantes en Colombia les aplica el Impuesto Nacional al Consumo,
- * no IVA. Se calcula sobre el subtotal de alimentos y bebidas, antes de propina.
- * Configurable porque no todos los establecimientos lo cobran igual.
- */
-export const INC_POR_DEFECTO = 8
 
 /**
  * La propina en Colombia es voluntaria y debe consultarse antes de incluirla.
@@ -101,12 +95,6 @@ export const UMBRAL_ALERTA_PEDIDO = 10
 /** Un celular colombiano tiene diez digitos y empieza por 3. */
 export const DIGITOS_TELEFONO = 10
 
-/** Como se nombra cada canal en pantalla. */
-export const ETIQUETA_CANAL = {
-  mesa: 'Salón',
-  domicilio: 'Domicilio',
-  llevar: 'Para llevar',
-} as const
 
 /** Los estados de un pedido, en el orden en que ocurren. */
 export const ESTADOS_PEDIDO = [
@@ -291,14 +279,10 @@ export function facturacionHabilitada(): boolean {
   )
 }
 
-/** Ancho del rollo de la impresora termica, en milimetros. */
-export const ANCHO_TICKET_MM = 80
 
 /** Si la comanda sale sola a cocina al enviar el turno. */
 export const IMPRIMIR_COMANDA_AUTOMATICO = false
 
-/** Copias del comprobante de venta. Una para el cliente, otra para la caja. */
-export const COPIAS_COMPROBANTE = 1
 
 // ---------------------------------------------------------------------------
 // Conexion con el backend

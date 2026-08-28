@@ -118,10 +118,6 @@ export function calcularCuenta(
   }
 }
 
-/** Total corriente de una mesa, para mostrarlo en el mapa de mesas. */
-export function totalCorriente(orden: Orden, porcentajeInc: number): number {
-  return calcularCuenta(orden, porcentajeInc).total
-}
 
 // ---------------------------------------------------------------------------
 // Division de cuenta
@@ -168,11 +164,6 @@ export function dividirPorItems(
 export const itemsSinEnviar = (orden: Orden): ItemOrden[] =>
   orden.items.filter((i) => i.turnoEnvio === 0 && i.estado !== 'anulado')
 
-/** Numero del proximo turno de envio de la mesa. */
-export function proximoTurno(orden: Orden): number {
-  const turnos = orden.items.map((i) => i.turnoEnvio)
-  return Math.max(0, ...turnos) + 1
-}
 
 /** Agrupa los items ya enviados por turno, en orden de envio. */
 export function agruparPorTurno(items: ItemOrden[]): { turno: number; items: ItemOrden[] }[] {
@@ -188,15 +179,3 @@ export function agruparPorTurno(items: ItemOrden[]): { turno: number; items: Ite
     .map(([turno, items]) => ({ turno, items }))
 }
 
-/**
- * Estado agregado de un turno: se toma el menos avanzado de sus items, porque
- * un turno no esta listo hasta que salga el ultimo plato.
- */
-export function estadoDeTurno(items: ItemOrden[]): 'pendiente' | 'en_preparacion' | 'listo' | 'servido' {
-  const vigentes = items.filter((i) => i.estado !== 'anulado')
-  if (vigentes.length === 0) return 'servido'
-  if (vigentes.some((i) => i.estado === 'pendiente')) return 'pendiente'
-  if (vigentes.some((i) => i.estado === 'en_preparacion')) return 'en_preparacion'
-  if (vigentes.some((i) => i.estado === 'listo')) return 'listo'
-  return 'servido'
-}
