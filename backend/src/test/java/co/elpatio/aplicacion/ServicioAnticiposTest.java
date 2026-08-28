@@ -23,7 +23,6 @@ import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.pedido.TipoPedido;
 import co.elpatio.dominio.puertos.GeneradorIds;
-import co.elpatio.dominio.puertos.NotificadorDeClientes;
 import co.elpatio.dominio.puertos.PasarelaDePagos;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Reloj;
@@ -49,7 +48,6 @@ class ServicioAnticiposTest {
   private GeneradorIds ids;
   private Reloj reloj;
   private PublicadorEventos eventos;
-  private NotificadorDeClientes notificador;
   private ServicioAnticipos servicio;
 
   private static final Instant AHORA = Instant.parse("2026-01-10T20:00:00Z");
@@ -63,9 +61,8 @@ class ServicioAnticiposTest {
     ids = mock(GeneradorIds.class);
     reloj = mock(Reloj.class);
     eventos = mock(PublicadorEventos.class);
-    notificador = mock(NotificadorDeClientes.class);
     servicio =
-        new ServicioAnticipos(ordenes, pagosOnline, ajustesRepo, pasarela, ids, reloj, eventos, notificador);
+        new ServicioAnticipos(ordenes, pagosOnline, ajustesRepo, pasarela, ids, reloj, eventos);
 
     when(reloj.ahora()).thenReturn(AHORA);
     when(pagosOnline.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -154,7 +151,6 @@ class ServicioAnticiposTest {
     assertThat(pago.getEstado()).isEqualTo(EstadoPagoOnline.APROBADO);
     assertThat(orden.getEstadoPedido()).isEqualTo(EstadoPedido.NUEVO);
     verify(eventos).publicar(List.of("pedidos", "ordenes"));
-    verify(notificador).avisarAnticipoConfirmado(orden);
   }
 
   @Test
@@ -187,7 +183,6 @@ class ServicioAnticiposTest {
 
     assertThat(pago.getEstado()).isEqualTo(EstadoPagoOnline.RECHAZADO);
     assertThat(orden.getEstadoPedido()).isEqualTo(EstadoPedido.CANCELADO);
-    verify(notificador).avisarAnticipoRechazado(orden);
   }
 
   @Test
