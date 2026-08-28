@@ -7,3 +7,7 @@
 Dockerfile text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+
+# Los documentos de la entrega son binarios. Marcarlos evita que un `text=auto`
+# futuro les cambie los saltos de línea y los deje ilegibles para Word.
+*.docx binary
