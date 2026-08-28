@@ -24,6 +24,8 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Aparecer en Google](#aparecer-en-google)
 - [Por qué las pantallas no hay que recargarlas](#por-qué-las-pantallas-no-hay-que-recargarlas)
 - [Respaldos y restauración](#respaldos-y-restauración)
+- [Pedidos y reservas que llegan por WhatsApp](#pedidos-y-reservas-que-llegan-por-whatsapp)
+- [Qué se edita sin desplegar](#qué-se-edita-sin-desplegar)
 - [Ubicación exacta de los domicilios](#ubicación-exacta-de-los-domicilios)
 - [Impresión en caja](#impresión-en-caja)
 - [Desarrollo local](#desarrollo-local)
@@ -200,7 +202,7 @@ Cuatro comportamientos que conviene conocer:
 |---|---|---|
 | `mesero` | `/comandera` | Abrir mesas, tomar y enviar comandas |
 | `cocina` | `/cocina` y `/cocina/bar` | Ver y despachar lo que está en producción |
-| `recepcion` | `/recepcion` | Recibir domicilios, para llevar y las solicitudes de reserva |
+| `recepcion` | `/recepcion` | Recibir domicilios, para llevar y las solicitudes de reserva; anotar las que llegan por WhatsApp o teléfono; editar el horario y el contacto del sitio |
 | `repartidor` | `/reparto` | Ver los domicilios que salieron a su nombre y confirmar la entrega |
 | `cajero` | `/admin`, `/recepcion`, cobrar | Caja, cierre y recepción |
 | `administrador` | todo | Además: carta, reportes, configuración, anulaciones |
@@ -449,6 +451,65 @@ Restaurado:  5,18,59,19,12,2,7
 
 CORRECTO: el respaldo restaura la misma cantidad de filas en todas las tablas.
 ```
+
+---
+
+## Pedidos y reservas que llegan por WhatsApp
+
+La mayoría de los pedidos y de las reservas no nacen en el formulario del sitio:
+nacen en un WhatsApp o en una llamada. Antes se anotaban en una libreta del
+mostrador y no existían para el sistema —cocina no los veía, la caja no los
+sumaba, al cliente no había cómo avisarle—. Ahora se anotan dentro:
+
+| Qué | Dónde | Quién |
+|---|---|---|
+| Pedido a domicilio o para llevar | `/recepcion` → **Nuevo pedido** | recepción, cajero, administrador |
+| Reserva | `/recepcion/reservas` o `/admin/reservas` → **Nueva reserva** | recepción, cajero, administrador |
+
+Cada uno guarda **por dónde pidió el cliente** (WhatsApp, teléfono o en el
+mostrador) y esa etiqueta se ve en la tarjeta. Solo se pinta cuando no es del
+sitio público: si saliera siempre, dejaría de significar algo.
+
+Dos diferencias frente a la puerta pública, y las dos a propósito:
+
+- **El pedido del mostrador no mira el horario ni la pausa del canal.** Esos dos
+  frenos existen para que el sitio no acepte lo que la cocina no puede sacar;
+  quien está en el mostrador ya tiene ese juicio delante y a veces decide
+  recibir uno más con la persiana a medio bajar.
+- **La reserva puede nacer confirmada**, con la mesa separada en el mismo gesto,
+  porque quien la anota ya le dijo que sí al cliente. Si solo se está tomando
+  nota, se guarda como solicitud y cae en «por responder» igual que las del
+  sitio.
+
+> El bot de WhatsApp **no volvió**. Esto es una persona escribiendo lo que le
+> dictan; `canal` solo deja constancia de por dónde entró la conversación.
+
+---
+
+## Qué se edita sin desplegar
+
+El horario de atención y los datos de contacto estaban escritos a mano en
+`src/compartido/config.ts`: corregir un dígito del teléfono o publicar el
+horario de una temporada costaba un despliegue. Ahora viven en la base —tablas
+`ficha_sitio` y `franja_horario`— y se editan desde el panel:
+
+| Qué | Dónde | Quién |
+|---|---|---|
+| Horario de atención, dirección, ciudad, teléfono, WhatsApp, Instagram | `/recepcion/ajustes` o `/admin/configuracion` | recepción, cajero, administrador |
+| Pausar el canal, franja de domicilios, zonas y tarifas | `/recepcion/ajustes` o `/admin/configuracion` | recepción, cajero, administrador |
+| Textos institucionales (quiénes somos, misión, visión) | `/recepcion/ajustes` o `/admin/institucional` | recepción, cajero, administrador |
+| Impuesto al consumo, cuentas del personal, mesas | `/admin/configuracion` | solo administrador |
+
+Recepción entra por su propia pestaña **Ajustes** y no por `/admin`: es quien
+contesta «¿hasta qué hora abren hoy?» y quien primero se entera de que el
+horario publicado quedó viejo, pero no tiene por qué ver las cuentas del
+personal ni el impuesto al consumo.
+
+Lo que sigue en `config.ts` son los **valores de reserva**: lo que se pinta
+mientras el servidor contesta. Cambiarlos ahí no cambia lo que ve el cliente.
+Las coordenadas del local también se quedan en el código a propósito: no
+cambian, y una coordenada mal escrita desde un formulario manda al repartidor a
+otro barrio.
 
 ---
 

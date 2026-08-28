@@ -400,6 +400,37 @@ export interface Reserva {
   estado: EstadoReserva
   notas?: string
   mesaAsignadaId?: string
+  /** Por donde pidio el cliente. 'web' es el formulario del sitio publico. */
+  canal?: Canal
+}
+
+// ---------------------------------------------------------------------------
+// Ficha del sitio
+// ---------------------------------------------------------------------------
+
+/** Una linea del horario de atencion: «Viernes y Sabado — 12:00 m. a 12:00 a. m.» */
+export interface FranjaHorario {
+  dias: string
+  horas: string
+}
+
+/**
+ * A que horas abrimos y como nos encuentran.
+ *
+ * Estuvo escrito a mano en config.ts hasta que se movio a la base: corregir un
+ * horario de temporada no puede costar un despliegue. Lo que queda en config.ts
+ * son los valores de reserva, para pintar algo mientras el servidor contesta.
+ */
+export interface FichaSitio {
+  direccion: string
+  ciudad: string
+  telefono: string
+  /** Solo digitos, con indicativo: es lo que se pega detras de wa.me/ */
+  whatsapp: string
+  /** Sin arroba: la pantalla arma el enlace. */
+  instagram: string
+  horario: FranjaHorario[]
+  actualizadoEn?: string
 }
 
 // ---------------------------------------------------------------------------

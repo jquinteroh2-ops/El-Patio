@@ -67,9 +67,13 @@ export function ZonasDomicilio({ ajustes }: { ajustes: Ajustes }) {
     }
   }
 
+  // Va por `actualizarCanalPedidos` y no por `actualizarAjustes`: ese otro
+  // endpoint tambien mueve el impuesto al consumo y solo lo abre administracion.
+  // Pausar el canal lo decide quien esta mirando la cocina, que suele ser
+  // recepcion, y por eso esta pantalla se monta tambien en el mostrador.
   const alternarPausa = (pausado: boolean) =>
     void conAviso(
-      () => api.actualizarAjustes({ domiciliosPausados: pausado }),
+      () => api.actualizarCanalPedidos({ pausados: pausado }),
       pausado
         ? 'Canal pausado. El sitio público deja de recibir pedidos.'
         : 'Canal abierto. Ya se pueden recibir pedidos.',
@@ -78,9 +82,9 @@ export function ZonasDomicilio({ ajustes }: { ajustes: Ajustes }) {
   const guardarHorario = () =>
     void conAviso(
       () =>
-        api.actualizarAjustes({
-          domiciliosDesde: `${horaDesde}:00`,
-          domiciliosHasta: `${horaHasta}:00`,
+        api.actualizarCanalPedidos({
+          desde: `${horaDesde}:00`,
+          hasta: `${horaHasta}:00`,
         }),
       'Horario de domicilios actualizado',
     )

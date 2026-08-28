@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Bike, Check, Clock, Crosshair, MapPin, ShoppingBag, Trash2 } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { PedidoCreado } from '@/compartido/mockApi'
-import { DIGITOS_TELEFONO, RESTAURANTE } from '@/compartido/config'
+import { DIGITOS_TELEFONO } from '@/compartido/config'
+import { useFichaSitio } from '@/compartido/sitio'
 import { formatoCOP } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type {
@@ -43,6 +44,7 @@ const telefonoValido = (valor: string): boolean => {
 export default function Pedir() {
   const navegar = useNavigate()
   const carrito = useCarrito()
+  const ficha = useFichaSitio()
 
   const { datos: canal } = useSyncedState<EstadoCanal | null>(
     () => api.estadoCanal(),
@@ -257,7 +259,7 @@ export default function Pedir() {
             : `Recibimos pedidos entre las ${hora(canal.desde)} y las ${hora(canal.hasta)}. Lo que escogió se le queda guardado.`}
         </p>
         <p className="mt-4 text-sm text-crema-100/50">
-          También puede visitarnos en {RESTAURANTE.direccion}, {RESTAURANTE.ciudad}.
+          También puede visitarnos en {ficha.direccion}, {ficha.ciudad}.
         </p>
       </div>
     )

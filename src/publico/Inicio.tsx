@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Clock, Flame, MapPin, MessageCircle, Navigation, Sparkles, Wine } from 'lucide-react'
+import { useFichaSitio } from '@/compartido/sitio'
 import { RESTAURANTE } from '@/compartido/config'
 import { formatoFechaLarga } from '@/compartido/formato'
 import * as api from '@/compartido/mockApi'
@@ -31,7 +32,9 @@ const DISTINTIVOS = [
 ]
 
 export default function Inicio() {
-  const whatsapp = enlaceWhatsApp(RESTAURANTE.whatsapp, SALUDO)
+  // Horario y contacto salen de la base, no del codigo: los edita el panel.
+  const ficha = useFichaSitio()
+  const whatsapp = enlaceWhatsApp(ficha.whatsapp, SALUDO)
 
   // Lo que el restaurante esta anunciando ahora. Se pide aparte y sin bloquear:
   // la portada tiene que pintarse completa aunque esto no llegue, porque una
@@ -73,7 +76,7 @@ export default function Inicio() {
           <Ornamento className="mb-8 h-16 w-28 text-oro-400/70" />
 
           <p className="text-[0.7rem] uppercase tracking-[0.4em] text-oro-400">
-            {RESTAURANTE.ciudad}
+            {ficha.ciudad}
           </p>
 
           <h1 className="mt-5 font-marca text-5xl font-normal tracking-[0.12em] text-crema-100 sm:text-7xl">
@@ -111,13 +114,20 @@ export default function Inicio() {
         {/* Franja de datos prácticos */}
         <div className="relative border-y border-oro-500/15 bg-onix-900/60">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-5 text-sm text-crema-100/70 sm:flex-row sm:items-center sm:justify-center sm:gap-10">
-            <span className="flex items-center gap-2">
-              <Clock className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              Martes a domingo, desde las 12:00 m.
-            </span>
+            {/*
+              La primera franja del horario, no una frase escrita a mano: si
+              alguien corrige el horario en el panel y esta linea se quedara
+              fija, la portada anunciaria unas horas y la seccion de abajo otras.
+            */}
+            {ficha.horario[0] && (
+              <span className="flex items-center gap-2">
+                <Clock className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
+                {ficha.horario[0].dias}, {ficha.horario[0].horas}
+              </span>
+            )}
             <span className="flex items-center gap-2">
               <MapPin className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              {RESTAURANTE.direccion}, {RESTAURANTE.ciudad}
+              {ficha.direccion}, {ficha.ciudad}
             </span>
             <a
               href={whatsapp}
@@ -126,7 +136,7 @@ export default function Inicio() {
               className="flex items-center gap-2 transition hover:text-oro-300"
             >
               <MessageCircle className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              {RESTAURANTE.telefono}
+              {ficha.telefono}
             </a>
           </div>
         </div>
@@ -277,9 +287,9 @@ export default function Inicio() {
             <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Encuéntrenos</p>
             <h2 className="mt-4 font-titulo text-4xl font-light text-crema-100">Dónde estamos</h2>
             <p className="mt-6 text-lg leading-relaxed text-crema-100/80">
-              {RESTAURANTE.direccion}
+              {ficha.direccion}
               <br />
-              {RESTAURANTE.ciudad}
+              {ficha.ciudad}
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               {/*
@@ -302,7 +312,7 @@ export default function Inicio() {
               </a>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  `${RESTAURANTE.nombreCompleto}, ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}`,
+                  `${RESTAURANTE.nombreCompleto}, ${ficha.direccion}, ${ficha.ciudad}`,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -318,7 +328,7 @@ export default function Inicio() {
             <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Horario</p>
             <h2 className="mt-4 font-titulo text-4xl font-light text-crema-100">Cuándo abrimos</h2>
             <dl className="mt-6 divide-y divide-crema-100/10">
-              {RESTAURANTE.horario.map((franja) => (
+              {ficha.horario.map((franja) => (
                 <div key={franja.dias} className="flex justify-between gap-4 py-3">
                   <dt className="text-sm text-crema-100/70">{franja.dias}</dt>
                   <dd
@@ -342,7 +352,7 @@ export default function Inicio() {
         */}
         <div className="mt-14 overflow-hidden rounded-3xl border border-oro-500/15">
           <iframe
-            title={`Ubicación de ${RESTAURANTE.nombreCompleto} en ${RESTAURANTE.ciudad}`}
+            title={`Ubicación de ${RESTAURANTE.nombreCompleto} en ${ficha.ciudad}`}
             src={enlaceMapaEmbebido(
               RESTAURANTE.coordenadas.latitud,
               RESTAURANTE.coordenadas.longitud,

@@ -21,6 +21,7 @@ import co.elpatio.dominio.reclutamiento.Pagina;
 import co.elpatio.dominio.reclutamiento.Postulacion;
 import co.elpatio.dominio.reserva.Reserva;
 import co.elpatio.dominio.salon.Mesa;
+import co.elpatio.dominio.sitio.FichaSitio;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -253,6 +254,15 @@ public final class Repositorios {
     Optional<ContenidoInstitucional> porClave(String clave);
 
     ContenidoInstitucional guardar(ContenidoInstitucional contenido);
+  }
+
+  /** El horario de atencion y los datos de contacto que pinta el sitio. */
+  public interface DeFichaSitio {
+    /** Siempre hay ficha: la crea la migracion y nunca se borra. */
+    FichaSitio leer();
+
+    /** Reescribe la ficha entera, horario incluido. */
+    FichaSitio guardar(FichaSitio ficha);
   }
 
   public interface DeAjustes {

@@ -21,10 +21,13 @@ import co.elpatio.dominio.reclutamiento.EstadoPostulacion;
 import co.elpatio.dominio.reclutamiento.FiltroPostulaciones;
 import co.elpatio.dominio.reclutamiento.Pagina;
 import co.elpatio.dominio.reclutamiento.Postulacion;
+import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.Reloj;
 import co.elpatio.dominio.puertos.Repositorios;
 import co.elpatio.dominio.reserva.Reserva;
 import co.elpatio.dominio.salon.Mesa;
+import co.elpatio.dominio.sitio.FichaSitio;
+import co.elpatio.dominio.sitio.FranjaHorario;
 import co.elpatio.infraestructura.persistencia.dao.DaoAjustes;
 import co.elpatio.infraestructura.persistencia.dao.DaoCategorias;
 import co.elpatio.infraestructura.persistencia.dao.DaoCierres;
@@ -33,6 +36,8 @@ import co.elpatio.infraestructura.persistencia.dao.DaoMesas;
 import co.elpatio.infraestructura.persistencia.dao.DaoOrdenes;
 import co.elpatio.infraestructura.persistencia.dao.DaoContenidoInstitucional;
 import co.elpatio.infraestructura.persistencia.dao.DaoEnviosErp;
+import co.elpatio.infraestructura.persistencia.dao.DaoFichaSitio;
+import co.elpatio.infraestructura.persistencia.dao.DaoFranjasHorario;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagos;
 import co.elpatio.infraestructura.persistencia.dao.DaoPagosOnline;
 import co.elpatio.infraestructura.persistencia.dao.DaoConsecutivosPqr;
@@ -50,6 +55,8 @@ import co.elpatio.infraestructura.persistencia.filas.FilaMesa;
 import co.elpatio.infraestructura.persistencia.filas.FilaOrden;
 import co.elpatio.infraestructura.persistencia.filas.FilaContenidoInstitucional;
 import co.elpatio.infraestructura.persistencia.filas.FilaEnvioErp;
+import co.elpatio.infraestructura.persistencia.filas.FilaFichaSitio;
+import co.elpatio.infraestructura.persistencia.filas.FilaFranjaHorario;
 import co.elpatio.infraestructura.persistencia.filas.FilaPago;
 import co.elpatio.infraestructura.persistencia.filas.FilaPagoOnline;
 import co.elpatio.infraestructura.persistencia.filas.FilaConsecutivoPqr;
@@ -733,6 +740,67 @@ public final class Adaptadores {
     @Override
     public CierreCaja guardar(CierreCaja cierre) {
       return dao.save(FilaCierreCaja.deDominio(cierre)).aDominio();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+
+  @Repository
+  public static class FichaSitioRepo implements Repositorios.DeFichaSitio {
+    private final DaoFichaSitio dao;
+    private final DaoFranjasHorario franjas;
+    private final GeneradorIds ids;
+
+    public FichaSitioRepo(DaoFichaSitio dao, DaoFranjasHorario franjas, GeneradorIds ids) {
+      this.dao = dao;
+      this.franjas = franjas;
+      this.ids = ids;
+    }
+
+    private FilaFichaSitio fila() {
+      return dao.findById(FilaFichaSitio.UNICA)
+          .orElseThrow(
+              () -> new IllegalStateException("La ficha del sitio no existe: revise las migraciones"));
+    }
+
+    @Override
+    public FichaSitio leer() {
+      FichaSitio ficha = fila().aDominio();
+      ficha.setHorario(
+          franjas.findAllByOrderByOrdenAsc().stream().map(FilaFranjaHorario::aDominio).toList());
+      return ficha;
+    }
+
+    /**
+     * Reescribe la ficha y el horario entero.
+     *
+     * Las franjas se borran y se vuelven a insertar en vez de casarlas una a
+     * una porque no tienen identidad propia: nadie enlaza a «la franja del
+     * domingo», solo se lee la lista en orden. Casarlas obligaria a inventarle
+     * una llave estable a un renglon de texto que el dueño reescribe entero.
+     *
+     * <p>Las nuevas llevan identificador NUEVO y no `fh-1`, `fh-2`... Repetir
+     * los de las que se acaban de borrar es lo que rompe este metodo: el borrado
+     * es masivo y no vacia el contexto de persistencia, asi que guardar con un
+     * id que sigue ahi dentro se traduce en un UPDATE contra una fila que ya no
+     * existe. Con identificadores nuevos el guardado solo puede ser un INSERT.
+     */
+    @Override
+    public FichaSitio guardar(FichaSitio ficha) {
+      FilaFichaSitio fila = fila();
+      fila.volcar(ficha);
+      dao.save(fila);
+
+      franjas.deleteAllInBatch();
+      List<FranjaHorario> horario = ficha.getHorario();
+      for (int i = 0; i < horario.size(); i++) {
+        franjas.save(new FilaFranjaHorario(ids.nuevo("fh"), horario.get(i), i + 1));
+      }
+      franjas.flush();
+
+      // Se relee de la base y no se devuelve `ficha`: asi lo que sale de aqui es
+      // lo que quedo escrito, con el orden que de verdad tienen las franjas.
+      return leer();
     }
   }
 

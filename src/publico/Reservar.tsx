@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, MessageCircle } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
-import { RESTAURANTE } from '@/compartido/config'
+import { useFichaSitio } from '@/compartido/sitio'
 import { claveDia, formatoFechaLarga, formatoHora } from '@/compartido/formato'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import type { Ocasion } from '@/compartido/tipos'
@@ -27,6 +27,7 @@ const CAMPO =
   'placeholder:text-crema-100/35 focus:border-oro-400 focus:outline-none transition'
 
 export default function Reservar() {
+  const ficha = useFichaSitio()
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
   const [fecha, setFecha] = useState(claveDia())
@@ -112,7 +113,7 @@ export default function Reservar() {
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <a
             href={enlaceWhatsApp(
-              RESTAURANTE.whatsapp,
+              ficha.whatsapp,
               `Hola, acabo de solicitar una reserva a nombre de ${nombre} para el ${formatoFechaLarga(enviada.fechaHora)} a las ${formatoHora(enviada.fechaHora)}.`,
             )}
             target="_blank"

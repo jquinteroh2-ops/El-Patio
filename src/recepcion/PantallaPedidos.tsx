@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Navigation,
   Phone,
+  Plus,
   Printer,
   ShoppingBag,
   X,
@@ -27,7 +28,7 @@ import {
   mensajePedidoNuevoTiempo,
   mensajePedidoRechazado,
 } from '@/compartido/whatsapp'
-import type { EstadoPedido } from '@/compartido/tipos'
+import type { Canal, EstadoPedido } from '@/compartido/tipos'
 import { useAvisoNuevaComanda } from '@/cocina/avisoNuevaComanda'
 import { imprimir } from '@/impresion/impresora'
 import { ComprobanteTermico } from '@/impresion/ComprobanteTermico'
@@ -42,6 +43,7 @@ import { MapaEntrega } from '@/componentes/MapaEntrega'
 import { BotonSonido } from './BotonSonido'
 import { useSonidoRecepcion } from './sonido'
 import { PestanasRecepcion } from './PestanasRecepcion'
+import { NuevoPedido } from './NuevoPedido'
 import {
   PRECISION_ACEPTABLE_METROS,
   distanciaLegible,
@@ -63,6 +65,14 @@ import {
  * alguien lo acepta. Cocinar algo que nadie confirmo que se puede entregar es
  * comida perdida.
  */
+/** Por donde llego. 'web' no se pinta: es de donde vienen casi todos. */
+const NOMBRE_CANAL: Record<Canal, string> = {
+  whatsapp: 'WhatsApp',
+  telefono: 'Teléfono',
+  presencial: 'Mostrador',
+  web: '',
+}
+
 export default function PantallaPedidos() {
   const { mostrar } = useAvisos()
   // El interruptor es del mostrador entero, no de esta pantalla: lo comparte
@@ -109,6 +119,7 @@ export default function PantallaPedidos() {
   const [cambiandoTiempo, setCambiandoTiempo] = useState<PedidoEnRecepcion | null>(null)
   const [minutosNuevos, setMinutosNuevos] = useState(30)
   const [trabajando, setTrabajando] = useState(false)
+  const [creando, setCreando] = useState(false)
 
   const porEstado = useMemo(() => {
     const mapa = new Map<EstadoPedido, PedidoEnRecepcion[]>()
@@ -256,6 +267,19 @@ export default function PantallaPedidos() {
         mostrarConexion
         acciones={
           <div className="flex items-center gap-1.5">
+            {/*
+              El pedido que llega por WhatsApp o por telefono entra por aqui. Es
+              la accion que convierte el papel del mostrador en una comanda.
+            */}
+            <Boton
+              variante="principal"
+              onClick={() => setCreando(true)}
+              aria-label="Nuevo pedido"
+              icono={<Plus className="h-4 w-4" aria-hidden />}
+              className="shrink-0"
+            >
+              <span className="hidden sm:inline">Nuevo pedido</span>
+            </Boton>
             <PestanasRecepcion activa="pedidos" />
             <BotonSonido />
           </div>
@@ -325,6 +349,12 @@ export default function PantallaPedidos() {
         </div>
       </div>
 
+
+      <NuevoPedido
+        abierto={creando}
+        onCerrar={() => setCreando(false)}
+        onCreado={(numero) => mostrar(`Pedido n.º ${numero} registrado`, 'exito')}
+      />
 
       {/* ---------- Aceptar ---------- */}
       <HojaInferior
@@ -631,6 +661,14 @@ function TarjetaPedido({
             <span className="truncate">{etiqueta}</span>
           </p>
           <p className="truncate text-xs text-noche-400">{orden.cliente?.nombre}</p>
+          {/*
+            De donde salio, y solo cuando NO es del sitio publico: importa
+            porque a un pedido dictado por telefono se le confirma distinto que
+            a uno que el cliente escribio y reviso el mismo.
+          */}
+          {orden.canal && orden.canal !== 'web' && (
+            <Insignia className="mt-1">{NOMBRE_CANAL[orden.canal]}</Insignia>
+          )}
         </div>
         <span
           className={`shrink-0 rounded-lg border px-2 py-1 text-sm font-bold tabular-nums ${fondoEspera(

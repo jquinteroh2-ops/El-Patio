@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { CalendarClock, Cake, Check, Clock, Phone, Users, X } from 'lucide-react'
+import { CalendarClock, Cake, Check, Clock, Phone, Plus, Users, X } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { MesaEnMapa } from '@/compartido/mockApi'
 import { formatoFechaLarga, formatoHora, formatoTelefono } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import { mensajeConfirmacion, mensajePropuesta, mensajeRechazo } from '@/compartido/whatsapp'
-import type { EstadoReserva, Ocasion, Reserva } from '@/compartido/tipos'
+import type { Canal, EstadoReserva, Ocasion, Reserva } from '@/compartido/tipos'
 import { NOMBRE_ZONA } from '@/compartido/estados'
 import { Boton } from '@/componentes/ui/Boton'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
@@ -13,6 +13,7 @@ import { Insignia } from '@/componentes/ui/Insignia'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { ModalWhatsApp } from './ModalWhatsApp'
+import { NuevaReserva } from './NuevaReserva'
 
 const NOMBRE_OCASION: Record<Ocasion, string> = {
   cumpleanos: 'Cumpleaños',
@@ -27,6 +28,14 @@ const ETIQUETA_ESTADO: Record<EstadoReserva, { texto: string; tono: 'neutro' | '
   cancelada: { texto: 'Rechazada', tono: 'demorado' },
   cumplida: { texto: 'Cumplida', tono: 'neutro' },
   no_asistio: { texto: 'No asistió', tono: 'demorado' },
+}
+
+/** Por donde llego. 'web' no se pinta: es de donde vienen casi todas. */
+const NOMBRE_CANAL: Record<Canal, string> = {
+  whatsapp: 'WhatsApp',
+  telefono: 'Teléfono',
+  presencial: 'En el restaurante',
+  web: '',
 }
 
 type Filtro = 'pendientes' | 'proximas' | 'todas'
@@ -58,6 +67,7 @@ export default function Reservas() {
   const [filtro, setFiltro] = useState<Filtro>('pendientes')
   const [ocupado, setOcupado] = useState(false)
 
+  const [creando, setCreando] = useState(false)
   const [confirmando, setConfirmando] = useState<Reserva | null>(null)
   const [mesaElegida, setMesaElegida] = useState<string>('')
   const [proponiendo, setProponiendo] = useState<Reserva | null>(null)
@@ -143,7 +153,7 @@ export default function Reservas() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {(
           [
             ['pendientes', `Por responder${pendientes ? ` (${pendientes})` : ''}`],
@@ -164,13 +174,27 @@ export default function Reservas() {
             {etiqueta}
           </button>
         ))}
+
+        {/*
+          La mayoria de las reservas no nacen en el sitio: nacen en un WhatsApp
+          o en una llamada. Este boton es el que las mete al sistema en vez de a
+          una libreta.
+        */}
+        <Boton
+          variante="principal"
+          onClick={() => setCreando(true)}
+          icono={<Plus className="h-4 w-4" aria-hidden />}
+          className="ml-auto"
+        >
+          Nueva reserva
+        </Boton>
       </div>
 
       {visibles.length === 0 ? (
         <Vacio
           icono={CalendarClock}
           titulo={filtro === 'pendientes' ? 'No hay solicitudes por responder' : 'Nada por aquí'}
-          descripcion="Las solicitudes del sitio público aparecen aquí de inmediato."
+          descripcion="Las solicitudes del sitio público aparecen aquí de inmediato. Las que pidan por WhatsApp o por teléfono se anotan con «Nueva reserva»."
         />
       ) : (
         <ul className="grid gap-2.5 lg:grid-cols-2">
@@ -204,7 +228,16 @@ export default function Reservas() {
                       </span>
                     </p>
                   </div>
-                  <Insignia tono={estado.tono}>{estado.texto}</Insignia>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <Insignia tono={estado.tono}>{estado.texto}</Insignia>
+                    {/*
+                      De donde salio. Solo cuando NO es del sitio publico: si se
+                      pintara siempre, la etiqueta dejaria de significar algo.
+                    */}
+                    {reserva.canal && reserva.canal !== 'web' && (
+                      <Insignia>{NOMBRE_CANAL[reserva.canal]}</Insignia>
+                    )}
+                  </div>
                 </div>
 
                 {(ocasion || reserva.notas || mesa) && (
@@ -367,6 +400,27 @@ export default function Reservas() {
           </p>
         </div>
       </HojaInferior>
+
+      <NuevaReserva
+        abierta={creando}
+        onCerrar={() => setCreando(false)}
+        mesas={mesas}
+        onCreada={(reserva) => {
+          // Si quedo confirmada, lo que sigue es avisarle al cliente. Se le
+          // ofrece el mensaje ya redactado, igual que al confirmar una del
+          // sitio: quien anoto la reserva sigue con el telefono en la mano.
+          if (reserva.estado !== 'confirmada') return
+          const mesa = mesas.find((m) => m.id === reserva.mesaAsignadaId)
+          setWhatsapp({
+            titulo: 'Confirmar por WhatsApp',
+            telefono: reserva.telefono,
+            mensaje: mensajeConfirmacion(
+              reserva,
+              mesa ? (mesa.nombre ?? `la mesa ${mesa.numero}`) : undefined,
+            ),
+          })
+        }}
+      />
 
       <ModalWhatsApp
         abierto={!!whatsapp}

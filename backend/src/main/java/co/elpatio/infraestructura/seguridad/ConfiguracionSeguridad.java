@@ -82,9 +82,17 @@ public class ConfiguracionSeguridad {
                     .requestMatchers(HttpMethod.POST, "/api/reservas").permitAll()
 
                     // El texto institucional visible es contenido de la pagina
-                    // de inicio: lo lee cualquiera que pase por el sitio. La
-                    // edicion vive bajo /api/admin y exige administrador.
+                    // de inicio: lo lee cualquiera que pase por el sitio.
                     .requestMatchers(HttpMethod.GET, "/api/institucional").permitAll()
+
+                    // El horario y el telefono son lo primero que busca quien
+                    // todavia no es cliente, asi que la ficha se lee sin
+                    // sesion. Escribirla es trabajo de mostrador: recepcion es
+                    // quien contesta «¿hasta que hora abren?» y quien primero
+                    // se entera de que el horario publicado quedo viejo.
+                    .requestMatchers(HttpMethod.GET, "/api/sitio").permitAll()
+                    .requestMatchers("/api/sitio/**", "/api/sitio")
+                        .hasAnyRole("RECEPCION", "CAJERO", "ADMINISTRADOR")
 
                     // «Trabaja con nosotros». Quien busca empleo no tiene ni va
                     // a crear una cuenta aqui, asi que el formulario es publico
@@ -102,6 +110,12 @@ public class ConfiguracionSeguridad {
                     .requestMatchers(HttpMethod.GET, "/api/public/pqr/tipos").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/public/pqr/consulta").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/public/pqr").permitAll()
+                    // Editar el texto institucional entra por /api/admin
+                    // pero no es solo del administrador: el mismo argumento que
+                    // la ficha del sitio. Va ANTES de la regla de abajo porque
+                    // gana el primer patron que coincide.
+                    .requestMatchers("/api/admin/institucional", "/api/admin/institucional/**")
+                        .hasAnyRole("RECEPCION", "CAJERO", "ADMINISTRADOR")
                     .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
 
                     // El cliente pide desde su celular sin tener usuario. Son las

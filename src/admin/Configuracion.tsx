@@ -11,6 +11,7 @@ import { Insignia } from '@/componentes/ui/Insignia'
 import { Interruptor } from '@/componentes/ui/Interruptor'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { EditorMesa } from './EditorMesa'
+import { FichaDelSitio } from './FichaDelSitio'
 import { EditorUsuario } from './EditorUsuario'
 import { ZonasDomicilio } from './ZonasDomicilio'
 
@@ -190,6 +191,9 @@ export default function Configuracion() {
           de impuesto.
         </p>
       </section>
+
+      {/* ---------- Horario y contacto del sitio ---------- */}
+      <FichaDelSitio />
 
       {/* ---------- Domicilios ---------- */}
       <ZonasDomicilio ajustes={ajustes} />

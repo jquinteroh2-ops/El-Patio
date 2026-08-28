@@ -2,6 +2,20 @@
  * Todo lo que un dueno distinto querria cambiar sin tocar componentes.
  */
 
+/**
+ * OJO CON LO QUE SE EDITA AQUI.
+ *
+ * `direccion`, `ciudad`, `telefono`, `whatsapp`, `instagram` y `horario` ya no
+ * los lee el sitio: viven en la base -tabla `ficha_sitio`- y los edita el panel,
+ * porque corregir un horario de temporada no puede costar un despliegue. Lo que
+ * queda escrito aqui son los VALORES DE RESERVA: lo que se pinta mientras el
+ * servidor contesta, y lo que se pinta si nunca contesta. Cambiarlos aqui no
+ * cambia lo que ve el cliente; para eso esta /recepcion/ajustes.
+ *
+ * Lo demas -el nombre, la descripcion, las coordenadas del local- si sale de
+ * aqui: no cambia, y una coordenada mal escrita desde un formulario manda al
+ * repartidor a otro barrio.
+ */
 export const RESTAURANTE = {
   nombre: 'El Patio',
   nombreCompleto: 'Restaurante El Patio',

@@ -1,5 +1,6 @@
 package co.elpatio.infraestructura.web;
 
+import co.elpatio.aplicacion.ServicioAjustes;
 import co.elpatio.aplicacion.ServicioPedidos;
 import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.comanda.Orden;
@@ -32,9 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControladorPedidos {
 
   private final ServicioPedidos servicio;
+  private final ServicioAjustes ajustes;
 
-  public ControladorPedidos(ServicioPedidos servicio) {
+  public ControladorPedidos(ServicioPedidos servicio, ServicioAjustes ajustes) {
     this.servicio = servicio;
+    this.ajustes = ajustes;
   }
 
   // ---------------------------------------------------------------------------
@@ -61,6 +64,36 @@ public class ControladorPedidos {
   // ---------------------------------------------------------------------------
   // Recepcion
   // ---------------------------------------------------------------------------
+
+  /**
+   * El pedido que llega por WhatsApp o por telefono y lo anota una persona.
+   *
+   * Es la misma orden que crea el sitio publico; lo que cambia es que aqui hay
+   * un usuario del restaurante detras, asi que el pedido entra al tablero sin
+   * pasar por el horario del canal y `canal` guarda por donde escribio el
+   * cliente. Sin esto, ese pedido solo existia en un papel del mostrador.
+   */
+  @PostMapping("/mostrador")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
+  public Dtos.PedidoCreado crearDesdeMostrador(@RequestBody Dtos.NuevoPedidoExterno datos) {
+    return servicio.crearPedidoDeMostrador(datos);
+  }
+
+  /**
+   * Abre, cierra o corre el horario del canal de pedidos.
+   *
+   * Va aqui y no en `PUT /api/ajustes` a proposito: ese endpoint tambien mueve
+   * el impuesto al consumo y el plazo de las PQR, que no son del mostrador.
+   * Recepcion es quien esta mirando la cocina cuando hay que pausar, asi que
+   * recibe exactamente esos tres campos y ninguno mas.
+   */
+  @PutMapping("/canal")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
+  public Dtos.AjustesDto cambiarCanal(@RequestBody Dtos.CambiosCanal cambios) {
+    return ajustes.actualizar(
+        new Dtos.CambiosAjustes(
+            null, cambios.pausados(), cambios.desde(), cambios.hasta(), null, null));
+  }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
@@ -169,13 +202,13 @@ public class ControladorPedidos {
   }
 
   @PutMapping("/zonas")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public ZonaDomicilio guardarZona(@RequestBody ZonaDomicilio zona) {
     return servicio.guardarZona(zona);
   }
 
   @DeleteMapping("/zonas/{zonaId}")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public ResponseEntity<Void> eliminarZona(@PathVariable String zonaId) {
     servicio.eliminarZona(zonaId);
     return ResponseEntity.noContent().build();

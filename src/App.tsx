@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProveedorSesion } from '@/compartido/auth'
 import * as api from '@/compartido/mockApi'
 import { MetaDeRuta } from '@/compartido/seo'
+import { precargarFichaSitio } from '@/compartido/sitio'
 import { Cargando } from '@/componentes/ui/Cargando'
 import { GuardaRuta } from '@/componentes/GuardaRuta'
 
@@ -24,6 +25,7 @@ import CuentaMesa from '@/comandera/CuentaMesa'
 import PantallaCocina from '@/cocina/PantallaCocina'
 import PantallaPedidos from '@/recepcion/PantallaPedidos'
 import PantallaReservas from '@/recepcion/PantallaReservas'
+import PantallaAjustes from '@/recepcion/PantallaAjustes'
 import PantallaRepartidor from '@/repartidor/PantallaRepartidor'
 import LayoutAdmin from '@/admin/LayoutAdmin'
 import InicioAdmin from '@/admin/InicioAdmin'
@@ -44,8 +46,12 @@ export default function App() {
 
   // Comprueba que el servidor conteste antes de pintar nada, para no abrir
   // pantallas vacias sin explicacion. No bloquea si falla.
+  //
+  // De paso trae la ficha del sitio, para que los modulos que la leen sin React
+  // -los mensajes de WhatsApp, los comprobantes que se imprimen- no salgan con
+  // la direccion de reserva la primera vez que alguien los usa.
   useEffect(() => {
-    void api.inicializar().finally(() => setListo(true))
+    void Promise.all([api.inicializar(), precargarFichaSitio()]).finally(() => setListo(true))
   }, [])
 
   if (!listo) return <Cargando pantallaCompleta mensaje="Preparando el salón" />
@@ -135,6 +141,19 @@ export default function App() {
               element={
                 <GuardaRuta roles={['recepcion', 'cajero', 'administrador']}>
                   <PantallaReservas />
+                </GuardaRuta>
+              }
+            />
+            {/*
+              El horario y el contacto del sitio, y el canal de pedidos. Es lo
+              unico de configuracion que llega al mostrador: quien contesta el
+              telefono es quien primero sabe que el horario publicado esta viejo.
+            */}
+            <Route
+              path="/recepcion/ajustes"
+              element={
+                <GuardaRuta roles={['recepcion', 'cajero', 'administrador']}>
+                  <PantallaAjustes />
                 </GuardaRuta>
               }
             />

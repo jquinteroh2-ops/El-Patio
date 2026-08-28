@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
  * El texto institucional: quienes somos, mision, vision, valores.
  *
  * La lectura de lo visible es publica —es contenido de la pagina de inicio— y
- * la edicion exige administrador. Las dos cosas viven en el mismo controlador
- * porque son cuatro metodos y separarlas en dos archivos escondería que la
- * diferencia entre ellas es exactamente una anotacion.
+ * la edicion exige personal del panel. Las dos cosas viven en el mismo
+ * controlador porque son cuatro metodos y separarlas en dos archivos
+ * escondería que la diferencia entre ellas es exactamente una anotacion.
  */
 @RestController
 @RequestMapping("/api")
@@ -45,9 +45,9 @@ public class ControladorInstitucional {
     return contenidos.visibles();
   }
 
-  /** Todos, incluidos los ocultos. Es lo que edita el dueño. */
+  /** Todos, incluidos los ocultos. Es lo que edita el personal del panel. */
   @GetMapping("/admin/institucional")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   @Transactional(readOnly = true)
   public List<ContenidoInstitucional> todos() {
     return contenidos.listar();
@@ -63,7 +63,7 @@ public class ControladorInstitucional {
    * creara bloques que el sitio no sabe donde pintar.
    */
   @PutMapping("/admin/institucional/{clave}")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   @Transactional
   public ContenidoInstitucional editar(
       @PathVariable String clave, @RequestBody Edicion edicion) {

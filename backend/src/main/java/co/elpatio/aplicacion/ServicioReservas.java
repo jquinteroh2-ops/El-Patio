@@ -3,6 +3,7 @@ package co.elpatio.aplicacion;
 import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.error.NoEncontradoError;
+import co.elpatio.dominio.error.ReglaDeNegocioError;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Repositorios;
@@ -42,20 +43,106 @@ public class ServicioReservas {
   /** La crea el cliente desde el sitio publico: entra siempre como solicitada. */
   @Transactional
   public Reserva crearReserva(Dtos.NuevaReserva datos) {
-    Reserva reserva = new Reserva();
-    reserva.setId(ids.nuevo("r"));
-    reserva.setNombreCliente(datos.nombreCliente().trim());
-    reserva.setTelefono(datos.telefono().trim());
-    reserva.setFechaHora(datos.fechaHora());
-    reserva.setPersonas(datos.personas());
-    reserva.setOcasion(datos.ocasion());
-    reserva.setNotas(datos.notas());
+    Reserva reserva =
+        armar(
+            datos.nombreCliente(),
+            datos.telefono(),
+            datos.fechaHora(),
+            datos.personas(),
+            datos.ocasion(),
+            datos.notas(),
+            datos.canal() == null ? Canal.WEB : datos.canal());
     reserva.setEstado(EstadoReserva.SOLICITADA);
-    reserva.setCanal(datos.canal() == null ? Canal.WEB : datos.canal());
 
     Reserva guardada = reservas.guardar(reserva);
     eventos.publicar(List.of("reservas"));
     return guardada;
+  }
+
+  /**
+   * La anota alguien del restaurante: por WhatsApp, por telefono o en la puerta.
+   *
+   * Nace confirmada cuando quien la toma ya le dijo que si al cliente, que es
+   * el caso normal de una llamada, y con eso puede separar la mesa en el mismo
+   * gesto. Queda solicitada cuando solo se esta apuntando lo que pidieron y la
+   * disponibilidad se mira despues: entonces cae en la bandeja de «por
+   * responder» como la del sitio publico y sigue el mismo camino.
+   */
+  @Transactional
+  public Reserva crearReservaDeMostrador(Dtos.NuevaReservaMostrador datos) {
+    Reserva reserva =
+        armar(
+            datos.nombreCliente(),
+            datos.telefono(),
+            datos.fechaHora(),
+            datos.personas(),
+            datos.ocasion(),
+            datos.notas(),
+            datos.canal() == null ? Canal.PRESENCIAL : datos.canal());
+    reserva.setEstado(
+        datos.confirmada() ? EstadoReserva.CONFIRMADA : EstadoReserva.SOLICITADA);
+
+    // La mesa solo se separa si la reserva queda en firme: apartarla por algo
+    // que todavia se puede caer le quita un puesto al salon toda la noche.
+    String mesaId = datos.mesaAsignadaId();
+    if (datos.confirmada() && mesaId != null && !mesaId.isBlank()) {
+      reserva.setMesaAsignadaId(mesaId);
+      separar(mesaId);
+    }
+
+    Reserva guardada = reservas.guardar(reserva);
+    eventos.publicar(List.of("reservas", "mesas"));
+    return guardada;
+  }
+
+  /**
+   * Lo comun a las dos puertas de entrada.
+   *
+   * Las validaciones estan aqui y no en cada llamador porque son las mismas:
+   * una reserva sin nombre o sin telefono no se puede confirmar, y sin fecha no
+   * se puede sentar a nadie.
+   */
+  private Reserva armar(
+      String nombreCliente,
+      String telefono,
+      java.time.Instant fechaHora,
+      int personas,
+      co.elpatio.dominio.reserva.Ocasion ocasion,
+      String notas,
+      Canal canal) {
+
+    if (nombreCliente == null || nombreCliente.isBlank()) {
+      throw new ReglaDeNegocioError("Necesitamos el nombre de quien reserva");
+    }
+    if (telefono == null || telefono.isBlank()) {
+      throw new ReglaDeNegocioError("Necesitamos un teléfono para poder confirmar");
+    }
+    if (fechaHora == null) {
+      throw new ReglaDeNegocioError("Falta el día y la hora de la reserva");
+    }
+    if (personas < 1) {
+      throw new ReglaDeNegocioError("Una reserva es para una persona o más");
+    }
+
+    Reserva reserva = new Reserva();
+    reserva.setId(ids.nuevo("r"));
+    reserva.setNombreCliente(nombreCliente.trim());
+    reserva.setTelefono(telefono.trim());
+    reserva.setFechaHora(fechaHora);
+    reserva.setPersonas(personas);
+    reserva.setOcasion(ocasion);
+    reserva.setNotas(notas);
+    reserva.setCanal(canal);
+    return reserva;
+  }
+
+  /** Marca la mesa como reservada, y solo si estaba libre. */
+  private void separar(String mesaId) {
+    Mesa mesa = mesas.porId(mesaId).orElse(null);
+    if (mesa != null && mesa.getEstado() == EstadoMesa.LIBRE) {
+      mesa.setEstado(EstadoMesa.RESERVADA);
+      mesas.guardar(mesa);
+    }
   }
 
   /**

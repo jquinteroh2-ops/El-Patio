@@ -48,6 +48,20 @@ public class ControladorReservas {
     return servicio.crearReserva(datos);
   }
 
+  /**
+   * La reserva que anota el personal: la que pidieron por WhatsApp, por
+   * telefono o de pie en la puerta.
+   *
+   * Va por su propia ruta y no por la de arriba porque puede nacer confirmada y
+   * con mesa separada, y eso no se le puede dejar decidir a quien manda el
+   * formulario del sitio publico, que entra sin sesion.
+   */
+  @PostMapping("/mostrador")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
+  public Reserva crearDesdeMostrador(@RequestBody Dtos.NuevaReservaMostrador datos) {
+    return servicio.crearReservaDeMostrador(datos);
+  }
+
   /** Equivale a `cambiarEstadoReserva(reservaId, estado, mesaAsignadaId)`. */
   @PatchMapping("/{reservaId}/estado")
   @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")

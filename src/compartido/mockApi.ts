@@ -12,6 +12,7 @@ import {
 import type { Cuenta } from './calculos'
 import type {
   Ajustes,
+  Canal,
   CargoAdicional,
   CategoriaCarta,
   CierreCaja,
@@ -29,8 +30,10 @@ import type {
   Pago,
   Publicacion,
   EstadoCanal,
+  FichaSitio,
   TipoPublicacion,
   EstadoPedido,
+  Ocasion,
   Reserva,
   Sesion,
   TipoPedido,
@@ -651,6 +654,36 @@ export async function crearPedidoExterno(datos: NuevoPedidoExterno): Promise<Ped
   )
 }
 
+/**
+ * El pedido que alguien del restaurante anota a mano.
+ *
+ * Es el que llega por WhatsApp o por telefono y hasta ahora se quedaba en un
+ * papel del mostrador: cocina no lo veia, la caja no lo sumaba y al cliente no
+ * habia como avisarle. Va por otra ruta que la del sitio publico porque exige
+ * sesion, no mira el horario del canal y guarda por donde escribio el cliente.
+ */
+export async function crearPedidoDeMostrador(
+  datos: NuevoPedidoExterno & { canal: Canal },
+): Promise<PedidoCreado> {
+  return contra(() =>
+    pedir<PedidoCreado>('/api/pedidos/mostrador', { metodo: 'POST', cuerpo: datos }),
+  )
+}
+
+/**
+ * Abre, cierra o corre el horario del canal de pedidos.
+ *
+ * Existe aparte de `actualizarAjustes` porque recepcion puede tocar esto y no
+ * el impuesto al consumo: son endpoints distintos con permisos distintos.
+ */
+export async function actualizarCanalPedidos(cambios: {
+  pausados?: boolean
+  desde?: string
+  hasta?: string
+}): Promise<Ajustes> {
+  return contra(() => pedir<Ajustes>('/api/pedidos/canal', { metodo: 'PUT', cuerpo: cambios }))
+}
+
 /** Un pedido tal como lo pinta la pantalla de recepcion. */
 export interface PedidoEnRecepcion {
   orden: Orden
@@ -876,6 +909,25 @@ export async function obtenerComprobante(pagoId: string): Promise<ComprobanteDet
 }
 
 // ---------------------------------------------------------------------------
+// Ficha del sitio: horario de atencion y contacto
+// ---------------------------------------------------------------------------
+
+/**
+ * A que horas abrimos y como nos encuentran.
+ *
+ * Se lee sin sesion porque es contenido de la pagina de inicio: el horario y el
+ * telefono son lo primero que busca quien todavia no es cliente.
+ */
+export async function obtenerFichaSitio(): Promise<FichaSitio> {
+  return contra(() => pedir<FichaSitio>('/api/sitio', { sinSesion: true }))
+}
+
+/** Reescribe la ficha entera, horario incluido. */
+export async function guardarFichaSitio(ficha: FichaSitio): Promise<FichaSitio> {
+  return contra(() => pedir<FichaSitio>('/api/sitio', { metodo: 'PUT', cuerpo: ficha }))
+}
+
+// ---------------------------------------------------------------------------
 // Reservas
 // ---------------------------------------------------------------------------
 
@@ -889,6 +941,34 @@ export async function crearReserva(
   // La crea el cliente desde el sitio publico, sin sesion.
   return contra(() =>
     pedir<Reserva>('/api/reservas', { metodo: 'POST', cuerpo: datos, sinSesion: true }),
+  )
+}
+
+/** Lo que el mostrador anota de una reserva pedida por WhatsApp o por telefono. */
+export interface NuevaReservaMostrador {
+  nombreCliente: string
+  telefono: string
+  fechaHora: string
+  personas: number
+  ocasion?: Ocasion
+  notas?: string
+  canal: Canal
+  /** Verdadero cuando ya se le dijo que si al cliente. Si no, cae en «por responder». */
+  confirmada: boolean
+  /** Solo se separa la mesa si la reserva queda en firme. */
+  mesaAsignadaId?: string
+}
+
+/**
+ * La reserva que anota el personal, no el cliente.
+ *
+ * Puede nacer confirmada y con mesa separada, que es lo que no se le puede
+ * dejar decidir al formulario del sitio publico: por eso es otra ruta y exige
+ * sesion.
+ */
+export async function crearReservaDeMostrador(datos: NuevaReservaMostrador): Promise<Reserva> {
+  return contra(() =>
+    pedir<Reserva>('/api/reservas/mostrador', { metodo: 'POST', cuerpo: datos }),
   )
 }
 

@@ -1,5 +1,6 @@
 import { AlertTriangle } from 'lucide-react'
 import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
+import { useFichaSitio } from '@/compartido/sitio'
 
 /**
  * La política de tratamiento de datos personales.
@@ -16,6 +17,10 @@ import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
  * la revisaría.
  */
 export default function PoliticaDatos() {
+  // El domicilio y el telefono del responsable salen de la ficha: si el
+  // restaurante se muda, la politica tiene que mudarse con el.
+  const ficha = useFichaSitio()
+
   return (
     <div className="mx-auto max-w-2xl px-5 py-12 sm:py-16">
       <h1 className="font-titulo text-3xl text-crema-100 sm:text-4xl">
@@ -39,7 +44,7 @@ export default function PoliticaDatos() {
           <h2 className="mb-2 font-titulo text-xl text-crema-100">Quién responde por sus datos</h2>
           <p>
             {RESTAURANTE.nombreCompleto}, con NIT {DATOS_FISCALES.nitCompleto} y domicilio en{' '}
-            {RESTAURANTE.direccion}, {RESTAURANTE.ciudad}, es el responsable del tratamiento de los
+            {ficha.direccion}, {ficha.ciudad}, es el responsable del tratamiento de los
             datos personales que usted entregue a través de este sitio.
           </p>
         </section>
@@ -75,7 +80,7 @@ export default function PoliticaDatos() {
           <p className="mt-3">
             Para ejercer cualquiera de estos derechos escríbanos a{' '}
             <span className="text-oro-300">{DATOS_FISCALES.correo}</span> o comuníquese al{' '}
-            <span className="text-oro-300">{RESTAURANTE.telefono}</span>. Atendemos su
+            <span className="text-oro-300">{ficha.telefono}</span>. Atendemos su
             solicitud en los términos que fija la ley.
           </p>
         </section>

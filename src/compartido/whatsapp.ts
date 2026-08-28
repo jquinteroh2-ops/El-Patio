@@ -1,4 +1,5 @@
 import { RESTAURANTE } from './config'
+import { fichaSitio } from './sitio'
 import { formatoCOP, formatoFechaLarga, formatoHora, telefonoWhatsApp } from './formato'
 import type { Orden, Reserva } from './tipos'
 
@@ -31,7 +32,7 @@ export function mensajeConfirmacion(reserva: Reserva, mesaEtiqueta?: string): st
       : reserva.ocasion === 'aniversario'
         ? ' Tenemos anotado que es un aniversario, así que lo preparamos todo.'
         : ''
-  const cierre = `Lo esperamos en ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}. Si necesita cambiar algo, respóndanos por aquí.`
+  const cierre = `Lo esperamos en ${fichaSitio().direccion}, ${fichaSitio().ciudad}. Si necesita cambiar algo, respóndanos por aquí.`
 
   return sinPuntoDoble(`${saludo}\n\n${cuerpo}${mesa}${ocasion}\n\n${cierre}`)
 }
@@ -82,7 +83,7 @@ export function mensajePedidoConfirmado(orden: Orden, total: number): string {
   const cierre =
     orden.tipo === 'domicilio'
       ? `Lo llevamos a ${orden.cliente?.direccion ?? 'la dirección indicada'}. Si necesita cambiar algo, respóndanos por aquí.`
-      : `Lo esperamos en ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}.`
+      : `Lo esperamos en ${fichaSitio().direccion}, ${fichaSitio().ciudad}.`
 
   return sinPuntoDoble(`${saludo}\n\n${cuerpo}${tiempo}\n\n${cierre}`)
 }
@@ -133,7 +134,7 @@ export function mensajePedidoEnCamino(orden: Orden): string {
 export function mensajePedidoListoParaRecoger(orden: Orden): string {
   const saludo = `Hola ${nombreDelCliente(orden)}, le escribimos de ${RESTAURANTE.nombreCompleto}.`
   const cuerpo = `Su pedido n.º ${orden.numero} ya está listo y lo tenemos empacado.`
-  const cierre = `Lo esperamos en ${RESTAURANTE.direccion}, ${RESTAURANTE.ciudad}.`
+  const cierre = `Lo esperamos en ${fichaSitio().direccion}, ${fichaSitio().ciudad}.`
 
   return sinPuntoDoble(`${saludo}\n\n${cuerpo}\n\n${cierre}`)
 }

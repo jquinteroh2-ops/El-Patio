@@ -1,13 +1,16 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Instagram, MapPin, MessageCircle, Phone } from 'lucide-react'
 import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
+import { enlaceInstagram, useFichaSitio } from '@/compartido/sitio'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import { Emblema, MarcaConNombre } from './Marca'
 
 const SALUDO_WHATSAPP = `Hola, quisiera información sobre ${RESTAURANTE.nombreCompleto}.`
 
 export default function LayoutPublico() {
-  const whatsapp = enlaceWhatsApp(RESTAURANTE.whatsapp, SALUDO_WHATSAPP)
+  // Direccion, telefono y redes salen de la base: los edita el panel.
+  const ficha = useFichaSitio()
+  const whatsapp = enlaceWhatsApp(ficha.whatsapp, SALUDO_WHATSAPP)
 
   return (
     <div className="flex min-h-dvh flex-col bg-onix-950 text-crema-100">
@@ -85,7 +88,7 @@ export default function LayoutPublico() {
               EL PATIO
             </p>
             <p className="mt-3 text-sm leading-relaxed text-crema-100/60">
-              {RESTAURANTE.descripcionCorta} en el corazón de {RESTAURANTE.ciudad}.
+              {RESTAURANTE.descripcionCorta} en el corazón de {ficha.ciudad}.
             </p>
           </div>
 
@@ -93,13 +96,13 @@ export default function LayoutPublico() {
             <p className="mb-3 text-xs uppercase tracking-[0.2em] text-oro-400">Visítanos</p>
             <p className="flex items-start gap-2 text-sm text-crema-100/70">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              {RESTAURANTE.direccion}
+              {ficha.direccion}
               <br />
-              {RESTAURANTE.ciudad}
+              {ficha.ciudad}
             </p>
             <p className="mt-3 flex items-center gap-2 text-sm text-crema-100/70">
               <Phone className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              {RESTAURANTE.telefono}
+              {ficha.telefono}
             </p>
           </div>
 
@@ -115,13 +118,13 @@ export default function LayoutPublico() {
               WhatsApp
             </a>
             <a
-              href={`https://instagram.com/${RESTAURANTE.instagram}`}
+              href={enlaceInstagram(ficha.instagram)}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 flex items-center gap-2 text-sm text-crema-100/70 transition hover:text-oro-300"
             >
               <Instagram className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              @{RESTAURANTE.instagram}
+              @{ficha.instagram}
             </a>
           </div>
         </div>

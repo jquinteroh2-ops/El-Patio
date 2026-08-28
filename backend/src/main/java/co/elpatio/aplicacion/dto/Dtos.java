@@ -21,6 +21,7 @@ import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.salon.EstadoMesa;
 import co.elpatio.dominio.salon.Mesa;
 import co.elpatio.dominio.salon.Zona;
+import co.elpatio.dominio.sitio.FranjaHorario;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -119,6 +120,34 @@ public final class Dtos {
       LocalTime domiciliosHasta,
       Integer porcentajeAnticipo,
       Integer diasHabilesPqr) {}
+
+  /**
+   * Lo unico del canal de pedidos que puede mover el mostrador.
+   *
+   * Es un record aparte y no `CambiosAjustes` para que recepcion no pueda
+   * cambiar el impuesto al consumo mandando un campo de mas: lo que no esta
+   * aqui no llega al servicio.
+   */
+  public record CambiosCanal(Boolean pausados, LocalTime desde, LocalTime hasta) {}
+
+  // -------------------------------------------------------------------------
+  // Ficha del sitio
+  // -------------------------------------------------------------------------
+
+  /**
+   * Lo que se manda al guardar el horario y el contacto del establecimiento.
+   *
+   * `horario` viaja entero, no por franjas sueltas: la pantalla edita la lista
+   * completa y mandarla asi es lo que hace que quitar una linea sea borrarla de
+   * la lista y no una llamada aparte.
+   */
+  public record FichaSitioDto(
+      String direccion,
+      String ciudad,
+      String telefono,
+      String whatsapp,
+      String instagram,
+      List<FranjaHorario> horario) {}
 
   // -------------------------------------------------------------------------
   // Anticipos (Wompi)
@@ -354,6 +383,25 @@ public final class Dtos {
       String notas,
       /** Nulo cuando la manda el sitio publico de siempre; el servicio lo completa con `WEB`. */
       Canal canal) {}
+
+  /**
+   * La reserva que anota alguien del restaurante.
+   *
+   * Trae dos campos que la del sitio publico no puede traer: si ya quedo
+   * acordada con el cliente -recepcion no la anota antes de decirle que si- y
+   * la mesa que se le separa. Sin ellos habria que crearla y confirmarla en
+   * dos pasos por una decision que se tomo en la misma llamada.
+   */
+  public record NuevaReservaMostrador(
+      String nombreCliente,
+      String telefono,
+      Instant fechaHora,
+      int personas,
+      co.elpatio.dominio.reserva.Ocasion ocasion,
+      String notas,
+      Canal canal,
+      boolean confirmada,
+      String mesaAsignadaId) {}
 
   public record CambioEstadoReserva(
       co.elpatio.dominio.reserva.EstadoReserva estado, String mesaAsignadaId) {}

@@ -149,6 +149,34 @@ public class ServicioPedidos {
               : "Estamos fuera del horario de pedidos. Lo esperamos en nuestro horario de atención.");
     }
 
+    return registrar(datos, false);
+  }
+
+  /**
+   * Crea el pedido que alguien del restaurante toma a mano.
+   *
+   * Existe porque el cliente que escribe por WhatsApp o llama por telefono no
+   * pasa por el formulario del sitio, y hasta ahora ese pedido no quedaba en
+   * ninguna parte: se anotaba en un papel y el tablero de recepcion no sabia de
+   * el. `canal` dice por donde entro la conversacion; quien la atendio fue una
+   * persona, y eso cambia dos cosas frente al sitio publico.
+   *
+   * La primera: no se comprueba el horario ni la pausa del canal. Esos dos
+   * frenos existen para que el sitio publico no acepte lo que la cocina no
+   * puede sacar; quien esta en el mostrador ya tiene ese juicio delante y a
+   * veces decide recibir uno mas con la persiana a medio bajar.
+   *
+   * La segunda va dentro de `registrar`: el pedido nace en `nuevo` aunque el
+   * canal sea de los automatizados, porque no hay bot esperando un anticipo
+   * detras. Un pedido nacido en `borrador` se quedaria invisible para siempre.
+   */
+  @Transactional
+  public Dtos.PedidoCreado crearPedidoDeMostrador(Dtos.NuevoPedidoExterno datos) {
+    return registrar(datos, true);
+  }
+
+  /** El cuerpo comun: valida, arma la orden y la guarda. */
+  private Dtos.PedidoCreado registrar(Dtos.NuevoPedidoExterno datos, boolean deMostrador) {
     TipoPedido tipo = datos.tipo();
     if (tipo == null || !tipo.esExterno()) {
       throw new ReglaDeNegocioError("El pedido tiene que ser a domicilio o para llevar");
@@ -183,16 +211,18 @@ public class ServicioPedidos {
     orden.setId(ids.nuevo("ord"));
     orden.setTipo(tipo);
     // El sitio publico de siempre no manda canal: es un pedido web como
-    // cualquier otro. Un canal automatizado (WhatsApp, telefono) si lo manda,
-    // porque para el es el unico dato que dice quien atendio al cliente.
+    // cualquier otro. Lo mandan los demas, porque para ellos es el unico dato
+    // que dice de donde salio el cliente: un bot, o el mostrador anotando lo
+    // que le acaban de escribir por WhatsApp.
     Canal canal = datos.canal() == null ? Canal.WEB : datos.canal();
     orden.setCanal(canal);
-    // Un canal automatizado cobra anticipo antes de que esto sea un pedido
-    // que recepcion pueda ver: nace en `borrador` y es `ServicioAnticipos`
-    // quien lo mueve a `esperando_anticipo`. El mostrador y el sitio publico
-    // de siempre no cobran anticipo, asi que entran directo en `nuevo`, que es
-    // donde este recorrido siempre empezo.
-    orden.setEstadoPedido(canal.esAutomatizado() ? EstadoPedido.BORRADOR : EstadoPedido.NUEVO);
+    // Un pedido que toma un bot cobra anticipo antes de ser algo que recepcion
+    // pueda ver: nace en `borrador` y es `ServicioAnticipos` quien lo mueve a
+    // `esperando_anticipo`. Lo que decide eso no es el canal por si solo sino
+    // quien atendio: con una persona del restaurante al otro lado no hay
+    // anticipo que esperar, y el pedido entra directo en `nuevo`.
+    orden.setEstadoPedido(
+        !deMostrador && canal.esAutomatizado() ? EstadoPedido.BORRADOR : EstadoPedido.NUEVO);
     orden.setNumero(ajustes.siguienteConsecutivo());
     orden.setComensales(1);
     orden.setAbiertaEn(reloj.ahora());
