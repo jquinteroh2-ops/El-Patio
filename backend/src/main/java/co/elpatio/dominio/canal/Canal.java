@@ -8,10 +8,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * persona parada en el mostrador.
  *
  * Es distinto del `TipoPedido` de una orden (mesa/domicilio/llevar, que dice
- * como se entrega): este dice quien atendio al cliente del otro lado. Hoy solo
- * WHATSAPP tiene un adaptador real. TELEFONO existe desde ya, vacio, para que
- * el futuro agente de voz entre por el mismo hueco sin que ningun caso de uso
- * tenga que enterarse de que existe un canal nuevo.
+ * como se entrega): este dice quien atendio al cliente del otro lado.
+ *
+ * Hoy ninguno de los dos canales automatizados tiene adaptador. WHATSAPP lo
+ * tuvo -un bot que tomaba el pedido- y se retiro cuando el cliente descarto la
+ * automatizacion; los dos valores siguen aqui porque hay pedidos guardados que
+ * los llevan escritos, y porque son el hueco por donde entraria el agente de
+ * voz sin que ningun caso de uso tenga que enterarse.
  */
 public enum Canal {
   WHATSAPP,

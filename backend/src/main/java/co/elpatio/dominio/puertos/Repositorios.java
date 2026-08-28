@@ -7,7 +7,6 @@ import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.cobro.Pago;
 import co.elpatio.dominio.comanda.Orden;
-import co.elpatio.dominio.conversacion.Conversacion;
 import co.elpatio.dominio.erp.EnvioErp;
 import co.elpatio.dominio.institucional.ContenidoInstitucional;
 import co.elpatio.dominio.pago.PagoOnline;
@@ -131,20 +130,6 @@ public final class Repositorios {
     List<CierreCaja> listar();
 
     CierreCaja guardar(CierreCaja cierre);
-  }
-
-  public interface DeConversaciones {
-    Optional<Conversacion> porId(String id);
-
-    /**
-     * La conversacion abierta con ese identificador en ese canal, si hay una.
-     *
-     * Un mismo telefono puede tener charlas viejas ya finalizadas; esto solo
-     * busca la que sigue activa, que es con la que un mensaje nuevo continua.
-     */
-    Optional<Conversacion> abiertaPara(Canal canal, String identificadorExterno);
-
-    Conversacion guardar(Conversacion conversacion);
   }
 
   public interface DePagosOnline {

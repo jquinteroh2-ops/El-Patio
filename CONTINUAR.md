@@ -38,17 +38,24 @@ Con eso, "Solicitar número de prueba" funcionó.
 Ya escritos en `backend/.env` (que git ignora). El `VERIFY_TOKEN` también quedó
 generado ahí.
 
-## El bot vive ahora en n8n, no en el backend
+## El bot de WhatsApp se retiro
 
-Se decidio el 2026-08-23 mover el bot a n8n Cloud. Estado completo, hallazgos y
-que probar manana: **`n8n/ESTADO.md`**.
+El 2026-08-27 el cliente dijo que no queria la automatizacion. Se quito entera:
+la carpeta `n8n/`, los paquetes `whatsapp/` e `ia/` del backend, el controlador
+del webhook, `ServicioConversaciones` y el dominio `conversacion/`.
 
-Resumen: funciona todo (Meta entrega el webhook, n8n enruta, Meta acepta la
-peticion) menos autorizar el numero destinatario, que lo bloquea un fallo de la
-consola de Meta.
+Lo que quedo a proposito, y por que:
 
-> El webhook de Meta apunta a n8n, asi que el backend en Railway ya **no**
-> recibe mensajes de WhatsApp. Los dos no pueden escuchar a la vez.
+- **`Canal.WHATSAPP` y `MetadataOrigen`.** Hay pedidos guardados que los llevan
+  escritos. Quitarlos toca el mapeo de una tabla viva.
+- **Las migraciones V14, V16 y V17.** Ya corrieron en produccion; borrarlas
+  rompe Flyway. Las tablas de conversaciones siguen ahi, vacias y sin usar. Si
+  se quieren tumbar de verdad, es una migracion nueva.
+- **El webhook de Wompi.** `/webhooks/**` sigue abierto porque los anticipos lo
+  necesitan; el unico que se fue es el de Meta.
+
+Si algun dia vuelve el bot, el hueco por donde entraba sigue limpio: un canal
+automatizado en `Canal` y la metadata de origen en la orden.
 
 ## Pendiente
 

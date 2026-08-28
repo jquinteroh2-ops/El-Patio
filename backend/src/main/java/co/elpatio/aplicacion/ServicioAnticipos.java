@@ -11,7 +11,6 @@ import co.elpatio.dominio.pago.Centavos;
 import co.elpatio.dominio.pago.PagoOnline;
 import co.elpatio.dominio.pedido.EstadoPedido;
 import co.elpatio.dominio.puertos.GeneradorIds;
-import co.elpatio.dominio.puertos.NotificadorDeClientes;
 import co.elpatio.dominio.puertos.PasarelaDePagos;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Reloj;
@@ -49,7 +48,6 @@ public class ServicioAnticipos {
   private final GeneradorIds ids;
   private final Reloj reloj;
   private final PublicadorEventos eventos;
-  private final NotificadorDeClientes notificador;
 
   public ServicioAnticipos(
       Repositorios.DeOrdenes ordenes,
@@ -58,8 +56,7 @@ public class ServicioAnticipos {
       PasarelaDePagos pasarela,
       GeneradorIds ids,
       Reloj reloj,
-      PublicadorEventos eventos,
-      NotificadorDeClientes notificador) {
+      PublicadorEventos eventos) {
     this.ordenes = ordenes;
     this.pagosOnline = pagosOnline;
     this.ajustes = ajustes;
@@ -67,7 +64,6 @@ public class ServicioAnticipos {
     this.ids = ids;
     this.reloj = reloj;
     this.eventos = eventos;
-    this.notificador = notificador;
   }
 
   /**
@@ -160,12 +156,15 @@ public class ServicioAnticipos {
       orden.cambiarEstadoPedido(EstadoPedido.ANTICIPO_PAGADO);
       orden.cambiarEstadoPedido(EstadoPedido.NUEVO);
       ordenes.guardar(orden);
-      notificador.avisarAnticipoConfirmado(orden);
     } else {
       orden.cancelar("El anticipo fue rechazado por la pasarela de pago");
       ordenes.guardar(orden);
-      notificador.avisarAnticipoRechazado(orden);
     }
+
+    // Aqui se le avisaba al cliente por WhatsApp. El aviso automatico se fue
+    // con el bot: el unico canal que lo recibia era el suyo, y sin pedidos por
+    // WhatsApp no queda a quien mandarselo. El pedido igual aparece en
+    // recepcion, que es quien contesta al cliente a mano.
 
     eventos.publicar(List.of("pedidos", "ordenes"));
   }
