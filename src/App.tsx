@@ -23,6 +23,7 @@ import SelectorProductos from '@/comandera/SelectorProductos'
 import CuentaMesa from '@/comandera/CuentaMesa'
 import PantallaCocina from '@/cocina/PantallaCocina'
 import PantallaPedidos from '@/recepcion/PantallaPedidos'
+import PantallaReservas from '@/recepcion/PantallaReservas'
 import PantallaRepartidor from '@/repartidor/PantallaRepartidor'
 import LayoutAdmin from '@/admin/LayoutAdmin'
 import InicioAdmin from '@/admin/InicioAdmin'
@@ -120,12 +121,20 @@ export default function App() {
               }
             />
 
-            {/* ---------- Recepcion de domicilios y para llevar ---------- */}
+            {/* ---------- Recepcion: domicilios, para llevar y reservas ---------- */}
             <Route
               path="/recepcion"
               element={
                 <GuardaRuta roles={['recepcion', 'cajero', 'administrador']}>
                   <PantallaPedidos />
+                </GuardaRuta>
+              }
+            />
+            <Route
+              path="/recepcion/reservas"
+              element={
+                <GuardaRuta roles={['recepcion', 'cajero', 'administrador']}>
+                  <PantallaReservas />
                 </GuardaRuta>
               }
             />

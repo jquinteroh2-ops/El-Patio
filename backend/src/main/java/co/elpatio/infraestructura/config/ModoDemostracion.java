@@ -45,7 +45,7 @@ public class ModoDemostracion {
           new Cuenta("mesero", "María Fernanda Ospina", Rol.MESERO, "Comandera"),
           new Cuenta("mesero2", "Deivis Cabarcas", Rol.MESERO, "Comandera"),
           new Cuenta("cocina", "Jhon Alexis Padilla", Rol.COCINA, "Pantalla de cocina"),
-          new Cuenta("recepcion", "Yuranis Mercado", Rol.RECEPCION, "Domicilios y para llevar"),
+          new Cuenta("recepcion", "Yuranis Mercado", Rol.RECEPCION, "Domicilios, para llevar y reservas"),
           new Cuenta("repartidor", "Wilfrido Baena", Rol.REPARTIDOR, "Sus entregas en la calle"),
           new Cuenta("cajero", "Katherine Villalba", Rol.CAJERO, "Caja y cierre"),
           new Cuenta("admin", "Álvaro Restrepo Díaz", Rol.ADMINISTRADOR, "Panel completo"));

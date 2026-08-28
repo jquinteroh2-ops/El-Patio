@@ -200,7 +200,7 @@ Cuatro comportamientos que conviene conocer:
 |---|---|---|
 | `mesero` | `/comandera` | Abrir mesas, tomar y enviar comandas |
 | `cocina` | `/cocina` y `/cocina/bar` | Ver y despachar lo que está en producción |
-| `recepcion` | `/recepcion` | Recibir domicilios y para llevar |
+| `recepcion` | `/recepcion` | Recibir domicilios, para llevar y las solicitudes de reserva |
 | `repartidor` | `/reparto` | Ver los domicilios que salieron a su nombre y confirmar la entrega |
 | `cajero` | `/admin`, `/recepcion`, cobrar | Caja, cierre y recepción |
 | `administrador` | todo | Además: carta, reportes, configuración, anulaciones |
@@ -240,7 +240,7 @@ y el formulario se llena solo:
 | `mesero` | Mesero | Comandera |
 | `mesero2` | Mesero | Comandera |
 | `cocina` | Cocina | Pantalla de cocina |
-| `recepcion` | Recepción | Domicilios y para llevar |
+| `recepcion` | Recepción | Domicilios, para llevar y reservas |
 | `repartidor` | Repartidor | Sus entregas en la calle |
 | `cajero` | Cajero | Caja y cierre |
 | `admin` | Administrador | Panel completo |

@@ -1,7 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
-  Bell,
-  BellOff,
   Bike,
   Check,
   Clock,
@@ -30,7 +28,7 @@ import {
   mensajePedidoRechazado,
 } from '@/compartido/whatsapp'
 import type { EstadoPedido } from '@/compartido/tipos'
-import { habilitarSonido, useAvisoNuevaComanda } from '@/cocina/avisoNuevaComanda'
+import { useAvisoNuevaComanda } from '@/cocina/avisoNuevaComanda'
 import { imprimir } from '@/impresion/impresora'
 import { ComprobanteTermico } from '@/impresion/ComprobanteTermico'
 import { Boton } from '@/componentes/ui/Boton'
@@ -41,6 +39,9 @@ import { Insignia } from '@/componentes/ui/Insignia'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
 import { MapaEntrega } from '@/componentes/MapaEntrega'
+import { BotonSonido } from './BotonSonido'
+import { useSonidoRecepcion } from './sonido'
+import { PestanasRecepcion } from './PestanasRecepcion'
 import {
   PRECISION_ACEPTABLE_METROS,
   distanciaLegible,
@@ -64,7 +65,13 @@ import {
  */
 export default function PantallaPedidos() {
   const { mostrar } = useAvisos()
-  const [sonidoActivo, setSonidoActivo] = useState(false)
+  // El interruptor es del mostrador entero, no de esta pantalla: lo comparte
+  // con reservas y lo enciende el boton de la cabecera.
+  const { activo: sonidoActivo, alternar: alternarSonido } = useSonidoRecepcion()
+
+  const activarSonido = async () => {
+    if (!(await alternarSonido())) mostrar('El navegador no dejó activar el sonido', 'error')
+  }
 
   const { datos: pedidos, cargando } = useSyncedState<PedidoEnRecepcion[]>(
     () => api.listarPedidos(),
@@ -90,7 +97,7 @@ export default function PantallaPedidos() {
     () => pedidos.filter((p) => p.orden.estadoPedido === 'nuevo').map((p) => p.orden.id),
     [pedidos],
   )
-  const recientes = useAvisoNuevaComanda(clavesNuevas, sonidoActivo)
+  const recientes = useAvisoNuevaComanda(clavesNuevas, sonidoActivo, 'entrada', !cargando)
 
   const [aceptando, setAceptando] = useState<PedidoEnRecepcion | null>(null)
   const [minutos, setMinutos] = useState(30)
@@ -112,12 +119,6 @@ export default function PantallaPedidos() {
     }
     return mapa
   }, [pedidos])
-
-  const activarSonido = useCallback(async () => {
-    const listo = await habilitarSonido()
-    setSonidoActivo(listo)
-    if (!listo) mostrar('El navegador no dejó activar el sonido', 'error')
-  }, [mostrar])
 
   const conError = async (accion: () => Promise<unknown>, exito: string) => {
     setTrabajando(true)
@@ -254,21 +255,10 @@ export default function PantallaPedidos() {
         }
         mostrarConexion
         acciones={
-          <Boton
-            variante="fantasma"
-            tamano="compacto"
-            onClick={activarSonido}
-            aria-label={sonidoActivo ? 'Sonido activo' : 'Activar aviso sonoro'}
-            icono={
-              sonidoActivo ? (
-                <Bell className="h-4 w-4 text-oro-400" aria-hidden />
-              ) : (
-                <BellOff className="h-4 w-4" aria-hidden />
-              )
-            }
-          >
-            {sonidoActivo ? '' : 'Activar sonido'}
-          </Boton>
+          <div className="flex items-center gap-1.5">
+            <PestanasRecepcion activa="pedidos" />
+            <BotonSonido />
+          </div>
         }
       />
 

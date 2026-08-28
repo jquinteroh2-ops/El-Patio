@@ -350,4 +350,6 @@ export const CLAVE_SESION = 'elpatio.sesion.v1'
 export const CLAVE_ACCESO = 'elpatio.acceso.v1'
 export const CLAVE_REFRESCO = 'elpatio.refresco.v1'
 export const CLAVE_COLA = 'elpatio.cola.v1'
+/** Si el mostrador dejo el aviso sonoro encendido. Sobrevive al cambio de pestana. */
+export const CLAVE_SONIDO_RECEPCION = 'elpatio.recepcion.sonido.v1'
 

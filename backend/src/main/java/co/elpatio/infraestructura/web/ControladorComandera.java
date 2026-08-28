@@ -39,9 +39,14 @@ public class ControladorComandera {
     this.salon = salon;
   }
 
-  /** Equivale a `listarMesas()`. */
+  /**
+   * Equivale a `listarMesas()`.
+   *
+   * Recepcion entra aqui, y solo aqui dentro de la comandera, porque al
+   * confirmar una reserva asigna mesa y necesita saber cuales estan libres.
+   */
   @GetMapping("/mesas")
-  @PreAuthorize("hasAnyRole('MESERO', 'CAJERO', 'ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('MESERO', 'RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public List<Dtos.MesaEnMapa> listarMesas() {
     return salon.listarMesas();
   }

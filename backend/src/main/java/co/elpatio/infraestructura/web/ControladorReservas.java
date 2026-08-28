@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
  * Crear una reserva queda abierto porque el formulario del sitio publico lo usa
  * sin sesion. Verlas y responderlas exige personal: son datos de contacto de
  * clientes.
+ *
+ * Quien responde es recepcion, que es el mostrador que ya atiende el telefono y
+ * los domicilios; caja y administracion entran tambien porque una solicitud sin
+ * responder no puede quedarse esperando a que llegue el turno de recepcion.
  */
 @RestController
 @RequestMapping("/api/reservas")
@@ -33,7 +37,7 @@ public class ControladorReservas {
 
   /** Equivale a `listarReservas()`. */
   @GetMapping
-  @PreAuthorize("hasAnyRole('CAJERO', 'ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public List<Reserva> listarReservas() {
     return servicio.listarReservas();
   }
@@ -46,7 +50,7 @@ public class ControladorReservas {
 
   /** Equivale a `cambiarEstadoReserva(reservaId, estado, mesaAsignadaId)`. */
   @PatchMapping("/{reservaId}/estado")
-  @PreAuthorize("hasAnyRole('CAJERO', 'ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public Reserva cambiarEstado(
       @PathVariable String reservaId, @RequestBody Dtos.CambioEstadoReserva cambio) {
     return servicio.cambiarEstadoReserva(reservaId, cambio.estado(), cambio.mesaAsignadaId());
@@ -54,7 +58,7 @@ public class ControladorReservas {
 
   /** Equivale a `reprogramarReserva(reservaId, fechaHora)`. */
   @PatchMapping("/{reservaId}/fecha")
-  @PreAuthorize("hasAnyRole('CAJERO', 'ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('RECEPCION', 'CAJERO', 'ADMINISTRADOR')")
   public ResponseEntity<Void> reprogramar(
       @PathVariable String reservaId, @RequestBody Dtos.PeticionReprogramar peticion) {
     servicio.reprogramarReserva(reservaId, peticion.fechaHora());

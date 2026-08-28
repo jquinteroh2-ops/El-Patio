@@ -38,6 +38,13 @@ const paraCampo = (iso: string): string => {
   return `${f.getFullYear()}-${pad(f.getMonth() + 1)}-${pad(f.getDate())}T${pad(f.getHours())}:${pad(f.getMinutes())}`
 }
 
+/**
+ * Panel de reservas.
+ *
+ * Se monta en dos sitios con la misma forma: en el panel administrativo, bajo
+ * /admin/reservas, y en el mostrador, bajo /recepcion/reservas. Por eso no trae
+ * cabecera propia: la pone el contenedor de cada area.
+ */
 export default function Reservas() {
   const { mostrar } = useAvisos()
   const { datos: reservas } = useSyncedState<Reserva[]>(

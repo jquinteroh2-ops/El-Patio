@@ -115,11 +115,21 @@ public class ConfiguracionSeguridad {
                     .requestMatchers("/api/pedidos/**")
                         .hasAnyRole("RECEPCION", "REPARTIDOR", "CAJERO", "ADMINISTRADOR")
 
+                    // Responder una reserva es trabajo de mostrador: recepcion
+                    // ya atiende el telefono, asi que recibe las solicitudes del
+                    // sitio publico igual que recibe los domicilios. Crearlas
+                    // sigue abierto mas arriba, que es lo que usa el cliente.
+                    .requestMatchers("/api/reservas/**")
+                        .hasAnyRole("RECEPCION", "CAJERO", "ADMINISTRADOR")
+
                     // El cajero entra a la comandera para cobrar y para ver el
                     // salon desde el panel; lo que puede hacer una vez dentro lo
                     // decide el @PreAuthorize de cada metodo, que es donde la
                     // diferencia entre leer una cuenta y editarla tiene sentido.
-                    .requestMatchers("/api/comandera/**").hasAnyRole("MESERO", "CAJERO", "ADMINISTRADOR")
+                    // Recepcion pasa por aqui solo por el mapa de mesas, que es
+                    // lo unico que el @PreAuthorize de la clase le deja abrir.
+                    .requestMatchers("/api/comandera/**")
+                        .hasAnyRole("MESERO", "RECEPCION", "CAJERO", "ADMINISTRADOR")
                     .requestMatchers("/api/cocina/**").hasAnyRole("COCINA", "ADMINISTRADOR")
                     .requestMatchers("/api/cobro/**").hasAnyRole("MESERO", "CAJERO", "ADMINISTRADOR")
                     .requestMatchers("/api/caja/**").hasAnyRole("CAJERO", "ADMINISTRADOR")
