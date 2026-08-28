@@ -1,0 +1,85 @@
+# El sistema entero dentro del restaurante.
+#
+# Levanta la base, el backend y la aplicación en la misma máquina, para que el
+# salón siga trabajando cuando se cae el internet. Mientras la WiFi del local
+# esté viva, las tablets tienen con quién hablar: el servidor está en el mismo
+# edificio y ninguna petición sale a la calle.
+#
+# Lo que SÍ deja de funcionar sin internet, y conviene saberlo:
+#   - Los enlaces de WhatsApp al cliente.
+#   - Lo que entra por el sitio público (reservas y pedidos en línea), que vive
+#     en la nube. Entra en cuanto vuelve la señal.
+#   - La facturación electrónica ante la DIAN.
+#
+#   docker compose -f local/docker-compose.yml up -d      <- desde la raíz
+#
+# Las rutas de construcción son relativas a la raíz del repositorio, por eso el
+# `context: ..` de abajo.
+
+name: elpatio-local
+
+# Los contenedores llevan el prefijo `elpatio-local-` a proposito: el
+# docker-compose.yml de desarrollo ya reclama `elpatio-base` en la maquina de
+# quien programa, y dos composes peleando por el mismo nombre no arrancan.
+
+services:
+  base:
+    image: postgres:16-alpine
+    container_name: elpatio-local-base
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NOMBRE:-elpatio}
+      POSTGRES_USER: ${DATABASE_USUARIO:-elpatio}
+      POSTGRES_PASSWORD: ${DATABASE_CLAVE:?falta DATABASE_CLAVE en local/.env}
+    volumes:
+      - datos-base:/var/lib/postgresql/data
+    # A propósito NO se publica ningún puerto: a la base solo llega el backend,
+    # por la red interna. Un PostgreSQL escuchando en la red del restaurante es
+    # una puerta abierta que nadie vigila.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USUARIO:-elpatio} -d ${DATABASE_NOMBRE:-elpatio}']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: elpatio-local-backend
+    restart: unless-stopped
+    depends_on:
+      base:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:postgresql://base:5432/${DATABASE_NOMBRE:-elpatio}
+      DATABASE_USUARIO: ${DATABASE_USUARIO:-elpatio}
+      DATABASE_CLAVE: ${DATABASE_CLAVE}
+      ELPATIO_JWT_SECRETO: ${ELPATIO_JWT_SECRETO:?falta ELPATIO_JWT_SECRETO en local/.env}
+      # Patrones, no dominios: la IP del equipo puede cambiar y el salón no se
+      # puede quedar sin canal de tiempo real por eso. Solo redes privadas.
+      ELPATIO_CORS_ORIGENES: ${ELPATIO_CORS_ORIGENES:-http://192.168.*.*,http://192.168.*.*:*,http://10.*.*.*,http://10.*.*.*:*,http://172.16.*.*,http://172.16.*.*:*,http://*.local,http://*.local:*,http://localhost,http://localhost:*}
+      ELPATIO_PERFIL: ${ELPATIO_PERFIL:-produccion}
+      ELPATIO_ZONA: ${ELPATIO_ZONA:-America/Bogota}
+    volumes:
+      # Documentos, imágenes de la carta y la carpeta del ERP. Es lo que hay que
+      # respaldar junto con la base.
+      - datos-aplicacion:/aplicacion/datos
+    expose:
+      - '8080'
+
+  aplicacion:
+    build:
+      context: ..
+      dockerfile: local/Dockerfile.frontend
+    container_name: elpatio-local-app
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      # El único puerto abierto. Las tablets entran por http://IP-DEL-EQUIPO/
+      - '${PUERTO:-80}:80'
+
+volumes:
+  datos-base:
+  datos-aplicacion:

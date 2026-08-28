@@ -1,0 +1,35 @@
+# La aplicación, servida por la misma máquina que el API.
+#
+# OJO CON EL CONTEXTO: igual que backend/Dockerfile, las rutas son relativas a
+# la RAÍZ del repositorio.
+#
+#   docker build -f local/Dockerfile.frontend .    <- desde la raíz del repo
+
+# ---------------------------------------------------------------------------
+# Compilación
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS construccion
+WORKDIR /obra
+
+# Las dependencias en su propia capa: mientras package-lock.json no cambie,
+# Docker no vuelve a instalar nada.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+
+# Vacío A PROPÓSITO. Es lo que le dice al frontend que el API viaja por el mismo
+# origen que la página, que es como lo sirve el Caddyfile de al lado. Si aquí se
+# escribiera la IP del equipo, cambiarla obligaría a reconstruir la imagen.
+ENV VITE_URL_API=""
+RUN npm run build
+
+# ---------------------------------------------------------------------------
+# Ejecución
+# ---------------------------------------------------------------------------
+FROM caddy:2-alpine AS ejecucion
+
+COPY --from=construccion /obra/dist /srv
+COPY local/Caddyfile /etc/caddy/Caddyfile
+
+EXPOSE 80

@@ -1,0 +1,42 @@
+# El único puerto que se abre en la máquina del restaurante.
+#
+# Todo entra por aquí: la aplicación, el API y el canal de tiempo real. Eso es
+# lo que hace que las tablets no lleven ninguna dirección escrita adentro -el
+# frontend se construye con VITE_URL_API vacío- y que cambiar la IP del equipo
+# no obligue a recompilar nada ni a tocar CORS.
+
+:80 {
+	root * /srv
+	encode gzip
+
+	# El API y el pulso. Caddy pasa el Host y el Origin tal cual, que es lo que
+	# el backend mira para decidir si acepta el socket.
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+	handle /salud* {
+		reverse_proxy backend:8080
+	}
+	handle /webhooks/* {
+		reverse_proxy backend:8080
+	}
+
+	# El canal de tiempo real. reverse_proxy reconoce el Upgrade y lo deja pasar
+	# sin configuración extra.
+	handle /ws* {
+		reverse_proxy backend:8080
+	}
+
+	# La aplicación. Cualquier ruta que no exista como archivo cae en index.html,
+	# porque el enrutado es del lado del navegador: sin esto, entrar directo a
+	# /comandera o recargar dentro de ella devuelve 404.
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

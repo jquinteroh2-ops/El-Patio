@@ -202,7 +202,9 @@ interface Opciones {
 }
 
 function construirUrl(ruta: string, consulta?: Opciones['consulta']): string {
-  const url = new URL(`${URL_API}${ruta}`)
+  // La base hace falta cuando URL_API va vacia -la instalacion local, donde el
+  // API viaja por el mismo origen-: sin ella `new URL` no acepta una ruta suelta.
+  const url = new URL(`${URL_API}${ruta}`, window.location.origin)
   for (const [clave, valor] of Object.entries(consulta ?? {})) {
     if (valor === undefined || valor === '') continue
     url.searchParams.set(clave, String(valor))
@@ -351,7 +353,9 @@ export async function descargarArchivo(
 ): Promise<void> {
   if (!hayConexion()) throw new SinConexionError()
 
-  const url = new URL(`${URL_API}${ruta}`)
+  // Misma base que en `construirUrl`, y por el mismo motivo: con el API en el
+  // mismo origen, `ruta` llega sola y `new URL` no la acepta sin base.
+  const url = new URL(`${URL_API}${ruta}`, window.location.origin)
   for (const [clave, valor] of Object.entries(consulta)) {
     if (valor !== undefined && valor !== '') url.searchParams.set(clave, String(valor))
   }

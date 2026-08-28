@@ -313,6 +313,12 @@ const sinBarraFinal = (url: string): string => url.replace(/\/+$/, '')
  * Nunca se escribe una URL en un componente. En desarrollo apunta al backend
  * local; en Railway la define la variable de entorno del servicio del frontend,
  * porque el dominio cambia entre entornos y el codigo no puede saberlo.
+ *
+ * Vacia a proposito significa «el mismo origen que esta pagina», que es como
+ * corre la instalacion del restaurante: alli un proxy sirve la aplicacion y
+ * reparte /api y /ws al backend, asi que no hay dominio que escribir. Eso
+ * ademas evita tener que recompilar el frontend cuando cambia la IP de la
+ * maquina del local.
  */
 export const URL_API = sinBarraFinal(import.meta.env.VITE_URL_API ?? 'http://localhost:8080')
 
@@ -322,9 +328,18 @@ export const URL_API = sinBarraFinal(import.meta.env.VITE_URL_API ?? 'http://loc
  * Si no viene declarada se deduce de la del API cambiando el esquema: sobre
  * HTTPS tiene que ser wss, porque un navegador en una pagina segura rechaza
  * abrir un socket en claro y el salon se quedaria sin tiempo real.
+ *
+ * Cuando el API va por el mismo origen no hay de donde deducirla, porque no
+ * hay dominio declarado: se arma con el de la pagina. stompjs exige una URL
+ * absoluta, asi que una ruta suelta como `/ws` no sirve.
  */
-export const URL_WS =
-  import.meta.env.VITE_URL_WS ?? `${URL_API.replace(/^http/, 'ws')}/ws`
+function wsPorDefecto(): string {
+  if (URL_API) return `${URL_API.replace(/^http/, 'ws')}/ws`
+  if (typeof window === 'undefined') return ''
+  return `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
+}
+
+export const URL_WS = import.meta.env.VITE_URL_WS ?? wsPorDefecto()
 
 /**
  * Topicos del canal de tiempo real. Tienen que coincidir con Topicos.java: si
