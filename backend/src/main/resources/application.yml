@@ -165,6 +165,25 @@ elpatio:
     # Lista separada por comas. Nunca `*`: el navegador envía el token.
     origenes: ${ELPATIO_CORS_ORIGENES:http://localhost:5173}
 
+  # El paso al panel del otro restaurante del dueño, sin volver a escribir la
+  # clave.
+  cruce:
+    # EL MISMO VALOR EN LOS DOS RESTAURANTES, y distinto del de las sesiones.
+    #
+    # Es lo único que El Patio y La Carreta comparten. No firma ninguna sesión:
+    # solo firma el pase de 30 segundos con que el dueño cruza de un panel al
+    # otro. Separarlo del secreto de las sesiones es lo que evita que un token
+    # cualquiera de un restaurante valga en el otro, y que la filtración de uno
+    # arrastre al segundo.
+    #
+    # VACÍO POR DEFECTO, y con eso el cruce queda apagado en los dos sentidos:
+    # ni se emiten pases ni se aceptan. Es lo correcto para un despliegue suelto
+    # que no tiene restaurante hermano.
+    secreto: ${ELPATIO_CRUCE_SECRETO:}
+    # De dónde dice venir el pase. Solo se usa para el registro y para poder
+    # decirle a la persona desde qué restaurante acaba de llegar.
+    nombre: ${ELPATIO_CRUCE_NOMBRE:El Patio}
+
   # Los anticipos de los canales automatizados, cobrados con un link de pago
   # de Wompi.
   #

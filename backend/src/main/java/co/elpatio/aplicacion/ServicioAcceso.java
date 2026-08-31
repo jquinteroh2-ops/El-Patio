@@ -3,13 +3,17 @@ package co.elpatio.aplicacion;
 import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.error.NoEncontradoError;
 import co.elpatio.dominio.error.ReglaDeNegocioError;
+import co.elpatio.dominio.personal.Rol;
 import co.elpatio.dominio.personal.Usuario;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Reloj;
 import co.elpatio.dominio.puertos.Repositorios;
+import co.elpatio.infraestructura.persistencia.dao.DaoPasesDeCruce;
 import co.elpatio.infraestructura.persistencia.dao.DaoSesionesRefresh;
+import co.elpatio.infraestructura.persistencia.filas.FilaPaseDeCruce;
 import co.elpatio.infraestructura.persistencia.filas.FilaSesionRefresh;
+import co.elpatio.infraestructura.seguridad.ServicioPaseDeCruce;
 import co.elpatio.infraestructura.seguridad.ServicioTokens;
 import java.time.Instant;
 import java.util.List;
@@ -33,7 +37,9 @@ public class ServicioAcceso {
 
   private final Repositorios.DeUsuarios usuarios;
   private final DaoSesionesRefresh sesiones;
+  private final DaoPasesDeCruce pases;
   private final ServicioTokens tokens;
+  private final ServicioPaseDeCruce cruce;
   private final PasswordEncoder claves;
   private final Reloj reloj;
   private final GeneradorIds ids;
@@ -42,14 +48,18 @@ public class ServicioAcceso {
   public ServicioAcceso(
       Repositorios.DeUsuarios usuarios,
       DaoSesionesRefresh sesiones,
+      DaoPasesDeCruce pases,
       ServicioTokens tokens,
+      ServicioPaseDeCruce cruce,
       PasswordEncoder claves,
       Reloj reloj,
       GeneradorIds ids,
       PublicadorEventos eventos) {
     this.usuarios = usuarios;
     this.sesiones = sesiones;
+    this.pases = pases;
     this.tokens = tokens;
+    this.cruce = cruce;
     this.claves = claves;
     this.reloj = reloj;
     this.ids = ids;
@@ -119,6 +129,95 @@ public class ServicioAcceso {
               sesiones.save(fila);
             });
   }
+
+  // ---------------------------------------------------------------------------
+  // Cruce al otro restaurante
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Firma un pase para que quien ya entro aqui entre al otro restaurante sin
+   * volver a escribir la clave.
+   *
+   * Solo el administrador. No es por esconder un boton: a un mesero o a un
+   * cajero no le sirve —trabaja en un local— y cada rol que pudiera cruzar
+   * seria una puerta mas que vigilar entre dos sistemas.
+   *
+   * Se relee el usuario de la base en vez de creerle al token. El token pudo
+   * emitirse hace veinte minutos y en ese rato al dueno pudieron retirarle el
+   * rol o desactivarle la cuenta; el pase que se firma aqui abre el panel del
+   * otro restaurante, y no puede apoyarse en algo que quizas ya no es cierto.
+   */
+  @Transactional(readOnly = true)
+  public Dtos.RespuestaPaseDeCruce emitirPaseDeCruce(String usuarioId) {
+    if (!cruce.activo()) {
+      throw new ReglaDeNegocioError("El cruce entre restaurantes no está configurado");
+    }
+
+    Usuario usuario =
+        usuarios
+            .porId(usuarioId)
+            .filter(Usuario::isActivo)
+            .filter(u -> u.getRol() == Rol.ADMINISTRADOR)
+            .orElseThrow(() -> new ReglaDeNegocioError("Solo el administrador puede cambiar de restaurante"));
+
+    return new Dtos.RespuestaPaseDeCruce(cruce.emitir(usuario));
+  }
+
+  /**
+   * Canjea un pase del otro restaurante por una sesion de este.
+   *
+   * EL PASE NO ABRE NADA POR SI MISMO: dice quien es la persona, y quien decide
+   * es esta casa. Hacen falta las tres cosas —firma valida, pase sin usar, y
+   * una cuenta de administrador activa AQUI con ese mismo nombre de usuario—.
+   * Si el dueno no tiene cuenta en este restaurante, o se la desactivaron, el
+   * pase no sirve aunque venga perfectamente firmado.
+   *
+   * El mensaje de error es el mismo en todos los casos, por lo mismo que en el
+   * ingreso: distinguir «ese pase ya se uso» de «ese usuario no existe aqui» le
+   * regala informacion a quien este tanteando.
+   */
+  @Transactional
+  public Dtos.RespuestaAcceso canjearPaseDeCruce(String pase) {
+    if (!cruce.activo()) {
+      throw new ReglaDeNegocioError("El cruce entre restaurantes no está configurado");
+    }
+
+    ServicioPaseDeCruce.Pase valido =
+        cruce.verificar(pase).orElseThrow(() -> new ReglaDeNegocioError(RECHAZO_DEL_CRUCE));
+
+    // Un solo uso. El insert es lo que lo garantiza: la clave primaria es el
+    // identificador del pase, asi que un segundo canje del mismo papel choca
+    // contra la base en vez de depender de que dos peticiones simultaneas se
+    // vean la una a la otra.
+    Instant ahora = reloj.ahora();
+    pases.borrarVencidos(ahora);
+    if (pases.existsById(valido.jti())) {
+      throw new ReglaDeNegocioError(RECHAZO_DEL_CRUCE);
+    }
+
+    Usuario local =
+        usuarios
+            .porNombreDeUsuario(valido.usuario())
+            .filter(Usuario::isActivo)
+            .filter(u -> u.getRol() == Rol.ADMINISTRADOR)
+            .orElseThrow(() -> new ReglaDeNegocioError(RECHAZO_DEL_CRUCE));
+
+    pases.save(
+        new FilaPaseDeCruce(
+            valido.jti(), local.getUsuario(), valido.origen(), ahora, valido.expiraEn()));
+
+    return emitir(local);
+  }
+
+  /**
+   * Lo que se responde ante cualquier pase que no sirva.
+   *
+   * Uno solo para todos los motivos: firma mala, vencido, ya usado, o sin
+   * cuenta de administrador en esta casa. Decir cual de los cuatro fallo le
+   * ahorra la mitad del trabajo a quien tantea.
+   */
+  private static final String RECHAZO_DEL_CRUCE =
+      "No se pudo entrar desde el otro restaurante: ingrese con su usuario y clave";
 
   private Dtos.RespuestaAcceso emitir(Usuario usuario) {
     Instant ahora = reloj.ahora();

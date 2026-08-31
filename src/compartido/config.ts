@@ -354,7 +354,7 @@ export const URL_WS =
  */
 export const RESTAURANTE_HERMANO = {
   nombre: 'La Carreta',
-  nombreCompleto: 'Restaurante La Carreta',
+  nombreCompleto: 'Restaurante La Carreta Gourmet',
   /** URL del otro sitio, sin barra final. Vacia = no hay hermano configurado. */
   url: sinBarraFinal(import.meta.env.VITE_URL_HERMANO ?? ''),
 } as const
@@ -388,4 +388,13 @@ export const CLAVE_REFRESCO = 'elpatio.refresco.v1'
 export const CLAVE_COLA = 'elpatio.cola.v1'
 /** Si el mostrador dejo el aviso sonoro encendido. Sobrevive al cambio de pestana. */
 export const CLAVE_SONIDO_RECEPCION = 'elpatio.recepcion.sonido.v1'
+/**
+ * Por que no se pudo entrar desde el otro restaurante.
+ *
+ * Lo escribe el canje del pase cuando falla y lo lee la pantalla de acceso, una
+ * sola vez. Existe porque el canje ocurre antes de que haya ninguna pantalla
+ * montada y no hay a quien avisarle todavia: sin esto, un pase rechazado deja
+ * al dueno frente a un formulario de acceso sin ninguna explicacion.
+ */
+export const CLAVE_AVISO_CRUCE = 'elpatio.cruce.aviso.v1'
 

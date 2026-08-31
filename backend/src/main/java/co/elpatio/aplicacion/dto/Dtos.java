@@ -59,6 +59,17 @@ public final class Dtos {
   public record RespuestaAcceso(Sesion sesion, String acceso, String refresco, long expiraEnSegundos) {}
 
   /**
+   * El pase con que el dueno cruza al panel del otro restaurante.
+   *
+   * Solo el pase: no lleva a donde va. La direccion del hermano la sabe el
+   * navegador, que la trae compilada, y el servidor no tiene por que conocer el
+   * dominio del otro despliegue.
+   */
+  public record RespuestaPaseDeCruce(String pase) {}
+
+  public record PeticionPaseDeCruce(String pase) {}
+
+  /**
    * Usuario tal como lo espera la pantalla de administracion.
    *
    * `clave` siempre sale vacia: la pantalla solo la escribe para cambiarla y

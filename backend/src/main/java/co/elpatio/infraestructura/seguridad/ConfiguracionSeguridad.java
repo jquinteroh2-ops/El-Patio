@@ -58,6 +58,20 @@ public class ConfiguracionSeguridad {
                 reglas
                     // Acceso y salud quedan abiertos: son la puerta y el pulso.
                     .requestMatchers("/api/acceso/ingresar", "/api/acceso/refrescar").permitAll()
+                    // El canje del pase del otro restaurante es la tercera
+                    // puerta. Se abre porque quien llega todavia no tiene
+                    // sesion AQUI; lo que trae en lugar de la clave es un pase
+                    // firmado, que el servicio verifica y ademas contrasta
+                    // contra su propia tabla de usuarios.
+                    //
+                    // Va ANTES que la regla de `/api/acceso/cruce`, que exige
+                    // administrador: las reglas se evaluan en orden y la
+                    // primera que empareja manda. Al reves, `/api/acceso/cruce`
+                    // atraparia tambien a `/cruce/canjear` y nadie podria
+                    // entrar nunca desde el otro restaurante.
+                    .requestMatchers(HttpMethod.POST, "/api/acceso/cruce/canjear").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/acceso/cruce")
+                    .hasRole("ADMINISTRADOR")
                     // La pantalla de acceso pregunta si hay cuentas de
                     // demostracion antes de tener sesion. Con el modo apagado
                     // la respuesta es una lista vacia.

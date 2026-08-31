@@ -68,18 +68,46 @@ veces, y la forma barata de hacerlo es `git cherry-pick`, no reescribirlo.
 
 En `/admin` aparece arriba a la derecha un selector con el nombre del
 restaurante en el que se está; al desplegarlo, un enlace lleva **a la misma
-sección** del otro local. Solo lo ve el administrador, y el salto vuelve a pedir
-la clave: son dos servidores distintos y la credencial de uno no vale en el
-otro.
+sección** del otro local. Solo lo ve el administrador: a un cajero no le sirve,
+trabaja en un local y el otro no lo conoce.
 
-Se enciende con una sola variable en el frontend:
+Se enciende con una variable en el frontend:
 
 ```bash
-VITE_URL_HERMANO=https://lacarreta.up.railway.app
+VITE_URL_HERMANO=https://carreta-frontend-production.up.railway.app
 ```
 
 Sin ella el selector **no se pinta**, que es lo que se quiere en desarrollo:
 allí casi nunca están los dos sistemas levantados.
+
+### El pase: por qué no vuelve a pedir la clave
+
+Son dos servidores con sus propios usuarios y sus propios tokens, así que la
+credencial de uno no vale en el otro. Antes de saltar, el selector le pide a su
+propio servidor un **pase**: un token de **30 segundos y un solo uso** que dice
+quién es el dueño, firmado con un secreto que comparten los dos restaurantes.
+
+El destino exige las tres cosas: firma válida, pase sin usar, y **una cuenta de
+administrador activa allá con ese mismo nombre de usuario**. El pase no abre nada
+por sí mismo —dice quién es la persona—; quien decide es el destino.
+
+Se enciende con `ELPATIO_CRUCE_SECRETO`, **el mismo valor en los dos
+restaurantes** y distinto del de las sesiones. Sin esa variable el cruce queda
+apagado en los dos sentidos y el selector sigue saltando: el otro sistema pedirá
+la clave, como antes.
+
+Compartir el secreto de las sesiones habría sido más simple y habría significado
+que **cualquier** token de un restaurante vale en el otro. Con un secreto propio,
+lo que se comparte es la capacidad de decir «esta persona ya se identificó ante
+mí», y nada más.
+
+El pase viaja en el **fragmento** de la URL (`#pase=…`) y no en la consulta,
+porque el navegador no manda el fragmento a ningún servidor: no queda en
+registros de acceso ni en la cabecera `Referer`. El frontend lo borra de la barra
+de direcciones antes de canjearlo.
+
+El detalle completo está en el
+[README de La Carreta](https://github.com/jquinteroh2-ops/La_Carreta#el-pase-por-qué-no-vuelve-a-pedir-la-clave).
 
 ---
 

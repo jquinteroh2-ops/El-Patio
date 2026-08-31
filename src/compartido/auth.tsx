@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { CLAVE_SESION } from './config'
 import { alExpirarSesion, haySesion } from './cliente'
+import { anotarFalloDelCruce, tomarPaseDeLaUrl } from './cruce'
 import * as api from './mockApi'
 import type { Rol, Sesion } from './tipos'
 
@@ -65,9 +66,55 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
   const [sesion, setSesion] = useState<Sesion | null>(null)
   const [cargando, setCargando] = useState(true)
 
+  /**
+   * Con que sesion arranca la pestana.
+   *
+   * Normalmente, la que ya estuviera guardada. Pero si en la URL viene un pase
+   * del otro restaurante del dueno hay que canjearlo ANTES de decidir nada: es
+   * un dueno que acaba de pulsar el selector en el otro panel y llega sin
+   * sesion aqui.
+   *
+   * `cargando` se mantiene en alto durante el canje a proposito. La guarda de
+   * rutas manda a /acceso a quien no tenga sesion, y sin esta espera lo haria
+   * en el instante entre que carga la pagina y responde el servidor: el dueno
+   * veria el formulario de acceso aparecer y desaparecer.
+   */
   useEffect(() => {
-    setSesion(leerSesion())
-    setCargando(false)
+    const pase = tomarPaseDeLaUrl()
+
+    if (!pase) {
+      setSesion(leerSesion())
+      setCargando(false)
+      return
+    }
+
+    let vigente = true
+    api
+      .canjearPaseDeCruce(pase)
+      .then((nueva) => {
+        if (!vigente) return
+        sessionStorage.setItem(CLAVE_SESION, JSON.stringify(nueva))
+        setSesion(nueva)
+      })
+      .catch((error: unknown) => {
+        if (!vigente) return
+        // El pase no sirvio: vencido, ya usado, o sin cuenta de administrador
+        // en esta casa. Se cae a la pantalla de acceso, pero dejando dicho por
+        // que: si no, parece que el boton del otro panel esta roto.
+        anotarFalloDelCruce(
+          error instanceof Error
+            ? error.message
+            : 'No se pudo entrar desde el otro restaurante',
+        )
+        setSesion(leerSesion())
+      })
+      .finally(() => {
+        if (vigente) setCargando(false)
+      })
+
+    return () => {
+      vigente = false
+    }
   }, [])
 
   // Cuando el refresco ya no sirve, el cliente avisa y aqui se limpia. La

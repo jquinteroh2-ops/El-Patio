@@ -127,6 +127,40 @@ export async function autenticar(usuario: string, clave: string): Promise<Sesion
 }
 
 /**
+ * Pide el pase con que el dueno cruza al panel del otro restaurante.
+ *
+ * Lo firma este servidor y lo verifica el del otro local. Dura treinta
+ * segundos, sirve una sola vez, y no abre nada por si mismo: dice quien es la
+ * persona, y el destino decide si le da sesion.
+ */
+export async function pedirPaseDeCruce(): Promise<string> {
+  return contra(async () => {
+    const respuesta = await pedir<{ pase: string }>('/api/acceso/cruce', { metodo: 'POST' })
+    return respuesta.pase
+  })
+}
+
+/**
+ * Canjea un pase del otro restaurante por una sesion de este.
+ *
+ * Va por POST y no en la URL a proposito: en la URL, el pase quedaria escrito
+ * en los registros del servidor. Lo unico que viaja por la barra de direcciones
+ * es el fragmento -lo que va despues del `#`-, que el navegador no manda a
+ * ningun servidor.
+ */
+export async function canjearPaseDeCruce(pase: string): Promise<Sesion> {
+  return contra(async () => {
+    const respuesta = await pedir<RespuestaAcceso>('/api/acceso/cruce/canjear', {
+      metodo: 'POST',
+      cuerpo: { pase },
+      sinSesion: true,
+    })
+    guardarCredenciales(respuesta.acceso, respuesta.refresco)
+    return respuesta.sesion
+  })
+}
+
+/**
  * Que cuentas ensenar en la pantalla de acceso.
  *
  * Lo decide el servidor y no el paquete compilado: el mismo frontend sirve para

@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, LogIn } from 'lucide-react'
 import { useSesion } from '@/compartido/auth'
 import { RESTAURANTE } from '@/compartido/config'
+import { tomarAvisoDelCruce } from '@/compartido/cruce'
 import { NOMBRE_ROL } from '@/compartido/estados'
 import * as api from '@/compartido/mockApi'
 import type { CuentasDemostracion } from '@/compartido/tipos'
@@ -21,6 +22,20 @@ export default function Acceso() {
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [demostracion, setDemostracion] = useState<CuentasDemostracion>(SIN_DEMOSTRACION)
+
+  /*
+   * Por que aterrizo aqui quien venia del otro restaurante.
+   *
+   * Un pase rechazado -vencido, ya usado, o sin cuenta de administrador en esta
+   * casa- deja al dueno frente a este formulario sin ninguna explicacion, y lo
+   * que parece es que el boton del otro panel esta roto. El aviso lo deja
+   * escrito el canje y se lee una sola vez.
+   *
+   * Se toma en el primer render y no en un efecto para que salga ya pintado:
+   * un aviso que aparece medio segundo despues de la pantalla se lee como un
+   * error nuevo, no como la razon de estar aqui.
+   */
+  const [avisoDelCruce] = useState(() => tomarAvisoDelCruce())
 
   // Lo decide el servidor, no el paquete compilado. Mientras la respuesta no
   // llega la pantalla se ve como la de produccion, que es como debe verse si
@@ -78,6 +93,15 @@ export default function Acceso() {
             {RESTAURANTE.ciudad} · Ingresa con el usuario que te asignó administración
           </p>
         </div>
+
+        {avisoDelCruce && (
+          <p
+            role="status"
+            className="mb-5 rounded-xl border border-estado-proceso/40 bg-estado-proceso-suave px-3.5 py-3 text-sm leading-relaxed text-crema-100"
+          >
+            {avisoDelCruce}
+          </p>
+        )}
 
         <form onSubmit={enviar} className="space-y-4">
           <Campo
