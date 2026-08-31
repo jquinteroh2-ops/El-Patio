@@ -250,18 +250,6 @@
   .entrada-escalonada > *:nth-child(9) { animation-delay: 320ms; }
   .entrada-escalonada > *:nth-child(n + 10) { animation-delay: 360ms; }
 
-  /*
-   * La tarjeta que responde al dedo.
-   *
-   * Sube un pelo al pasar por encima y se hunde al pulsarla. El hundido importa
-   * mas que el levantado: en un celular no hay «pasar por encima», y sin
-   * respuesta al toque el mesero no sabe si el sistema registro el golpe y
-   * vuelve a tocar.
-   */
-  .tarjeta-viva {
-    @apply transition duration-150 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99];
-  }
-
   /* Barra de desplazamiento discreta para las areas operativas */
   .scroll-fino::-webkit-scrollbar {
     width: 8px;
