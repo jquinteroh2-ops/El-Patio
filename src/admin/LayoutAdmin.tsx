@@ -4,6 +4,7 @@ import * as api from '@/compartido/mockApi'
 import { useSesionActiva } from '@/compartido/auth'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
+import { SelectorRestaurante } from './SelectorRestaurante'
 
 /**
  * Lo que espera respuesta, contado en la pestana.
@@ -57,6 +58,14 @@ export default function LayoutAdmin() {
       <BarraOperativa
         titulo="Panel administrativo"
         subtitulo={`${sesion.nombre} · ${sesion.rol === 'administrador' ? 'Administrador' : 'Cajero'}`}
+        /*
+          El cambio de restaurante solo para el dueno. No es control de acceso
+          —el otro sistema pide su propia clave y no deja entrar a nadie por
+          esconder o mostrar un boton aqui—: es que a un cajero no le sirve de
+          nada. Trabaja en un local, cobra en un local, y el otro le pediria
+          una clave que no tiene.
+        */
+        acciones={sesion.rol === 'administrador' ? <SelectorRestaurante /> : undefined}
       />
 
       <nav className="sticky top-16 z-20 border-b border-noche-800 bg-noche-900/95 backdrop-blur">

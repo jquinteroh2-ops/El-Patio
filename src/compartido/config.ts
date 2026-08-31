@@ -324,6 +324,44 @@ export const URL_API = sinBarraFinal(import.meta.env.VITE_URL_API ?? 'http://loc
 export const URL_WS =
   import.meta.env.VITE_URL_WS ?? `${URL_API.replace(/^http/, 'ws')}/ws`
 
+// ---------------------------------------------------------------------------
+// El otro restaurante del mismo dueno
+// ---------------------------------------------------------------------------
+
+/**
+ * El sistema hermano, al que salta el selector del panel administrativo.
+ *
+ * El Patio y La Carreta son del mismo dueno y corren el MISMO software, pero
+ * son dos despliegues separados: cada uno con su base de datos, su carta, su
+ * personal y su caja. No hay ni un dato compartido, y eso es a proposito —
+ * mezclar las ventas de dos restaurantes en una sola base es un problema
+ * contable, no una comodidad—.
+ *
+ * Lo que si se comparte es el jefe, que no tiene por que aprenderse dos
+ * sistemas ni recordar dos direcciones. Por eso el panel lleva arriba un
+ * selector que lo lleva al panel del otro local, a la MISMA seccion en la que
+ * estaba. Ver las ventas de los dos restaurantes es cambiar de pestana en el
+ * selector, no buscar otro enlace.
+ *
+ * OJO: saltar exige volver a entrar. Son dos servidores distintos, cada uno con
+ * sus usuarios y sus tokens, y la credencial de uno no vale en el otro. El
+ * selector lo advierte en pantalla en vez de dejar que el otro sistema reciba
+ * al jefe con una pantalla de acceso que no esperaba.
+ *
+ * Si la variable viene vacia el selector NO SE PINTA. Esa es la situacion
+ * normal en desarrollo, donde casi nunca estan los dos sistemas levantados a la
+ * vez, y un boton que lleva a una direccion muerta es peor que no tener boton.
+ */
+export const RESTAURANTE_HERMANO = {
+  nombre: 'La Carreta',
+  nombreCompleto: 'Restaurante La Carreta',
+  /** URL del otro sitio, sin barra final. Vacia = no hay hermano configurado. */
+  url: sinBarraFinal(import.meta.env.VITE_URL_HERMANO ?? ''),
+} as const
+
+/** Si hay a donde saltar. Lo consulta el selector antes de pintarse. */
+export const HAY_RESTAURANTE_HERMANO = RESTAURANTE_HERMANO.url !== ''
+
 /**
  * Topicos del canal de tiempo real. Tienen que coincidir con Topicos.java: si
  * uno cambia de nombre, la pantalla que lo escuchaba se queda muda sin que nada

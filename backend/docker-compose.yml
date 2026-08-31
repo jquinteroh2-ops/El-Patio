@@ -7,6 +7,18 @@
 # tienen un PostgreSQL propio instalado en el puerto estándar. Si el contenedor
 # lo tomara también, el host resolvería contra la instalación local y el error
 # que aparece es «autenticación fallida», que no dice nada sobre el conflicto.
+#
+# La Carreta —el otro restaurante del dueño, que corre este mismo software— usa
+# el 5434, para que se puedan levantar los dos a la vez.
+
+# El nombre del proyecto, escrito y no deducido.
+#
+# Sin esta línea Docker lo saca del nombre de la carpeta, que en los dos
+# repositorios es `backend`: los dos compose se creían el mismo proyecto, y
+# levantar la base de un restaurante BORRABA el contenedor del otro. Los datos
+# se salvaban de milagro, porque el volumen sí lleva nombre propio.
+name: elpatio
+
 services:
   base:
     image: postgres:16-alpine

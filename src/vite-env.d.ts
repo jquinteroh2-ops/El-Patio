@@ -22,6 +22,14 @@ interface ImportMetaEnv {
    * Globalsoft sea quien factura. Ver `FACTURACION_INTERNA_HABILITADA`.
    */
   readonly VITE_FACTURACION_INTERNA_HABILITADA?: string
+  /**
+   * URL del sistema del otro restaurante del dueno, sin barra final.
+   *
+   * Es lo unico que ata a El Patio con La Carreta. Si falta, el panel
+   * administrativo no pinta el selector para cambiar de restaurante, que es lo
+   * que se quiere en desarrollo: alli casi nunca estan los dos levantados.
+   */
+  readonly VITE_URL_HERMANO?: string
 }
 
 interface ImportMeta {

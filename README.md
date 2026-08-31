@@ -4,6 +4,12 @@ Sistema de sala para el Restaurante El Patio, en Turbaco, Bolívar. Cubre el
 sitio público, la toma de pedidos en el salón, la pantalla de cocina, la
 recepción de domicilios y para llevar, el cobro y el panel administrativo.
 
+> El mismo dueño tiene un segundo restaurante,
+> [La Carreta](https://github.com/jquinteroh2-ops/La_Carreta), que corre este
+> mismo software con otra marca y otra base de datos. Lo único que los une es
+> un botón en el panel administrativo: ver
+> [El otro restaurante](#el-otro-restaurante).
+
 ```
 Frontend   React 18 · TypeScript · Vite · Tailwind
 Backend    Spring Boot 3.3 · Java 21 · arquitectura hexagonal
@@ -17,6 +23,7 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 
 ## Índice
 
+- [El otro restaurante](#el-otro-restaurante)
 - [Cómo desplegar en Railway](#cómo-desplegar-en-railway)
 - [Variables de entorno](#variables-de-entorno)
 - [Cómo crear usuarios](#cómo-crear-usuarios)
@@ -31,6 +38,48 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Desarrollo local](#desarrollo-local)
 
 Aparte: [análisis de facturación electrónica ante la DIAN](FACTURACION-DIAN.md).
+
+---
+
+## El otro restaurante
+
+El dueño tiene dos locales: **El Patio** y **La Carreta**. Los dos corren este
+mismo software, y aun así son **dos despliegues completamente separados**: cada
+uno con su base de datos, su carta, su personal, su caja y su dominio.
+
+```
+    elpatio.co                       lacarreta.co
+ ┌──────────────┐                  ┌──────────────┐
+ │  Público     │                  │  Público     │
+ │  Salón       │                  │  Salón       │
+ │  Admin  ─────┼───── salta ─────▶│  Admin       │
+ └──────┬───────┘                  └──────┬───────┘
+   BD el_patio                       BD la_carreta
+```
+
+Separados, y no una sola base con una columna «restaurante», porque la venta de
+dos restaurantes en una sola base es un problema contable esperando el cierre de
+mes: son dos NIT, dos cajas y dos nóminas, y una consulta a la que se le olvide
+filtrar no da un error sino una cifra creíble y equivocada. El precio es que el
+código está duplicado en dos repositorios: un arreglo hay que aplicarlo dos
+veces, y la forma barata de hacerlo es `git cherry-pick`, no reescribirlo.
+
+### El botón que los une
+
+En `/admin` aparece arriba a la derecha un selector con el nombre del
+restaurante en el que se está; al desplegarlo, un enlace lleva **a la misma
+sección** del otro local. Solo lo ve el administrador, y el salto vuelve a pedir
+la clave: son dos servidores distintos y la credencial de uno no vale en el
+otro.
+
+Se enciende con una sola variable en el frontend:
+
+```bash
+VITE_URL_HERMANO=https://lacarreta.up.railway.app
+```
+
+Sin ella el selector **no se pinta**, que es lo que se quiere en desarrollo:
+allí casi nunca están los dos sistemas levantados.
 
 ---
 
@@ -165,6 +214,7 @@ sus claves:
 |---|---|---|
 | `VITE_URL_API` | sí | URL del backend, sin barra final |
 | `VITE_URL_WS` | no | Solo si el WebSocket vive en otro dominio |
+| `VITE_URL_HERMANO` | no | URL del sitio de La Carreta. Enciende el selector de restaurante en `/admin` |
 
 Ningún secreto va en las variables del frontend: **todas quedan escritas en el
 paquete compilado** y cualquiera puede leerlas.
@@ -629,6 +679,11 @@ El contenedor publica PostgreSQL en el **5433** y no en el 5432, porque muchas
 máquinas ya tienen un PostgreSQL propio en el puerto estándar. Si los dos
 compiten, el error que aparece es «autenticación fallida», que no dice nada
 sobre el conflicto.
+
+El 5434 es el de La Carreta, el otro restaurante del dueño. Cada uno tiene su
+puerto y su nombre de proyecto de Docker —`elpatio` y `lacarreta`— para poder
+levantar los dos a la vez, que es lo que hace falta para probar el salto entre
+los dos paneles.
 
 ### Construir la imagen del backend
 
