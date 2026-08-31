@@ -11,6 +11,7 @@ import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { Comprobante } from '@/comandera/Comprobante'
+import { EsqueletoTabla } from '@/componentes/ui/Esqueleto'
 
 const METODOS: { id: MetodoPago | 'todos'; etiqueta: string }[] = [
   { id: 'todos', etiqueta: 'Todos' },
@@ -140,7 +141,7 @@ export default function Ventas() {
 
       {/* ---------- Listado ---------- */}
       {cargando ? (
-        <p className="py-8 text-center text-sm text-noche-400">Cargando ventas…</p>
+        <EsqueletoTabla filas={8} columnas={5} />
       ) : ventas.length === 0 ? (
         <Vacio
           icono={Receipt}

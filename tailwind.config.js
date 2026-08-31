@@ -101,6 +101,34 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(-12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // El barrido de luz de los esqueletos de carga.
+        //
+        // Se mueve el FONDO y no el elemento: un hijo desplazandose dentro de
+        // una caja obliga al navegador a recortarlo en cada cuadro, y con
+        // treinta esqueletos en pantalla —una tabla de ventas— eso se nota en
+        // un celular de mostrador. Un degradado que se corre lo resuelve la
+        // tarjeta grafica sola.
+        brillo: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        // La respiracion del emblema mientras el sistema abre.
+        respirar: {
+          '0%,100%': { opacity: '0.55', transform: 'scale(0.97)' },
+          '50%': { opacity: '1', transform: 'scale(1)' },
+        },
+        // La barra que cruza bajo el emblema en la pantalla de arranque. No
+        // mide progreso —nadie sabe cuanto falta— y por eso va y viene en vez
+        // de llenarse: una barra que se llena y se queda quieta miente.
+        vaiven: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(300%)' },
+        },
+        // El trazo que se dibuja solo. Lo usa la herradura del arranque.
+        trazar: {
+          '0%': { strokeDashoffset: '1000' },
+          '55%,100%': { strokeDashoffset: '0' },
+        },
       },
       animation: {
         entrada: 'entrada 0.22s ease-out',
@@ -109,6 +137,10 @@ export default {
         deslizar: 'deslizar 0.24s cubic-bezier(0.32, 0.72, 0, 1)',
         aparecer: 'aparecer 0.18s ease-out',
         caer: 'caer 0.2s ease-out',
+        brillo: 'brillo 1.6s linear infinite',
+        respirar: 'respirar 2.4s ease-in-out infinite',
+        vaiven: 'vaiven 1.4s ease-in-out infinite',
+        trazar: 'trazar 2.6s ease-in-out infinite',
       },
     },
   },

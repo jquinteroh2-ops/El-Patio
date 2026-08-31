@@ -21,7 +21,7 @@ export function TarjetaMesa({ mesa, onTocar }: Props) {
     <button
       type="button"
       onClick={() => onTocar(mesa)}
-      className={`relative flex min-h-[124px] flex-col rounded-2xl border p-3 text-left transition active:scale-[0.98] ${estilo.borde} ${estilo.fondo} hover:brightness-125`}
+      className={`relative flex min-h-[124px] flex-col rounded-2xl border p-3 text-left transition duration-150 hover:-translate-y-0.5 hover:brightness-125 active:translate-y-0 active:scale-[0.98] ${estilo.borde} ${estilo.fondo}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">

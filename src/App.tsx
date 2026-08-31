@@ -54,7 +54,7 @@ export default function App() {
     void Promise.all([api.inicializar(), precargarFichaSitio()]).finally(() => setListo(true))
   }, [])
 
-  if (!listo) return <Cargando pantallaCompleta mensaje="Preparando el salón" />
+  if (!listo) return <Cargando pantallaCompleta />
 
   return (
     <BrowserRouter>

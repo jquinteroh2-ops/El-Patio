@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EsqueletoTabla } from '@/componentes/ui/Esqueleto'
 import { AlertTriangle, CheckCircle2, Clock, FileWarning, RefreshCw } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type {
@@ -9,7 +10,6 @@ import type {
 import { claveDia, formatoCOP, formatoFechaHora } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import { Boton } from '@/componentes/ui/Boton'
-import { Cargando } from '@/componentes/ui/Cargando'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { MenuExportar } from '@/componentes/ui/MenuExportar'
 import { Vacio } from '@/componentes/ui/Vacio'
@@ -158,7 +158,7 @@ export default function Conciliacion() {
       </div>
 
       {cargando ? (
-        <Cargando mensaje="Cruzando las ventas con el ERP" />
+        <EsqueletoTabla filas={7} columnas={5} />
       ) : (
         <>
           {/* ---------- El resumen, que es lo que se mira primero ---------- */}

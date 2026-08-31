@@ -90,7 +90,7 @@ export default function InicioAdmin() {
   return (
     <div className="space-y-4">
       {/* ---------- Indicadores ---------- */}
-      <section className="grid grid-cols-2 gap-2.5 lg:grid-cols-6">
+      <section className="entrada-escalonada grid grid-cols-2 gap-2.5 lg:grid-cols-6">
         {tarjetas.map(({ icono: Icono, etiqueta, valor }) => (
           <div key={etiqueta} className="rounded-2xl border border-noche-800 bg-noche-900 p-3">
             <Icono className="mb-2 h-4 w-4 text-noche-500" aria-hidden />
@@ -132,7 +132,7 @@ export default function InicioAdmin() {
         </section>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="entrada-escalonada grid gap-4 lg:grid-cols-3">
         {/* ---------- Mesas activas ---------- */}
         <section className="rounded-2xl border border-noche-800 bg-noche-900 p-3 lg:col-span-2">
           <h2 className="mb-2.5 flex items-center justify-between gap-2 text-sm font-semibold text-crema-100">

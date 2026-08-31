@@ -10,6 +10,7 @@ import type { EstadoCanal, ItemCarta } from '@/compartido/tipos'
 import { HojaModificadores, type SeleccionProducto } from '@/comandera/HojaModificadores'
 import { useCarrito } from './carrito'
 import { Filete } from './Ornamento'
+import { Esqueleto, EsqueletoTexto, ZonaCargando } from '@/componentes/ui/Esqueleto'
 
 export default function Carta() {
   // Sin filtrar: un plato agotado se marca, no se esconde. El cliente merece
@@ -131,7 +132,39 @@ export default function Carta() {
 
       <div className="mx-auto max-w-3xl px-5 py-14">
         {cargando ? (
-          <p className="py-16 text-center text-crema-100/50">Cargando la carta…</p>
+          /*
+            Dos categorias de cuatro platos. No es el numero real -no se sabe
+            hasta que llega la carta- pero llena la primera pantalla, que es lo
+            unico que se ve mientras carga.
+          */
+          <ZonaCargando etiqueta="Cargando la carta">
+            <div className="space-y-16">
+              {[0, 1].map((categoria) => (
+                <section key={categoria}>
+                  <Esqueleto claro className="h-8 w-1/2" />
+                  <span className="mt-3 mb-7 block h-px w-full bg-crema-100/10" aria-hidden />
+                  <ul className="space-y-7">
+                    {[0, 1, 2, 3].map((plato) => (
+                      <li
+                        key={plato}
+                        className="animate-entrada"
+                        style={{ animationDelay: `${(categoria * 4 + plato) * 45}ms` }}
+                      >
+                        <div className="flex items-baseline gap-4">
+                          <Esqueleto claro className="h-5 w-2/5" />
+                          <span className="h-px flex-1 bg-crema-100/10" aria-hidden />
+                          <Esqueleto claro className="h-5 w-20" />
+                        </div>
+                        <div className="mt-2.5">
+                          <EsqueletoTexto lineas={2} claro />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </ZonaCargando>
         ) : (
           <div className="space-y-16">
             {categorias.map((categoria) => (

@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { EsqueletoTarjetas } from '@/componentes/ui/Esqueleto'
 import { Download, Mail, Phone, Trash2, Users } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { EstadoPostulacion, PaginaDe, Postulacion } from '@/compartido/mockApi'
 import { claveDia, formatoFechaHora } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import { Boton } from '@/componentes/ui/Boton'
-import { Cargando } from '@/componentes/ui/Cargando'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { MenuExportar } from '@/componentes/ui/MenuExportar'
@@ -165,7 +165,7 @@ export default function Postulaciones() {
       </section>
 
       {cargando ? (
-        <Cargando mensaje="Cargando postulaciones" />
+        <EsqueletoTarjetas cantidad={4} etiqueta="Cargando las postulaciones" />
       ) : datos.contenido.length === 0 ? (
         <Vacio
           icono={Users}

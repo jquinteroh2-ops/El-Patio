@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Esqueleto, ZonaCargando } from '@/componentes/ui/Esqueleto'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Pencil, Search, ShoppingBag, X } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
@@ -7,7 +8,6 @@ import { formatoCOP } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type { ItemCarta, ModificadorSeleccionado } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
-import { Cargando } from '@/componentes/ui/Cargando'
 import { Contador } from '@/componentes/ui/Contador'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Vacio } from '@/componentes/ui/Vacio'
@@ -209,7 +209,23 @@ export default function SelectorProductos() {
 
       <main className="flex-1 px-3 py-3">
         {cargando ? (
-          <Cargando mensaje="Cargando la carta" />
+          <ZonaCargando etiqueta="Cargando la carta">
+            <div className="space-y-2.5">
+              {Array.from({ length: 7 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex animate-entrada items-center gap-3 rounded-2xl border border-noche-800 bg-noche-900 p-3.5"
+                  style={{ animationDelay: `${i * 45}ms` }}
+                >
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Esqueleto className="h-4 w-2/5" />
+                    <Esqueleto className="h-3 w-4/5" />
+                  </div>
+                  <Esqueleto className="h-4 w-16 shrink-0" />
+                </div>
+              ))}
+            </div>
+          </ZonaCargando>
         ) : visibles.length === 0 ? (
           <Vacio icono={Search} titulo="Sin resultados" descripcion="Prueba con otra palabra del nombre del plato." />
         ) : (

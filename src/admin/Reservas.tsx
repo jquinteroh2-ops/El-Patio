@@ -197,7 +197,7 @@ export default function Reservas() {
           descripcion="Las solicitudes del sitio público aparecen aquí de inmediato. Las que pidan por WhatsApp o por teléfono se anotan con «Nueva reserva»."
         />
       ) : (
-        <ul className="grid gap-2.5 lg:grid-cols-2">
+        <ul className="entrada-escalonada grid gap-2.5 lg:grid-cols-2">
           {visibles.map((reserva) => {
             const estado = ETIQUETA_ESTADO[reserva.estado]
             const ocasion = reserva.ocasion ? NOMBRE_OCASION[reserva.ocasion] : ''

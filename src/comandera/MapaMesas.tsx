@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { Esqueleto, ZonaCargando } from '@/componentes/ui/Esqueleto'
 import { useNavigate } from 'react-router-dom'
 import { LayoutGrid, Users } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
@@ -10,7 +11,6 @@ import { useReloj, useSyncedState } from '@/compartido/useSyncedState'
 import type { Zona } from '@/compartido/tipos'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
 import { Boton } from '@/componentes/ui/Boton'
-import { Cargando } from '@/componentes/ui/Cargando'
 import { Contador } from '@/componentes/ui/Contador'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { useAvisos } from '@/componentes/ui/Avisos'
@@ -127,7 +127,18 @@ export default function MapaMesas() {
 
       <main className="flex-1 px-4 py-4">
         {cargando ? (
-          <Cargando mensaje="Cargando el salón" />
+          <ZonaCargando etiqueta="Cargando el salón">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }, (_, i) => (
+                <Esqueleto
+                  key={i}
+                  className="h-28 animate-entrada rounded-2xl"
+                  /* Cada mesa entra un poco despues de la anterior: el salon se
+                     arma de izquierda a derecha, como se recorre. */
+                />
+              ))}
+            </div>
+          </ZonaCargando>
         ) : (
           <div className="space-y-6">
             {ZONAS.filter((z) => visibles.some((m) => m.zona === z)).map((zona) => (
@@ -136,7 +147,7 @@ export default function MapaMesas() {
                   <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
                   {NOMBRE_ZONA[zona]}
                 </h2>
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+                <div className="entrada-escalonada grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
                   {visibles
                     .filter((m) => m.zona === zona)
                     .map((mesa) => (

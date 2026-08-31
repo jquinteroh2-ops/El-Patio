@@ -44,6 +44,7 @@ import { BotonSonido } from './BotonSonido'
 import { useSonidoRecepcion } from './sonido'
 import { PestanasRecepcion } from './PestanasRecepcion'
 import { NuevoPedido } from './NuevoPedido'
+import { EsqueletoTarjetas } from '@/componentes/ui/Esqueleto'
 import {
   PRECISION_ACEPTABLE_METROS,
   distanciaLegible,
@@ -243,8 +244,8 @@ export default function PantallaPedidos() {
 
   if (cargando) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-noche-950 text-noche-400">
-        Cargando pedidos…
+      <div className="min-h-dvh bg-noche-950 px-3 py-4 sm:px-4">
+        <EsqueletoTarjetas cantidad={6} etiqueta="Cargando los pedidos" />
       </div>
     )
   }

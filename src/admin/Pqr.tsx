@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { EsqueletoTarjetas } from '@/componentes/ui/Esqueleto'
 import { AlertTriangle, Clock, Download, Mail, MessageSquare, Paperclip, Phone } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { EstadoPqr, PaginaDe, SolicitudPqr, TipoSolicitud } from '@/compartido/mockApi'
 import { claveDia, formatoFecha, formatoFechaHora } from '@/compartido/formato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import { Boton } from '@/componentes/ui/Boton'
-import { Cargando } from '@/componentes/ui/Cargando'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { Insignia } from '@/componentes/ui/Insignia'
 import { MenuExportar } from '@/componentes/ui/MenuExportar'
@@ -215,7 +215,7 @@ export default function Pqr() {
       </section>
 
       {cargando ? (
-        <Cargando mensaje="Cargando solicitudes" />
+        <EsqueletoTarjetas cantidad={4} etiqueta="Cargando las solicitudes" />
       ) : datos.contenido.length === 0 ? (
         <Vacio
           icono={MessageSquare}

@@ -156,7 +156,7 @@ export default function Inicio() {
               Lo que está pasando
             </h2>
 
-            <div className="mt-9 grid gap-6 sm:grid-cols-2">
+            <div className="entrada-escalonada mt-9 grid gap-6 sm:grid-cols-2">
               {anuncios.map((p) => (
                 <article
                   key={p.id}
@@ -282,7 +282,7 @@ export default function Inicio() {
 
       {/* ---------------- Ubicación y horario ---------------- */}
       <section className="mx-auto max-w-5xl px-5 py-20">
-        <div className="grid gap-12 sm:grid-cols-2">
+        <div className="entrada-escalonada grid gap-12 sm:grid-cols-2">
           <div>
             <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Encuéntrenos</p>
             <h2 className="mt-4 font-titulo text-4xl font-light text-crema-100">Dónde estamos</h2>
