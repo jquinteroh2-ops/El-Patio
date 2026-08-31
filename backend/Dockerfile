@@ -50,15 +50,25 @@ COPY --from=construccion /obra/target/*.jar aplicacion.jar
 #
 # EN RAILWAY, EL VOLUMEN SE MONTA EN /aplicacion/datos. Si se monta en otra
 # ruta, hay que apuntar ahí ELPATIO_RUTA_DOCUMENTOS, ELPATIO_RUTA_IMAGENES y
-# ELPATIO_ERP_CARPETA; y si el volumen llega con dueño root, este chown no
-# alcanza porque el montaje ocurre después de construir la imagen: en ese caso
-# el arranque avisa en la bitácora y el resto del sistema sigue funcionando.
+# ELPATIO_ERP_CARPETA.
+#
+# Este chown NO alcanza para el volumen: el montaje ocurre DESPUÉS de
+# construir la imagen y llega con sus propios permisos, encima de esta
+# carpeta. De eso se encarga `arranque.sh`, que corrige el dueño ya montado y
+# baja privilegios antes de arrancar la máquina virtual.
 RUN mkdir -p /aplicacion/datos/documentos \
              /aplicacion/datos/imagenes \
              /aplicacion/datos/erp \
     && chown -R elpatio:elpatio /aplicacion
 
-USER elpatio
+# NO hay `USER elpatio` aquí, y es deliberado.
+#
+# El contenedor entra como root para poder ajustar el dueño del volumen
+# montado, y `arranque.sh` cambia a `elpatio` con `setpriv` antes de ejecutar
+# Java. Root vive unos milisegundos y solo para un `chown`; el proceso que
+# atiende peticiones nunca tiene privilegios, que es lo que de verdad importa.
+COPY backend/arranque.sh arranque.sh
+RUN chmod +x arranque.sh
 
 # Railway inyecta PORT; el application.yml ya lo lee.
 EXPOSE 8080
@@ -67,4 +77,4 @@ EXPOSE 8080
 # tamaño en Railway y la JVM debe acomodarse sin que nadie edite esto.
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+UseContainerSupport"
 
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar aplicacion.jar"]
+ENTRYPOINT ["./arranque.sh"]

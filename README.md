@@ -216,6 +216,42 @@ sus claves:
 
 ---
 
+## El volumen de datos
+
+El backend de cada restaurante tiene un **volumen montado en `/aplicacion/datos`**
+(servicio `backend`). Ahí van las hojas de vida de quien se postula y los
+adjuntos de las PQR.
+
+Sin volumen, el sistema de archivos del contenedor se borra en cada despliegue y
+esos archivos desaparecen sin que nadie se entere: la fila de la postulación
+sigue en la base, pero el PDF que la persona subió ya no está.
+
+### Lo que costó montarlo
+
+**El volumen llega con dueño `root` y el proceso corre como `elpatio`.** La
+imagen crea `/aplicacion/datos` y se lo da al usuario que ejecuta, pero eso pasa
+al CONSTRUIR; el volumen se monta después, encima de esa carpeta y con sus
+propios permisos. El resultado era un `AccessDeniedException` al arrancar, y las
+hojas de vida sin poder guardarse.
+
+La salida fácil era correr todo como root. Lo que hace `backend/arranque.sh` es
+lo contrario: entra como root, corrige el dueño de la carpeta ya montada, y
+**cambia a `elpatio` con `setpriv` antes de ejecutar Java**. Root vive unos
+milisegundos y solo para un `chown`; el proceso que atiende peticiones nunca
+tiene privilegios.
+
+Se usa `setpriv` y no `su` porque `su` deja una sesión intermedia de PID 1: la
+señal de apagado le llegaría a ella y no a Java, y el contenedor tardaría medio
+minuto en morir cortando peticiones en curso. `setpriv` reemplaza el proceso, así
+que Java queda de PID 1 y recibe las señales directamente.
+
+### Ojo el día del respaldo
+
+`respaldar.sh` vuelca la base, y **estos archivos no están en la base**. Un
+respaldo completo tiene que llevarse además el contenido del volumen.
+
+---
+
 ## Variables de entorno
 
 ### Backend
