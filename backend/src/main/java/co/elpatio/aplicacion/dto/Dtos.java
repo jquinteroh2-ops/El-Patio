@@ -69,6 +69,28 @@ public final class Dtos {
 
   public record PeticionPaseDeCruce(String pase) {}
 
+  /** El sobre firmado con que un restaurante le manda al otro un cambio de cuenta. */
+  public record PeticionEspejo(String sobre) {}
+
+  /**
+   * Si el otro restaurante encontro aqui una cuenta que espejar.
+   *
+   * `false` no es un error: significa que ese administrador solo existe en el
+   * restaurante que mando el cambio, que es lo normal para quien trabaja en un
+   * solo local.
+   */
+  public record RespuestaEspejo(boolean aplicado) {}
+
+  /**
+   * Lo que se responde al guardar un usuario.
+   *
+   * Lleva ademas que paso con el espejo, para que la pantalla pueda decirlo. Un
+   * cambio que se guardo aqui pero no llego al otro restaurante tiene que verse:
+   * si se callara, el dueno se quedaria con dos claves distintas creyendo que
+   * tiene una.
+   */
+  public record RespuestaUsuarioGuardado(UsuarioDto usuario, String espejo) {}
+
   /**
    * Usuario tal como lo espera la pantalla de administracion.
    *

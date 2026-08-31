@@ -13,11 +13,14 @@ import co.elpatio.infraestructura.persistencia.dao.DaoPasesDeCruce;
 import co.elpatio.infraestructura.persistencia.dao.DaoSesionesRefresh;
 import co.elpatio.infraestructura.persistencia.filas.FilaPaseDeCruce;
 import co.elpatio.infraestructura.persistencia.filas.FilaSesionRefresh;
+import co.elpatio.infraestructura.seguridad.ServicioEspejoDeCuenta;
 import co.elpatio.infraestructura.seguridad.ServicioPaseDeCruce;
 import co.elpatio.infraestructura.seguridad.ServicioTokens;
 import java.time.Instant;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 /** Ingreso, renovacion de sesion y administracion del personal. */
 @Service
 public class ServicioAcceso {
+
+  private static final Logger registro = LoggerFactory.getLogger(ServicioAcceso.class);
 
   /**
    * Validacion del correo, deliberadamente floja: algo, una arroba, algo con
@@ -260,9 +265,14 @@ public class ServicioAcceso {
    * regla cada edicion de nombre borraria la clave de la persona.
    */
   @Transactional
-  public Dtos.UsuarioDto guardarUsuario(Dtos.UsuarioDto entrada) {
+  public UsuarioGuardado guardarUsuario(Dtos.UsuarioDto entrada) {
     boolean esNuevo = entrada.id() == null || entrada.id().isBlank();
     Usuario usuario;
+    boolean claveCambio = false;
+    // Con el que hay que buscar la cuenta en el otro restaurante. Se anota
+    // ANTES de tocar nada: si el dueno se esta cambiando el nombre de usuario,
+    // el nuevo no existe alla y buscarlo por el no encontraria nada.
+    String usuarioAnterior = null;
 
     if (esNuevo) {
       if (entrada.clave() == null || entrada.clave().isBlank()) {
@@ -271,13 +281,16 @@ public class ServicioAcceso {
       usuario = new Usuario();
       usuario.setId(ids.nuevo("u"));
       usuario.setClaveHash(claves.encode(entrada.clave()));
+      claveCambio = true;
     } else {
       usuario =
           usuarios
               .porId(entrada.id())
               .orElseThrow(() -> new NoEncontradoError("El usuario no existe"));
+      usuarioAnterior = usuario.getUsuario();
       if (entrada.clave() != null && !entrada.clave().isBlank()) {
         usuario.setClaveHash(claves.encode(entrada.clave()));
+        claveCambio = true;
         // Cambiar la clave tiene que echar de todas las sesiones abiertas: si no,
         // el token viejo seguiria sirviendo justo cuando se quiso cortar el acceso.
         sesiones.revocarTodasDe(usuario.getId());
@@ -308,8 +321,71 @@ public class ServicioAcceso {
 
     if (!usuario.isActivo()) sesiones.revocarTodasDe(usuario.getId());
 
-    Dtos.UsuarioDto guardado = Dtos.UsuarioDto.de(usuarios.guardar(usuario));
+    Usuario fila = usuarios.guardar(usuario);
     eventos.publicar(List.of("usuarios"));
-    return guardado;
+    return new UsuarioGuardado(
+        Dtos.UsuarioDto.de(fila),
+        usuarioAnterior == null ? fila.getUsuario() : usuarioAnterior,
+        fila.getRol() == Rol.ADMINISTRADOR,
+        claveCambio ? fila.getClaveHash() : null);
+  }
+
+  /**
+   * Lo que el controlador necesita para replicar el cambio al otro restaurante.
+   *
+   * El hash NO sale de aqui hacia el navegador: lo usa el controlador para
+   * meterlo en el sobre firmado y nada mas. Va nulo cuando la clave no cambio,
+   * para que el destino sepa que no tiene que tocar la suya.
+   */
+  public record UsuarioGuardado(
+      Dtos.UsuarioDto usuario, String usuarioAnterior, boolean esAdministrador, String claveHash) {}
+
+  /**
+   * Aplica el cambio que mando el otro restaurante sobre la cuenta del dueno.
+   *
+   * Se busca por el nombre de usuario ANTERIOR y se exige que la cuenta local
+   * sea de administrador. Si no existe, no pasa nada y se responde que no se
+   * aplico: ese administrador solo trabaja en el otro local.
+   *
+   * NO se tocan el rol ni si la cuenta esta activa. Los dos dicen que puede
+   * hacer la persona AQUI, y eso lo decide cada restaurante: suspenderle el
+   * acceso a un local no tiene por que cerrarle el otro.
+   *
+   * Es idempotente a proposito. Si la respuesta se pierde y el origen reintenta,
+   * el segundo intento deja lo mismo que el primero, y las dos cuentas quedan
+   * iguales sin que nadie tenga que arreglar nada a mano.
+   */
+  @Transactional
+  public boolean aplicarEspejo(ServicioEspejoDeCuenta.Cambio cambio) {
+    Usuario local =
+        usuarios
+            .porNombreDeUsuario(cambio.usuarioAnterior() == null ? "" : cambio.usuarioAnterior())
+            .filter(u -> u.getRol() == Rol.ADMINISTRADOR)
+            .orElse(null);
+    if (local == null) return false;
+
+    // El nombre de usuario tambien viaja, pero solo se acepta si no se lo esta
+    // quitando a otra cuenta de esta casa.
+    String nuevoUsuario = cambio.usuario() == null ? local.getUsuario() : cambio.usuario().trim();
+    boolean chocaConOtro =
+        usuarios.porNombreDeUsuario(nuevoUsuario).filter(o -> !o.getId().equals(local.getId())).isPresent();
+    if (!nuevoUsuario.isBlank() && !chocaConOtro) local.setUsuario(nuevoUsuario);
+
+    if (cambio.nombre() != null && !cambio.nombre().isBlank()) local.setNombre(cambio.nombre().trim());
+    local.setCorreo(cambio.correo() == null || cambio.correo().isBlank() ? null : cambio.correo().trim());
+
+    if (cambio.claveHash() != null && !cambio.claveHash().isBlank()) {
+      local.setClaveHash(cambio.claveHash());
+      // La clave cambio: las sesiones abiertas de este lado tienen que caerse
+      // igual que si se hubiera cambiado aqui. Si no, el token viejo seguiria
+      // sirviendo justo cuando se quiso cortar el acceso.
+      sesiones.revocarTodasDe(local.getId());
+    }
+
+    usuarios.guardar(local);
+    eventos.publicar(List.of("usuarios"));
+    registro.info(
+        "Cuenta «{}» actualizada desde {}", local.getUsuario(), cambio.origen());
+    return true;
   }
 }

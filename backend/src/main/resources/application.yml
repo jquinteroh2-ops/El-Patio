@@ -183,6 +183,14 @@ elpatio:
     # De dónde dice venir el pase. Solo se usa para el registro y para poder
     # decirle a la persona desde qué restaurante acaba de llegar.
     nombre: ${ELPATIO_CRUCE_NOMBRE:El Patio}
+    # La API del OTRO restaurante, sin barra final.
+    #
+    # Es a donde se manda el cambio cuando el dueño edita su propia cuenta, para
+    # que allá quede igual. Ojo: aquí va el backend del hermano, no su sitio
+    # web; el frontend tiene su propia variable con la otra dirección.
+    #
+    # Vacía = no se replica nada, y guardar un usuario funciona como siempre.
+    api-hermana: ${ELPATIO_CRUCE_API_HERMANA:}
 
   # Los anticipos de los canales automatizados, cobrados con un link de pago
   # de Wompi.

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Percent, PlusCircle, UserPlus, Users, Utensils } from 'lucide-react'
+import { RESTAURANTE, RESTAURANTE_HERMANO } from '@/compartido/config'
 import * as api from '@/compartido/mockApi'
 import type { MesaEnMapa } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
@@ -68,13 +69,30 @@ export default function Configuracion() {
   const guardarUsuario = async (borrador: Usuario) => {
     setGuardandoUsuario(true)
     try {
-      await api.guardarUsuario(borrador)
+      const { espejo } = await api.guardarUsuario(borrador)
       setEditorAbierto(false)
       refrescarUsuarios()
-      mostrar(
-        borrador.id ? `${borrador.nombre}: cuenta actualizada` : `${borrador.nombre} ya puede entrar`,
-        'exito',
-      )
+
+      if (espejo === 'fallo') {
+        // El cambio quedó AQUÍ y no allá. Se dice con todas las letras y se
+        // pide reintentar: callarlo dejaría al dueño con dos claves distintas
+        // creyendo que tiene una, y descubriéndolo el día que no pueda entrar
+        // al otro panel. Volver a guardar es seguro y deja las dos iguales.
+        mostrar(
+          `Se guardó en ${RESTAURANTE.nombre}, pero no se pudo actualizar la cuenta en ` +
+            `${RESTAURANTE_HERMANO.nombre}. Vuelva a guardar para que queden iguales.`,
+          'error',
+        )
+      } else {
+        mostrar(
+          espejo === 'replicado'
+            ? `${borrador.nombre}: cuenta actualizada en los dos restaurantes`
+            : borrador.id
+              ? `${borrador.nombre}: cuenta actualizada`
+              : `${borrador.nombre} ya puede entrar`,
+          'exito',
+        )
+      }
     } catch (error) {
       // El aviso se queda en la hoja abierta a proposito: el borrador no se
       // pierde y se corrige lo que el servidor rechazo sin volver a escribirlo.
@@ -246,6 +264,9 @@ export default function Configuracion() {
                   activo={usuario.activo}
                   etiqueta={`Acceso de ${usuario.nombre}`}
                   onCambiar={async (activo) => {
+                    // El espejo no se mira aquí: activar o suspender el
+                    // acceso NO viaja al otro restaurante, porque dice qué
+                    // puede hacer la persona en ESTA casa.
                     await api.guardarUsuario({ ...usuario, activo })
                     mostrar(
                       activo ? `${usuario.nombre} puede entrar` : `Acceso suspendido a ${usuario.nombre}`,

@@ -70,6 +70,11 @@ public class ConfiguracionSeguridad {
                     // atraparia tambien a `/cruce/canjear` y nadie podria
                     // entrar nunca desde el otro restaurante.
                     .requestMatchers(HttpMethod.POST, "/api/acceso/cruce/canjear").permitAll()
+                    // El espejo de la cuenta del dueno. Lo llama el OTRO
+                    // SERVIDOR, que no tiene sesion aqui; lo que lo
+                    // autentica es la firma del sobre, hecha con el secreto
+                    // que solo conocen los dos restaurantes.
+                    .requestMatchers(HttpMethod.POST, "/api/acceso/espejo").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/acceso/cruce")
                     .hasRole("ADMINISTRADOR")
                     // La pantalla de acceso pregunta si hay cuentas de

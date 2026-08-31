@@ -33,7 +33,7 @@ class ServicioPaseDeCruceTest {
   }
 
   private static ServicioPaseDeCruce servicio(String secreto, Instant momento) {
-    return new ServicioPaseDeCruce(secreto, "La Carreta Gourmet", relojEn(momento));
+    return new ServicioPaseDeCruce(new LlaveDeCruce(secreto, "La Carreta Gourmet"), relojEn(momento));
   }
 
   private static Usuario dueno() {

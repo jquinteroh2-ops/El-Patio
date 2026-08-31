@@ -3,6 +3,7 @@ package co.elpatio.infraestructura.web;
 import co.elpatio.aplicacion.ServicioAcceso;
 import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.infraestructura.config.ModoDemostracion;
+import co.elpatio.infraestructura.seguridad.ServicioEspejoDeCuenta;
 import co.elpatio.infraestructura.seguridad.ServicioTokens;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +31,16 @@ public class ControladorAcceso {
 
   private final ServicioAcceso servicio;
   private final ModoDemostracion demostracion;
+  private final ServicioEspejoDeCuenta espejo;
 
   // El modo se lee aqui y no en ServicioAcceso porque es configuracion del
   // despliegue, no una regla del restaurante: la capa de aplicacion no conoce
   // el paquete de infraestructura, y este controlador si.
-  public ControladorAcceso(ServicioAcceso servicio, ModoDemostracion demostracion) {
+  public ControladorAcceso(
+      ServicioAcceso servicio, ModoDemostracion demostracion, ServicioEspejoDeCuenta espejo) {
     this.servicio = servicio;
     this.demostracion = demostracion;
+    this.espejo = espejo;
   }
 
   /** Equivale a `autenticar(usuario, clave)` de mockApi.ts. */
@@ -114,10 +118,58 @@ public class ControladorAcceso {
     return servicio.listarUsuarios();
   }
 
-  /** Equivale a `guardarUsuario(usuario)`. */
+  /**
+   * Equivale a `guardarUsuario(usuario)`.
+   *
+   * Si el usuario guardado es administrador, el cambio viaja ademas al otro
+   * restaurante del dueno: alla tiene la misma cuenta y tiene que quedar igual.
+   *
+   * LA LLAMADA AL HERMANO SE HACE AQUI Y NO EN EL SERVICIO, a proposito. El
+   * servicio guarda dentro de una transaccion, y meter una peticion HTTP de
+   * hasta cinco segundos ahi dentro es tener una conexion de base bloqueada
+   * esperando a otro servidor. Aqui la transaccion ya cerro.
+   *
+   * Que el hermano no conteste NO deshace lo que se guardo aqui: el cambio
+   * local es valido por si mismo. Lo que se hace es contarlo en la respuesta,
+   * para que la pantalla lo diga y la persona vuelva a guardar. Reintentar es
+   * seguro: aplicar el mismo cambio dos veces deja lo mismo.
+   */
   @PutMapping("/usuarios")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public Dtos.UsuarioDto guardarUsuario(@RequestBody Dtos.UsuarioDto usuario) {
-    return servicio.guardarUsuario(usuario);
+  public Dtos.RespuestaUsuarioGuardado guardarUsuario(@RequestBody Dtos.UsuarioDto usuario) {
+    ServicioAcceso.UsuarioGuardado guardado = servicio.guardarUsuario(usuario);
+
+    ServicioEspejoDeCuenta.Resultado resultado = ServicioEspejoDeCuenta.Resultado.APAGADO;
+    if (guardado.esAdministrador()) {
+      resultado =
+          espejo.replicar(
+              new ServicioEspejoDeCuenta.Cambio(
+                  guardado.usuarioAnterior(),
+                  guardado.usuario().usuario(),
+                  guardado.usuario().nombre(),
+                  guardado.usuario().correo(),
+                  guardado.claveHash(),
+                  null));
+    }
+
+    return new Dtos.RespuestaUsuarioGuardado(
+        guardado.usuario(), resultado.name().toLowerCase(java.util.Locale.ROOT));
+  }
+
+  /**
+   * Recibe del otro restaurante un cambio sobre la cuenta del dueno.
+   *
+   * Abierta, como el canje del pase: quien llama es el otro servidor, que no
+   * tiene sesion aqui. Lo que lo autentica es la firma del sobre, hecha con el
+   * secreto que solo conocen los dos restaurantes.
+   */
+  @PostMapping("/acceso/espejo")
+  public Dtos.RespuestaEspejo recibirEspejo(@RequestBody Dtos.PeticionEspejo peticion) {
+    return espejo
+        .abrir(peticion.sobre())
+        .map(cambio -> new Dtos.RespuestaEspejo(servicio.aplicarEspejo(cambio)))
+        // Un sobre que no valida no dice cuanto falto para validar: se responde
+        // lo mismo que si la cuenta no existiera.
+        .orElseGet(() -> new Dtos.RespuestaEspejo(false));
   }
 }

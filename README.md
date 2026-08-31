@@ -80,6 +80,63 @@ VITE_URL_HERMANO=https://carreta-frontend-production.up.railway.app
 Sin ella el selector **no se pinta**, que es lo que se quiere en desarrollo:
 allí casi nunca están los dos sistemas levantados.
 
+### La cuenta del dueño es una sola
+
+El dueño tiene una cuenta de administrador en cada local, y eran dos cuentas de
+verdad: cambiar la clave en La Carreta no la cambiaba en El Patio, y había que
+acordarse de hacerlo dos veces y de cuál era cuál.
+
+Ahora **el cambio que hace en un panel viaja al otro**. Se activa con la
+dirección del backend hermano:
+
+```bash
+ELPATIO_CRUCE_API_HERMANA=https://carreta-backend-production.up.railway.app
+```
+
+Vacía = no se replica nada y guardar un usuario funciona como siempre.
+
+**Qué se copia y qué no.** Se copia lo que ES la persona: nombre, correo, clave
+y nombre de usuario. **No** se copian el rol ni si la cuenta está activa, porque
+esos dicen qué puede hacer *aquí*, y son decisión de cada restaurante:
+suspenderle el acceso a un local no tiene por qué cerrarle el otro.
+
+Solo viaja para cuentas de **administrador**, y solo se aplica allá si existe una
+cuenta de administrador con ese mismo nombre de usuario. Para cualquier otra
+persona no pasa nada.
+
+**Viaja el hash, no la clave.** Los dos sistemas cifran igual, así que el hash
+calculado de un lado sirve tal cual en el otro. La clave en limpio no sale nunca
+del servidor donde se escribió.
+
+#### Por qué es síncrono y por qué avisa cuando falla
+
+Sincronizar el personal entero se descartó justamente por esto: dos bases que se
+escriben la una a la otra se desfasan en silencio cuando una llamada se pierde, y
+nadie se entera hasta que algo no cuadra.
+
+Aquí el riesgo se acota de tres maneras. Es **una** cuenta, no un directorio. El
+cambio lo hace una persona que está mirando la pantalla, así que se le puede
+decir la verdad —«se guardó aquí pero no allá, vuelva a guardar»— en vez de
+esconderlo en una cola. Y aplicar el mismo cambio dos veces no hace daño, así que
+**reintentar converge**.
+
+Por eso no hay bandeja de salida ni reintentos automáticos. Un fallo se ve en
+pantalla, se vuelve a pulsar guardar, y listo.
+
+La llamada al hermano se hace en el controlador y no en el servicio, a propósito:
+el servicio guarda dentro de una transacción, y meter ahí una petición HTTP de
+hasta cinco segundos es tener una conexión de base bloqueada esperando a otro
+servidor.
+
+#### Si el nombre de usuario cambia
+
+El sobre lleva el nombre de usuario **anterior** además del nuevo, y el destino
+busca por el anterior. Sin eso, cambiarse el nombre de usuario rompería el
+vínculo para siempre: el destino buscaría un usuario que allá todavía no existe,
+no encontraría nada, y las dos cuentas quedarían separadas sin que nadie lo note.
+
+---
+
 ### El pase: por qué no vuelve a pedir la clave
 
 Son dos servidores con sus propios usuarios y sus propios tokens, así que la

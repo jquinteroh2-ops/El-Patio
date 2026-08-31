@@ -208,8 +208,29 @@ export async function listarUsuarios(): Promise<Usuario[]> {
   return contra(() => pedir<Usuario[]>('/api/usuarios'))
 }
 
-export async function guardarUsuario(usuario: Usuario): Promise<Usuario> {
-  return contra(() => pedir<Usuario>('/api/usuarios', { metodo: 'PUT', cuerpo: usuario }))
+/**
+ * Que paso con el espejo de la cuenta al otro restaurante.
+ *
+ *   apagado         — no hay restaurante hermano configurado, o el usuario
+ *                     guardado no es administrador. No hay nada que decir.
+ *   replicado       — el otro restaurante quedo igual.
+ *   sin_cuenta_alla — contesto bien, pero alli no hay una cuenta con ese
+ *                     usuario. Es lo normal para un administrador que solo
+ *                     trabaja en un local.
+ *   fallo           — no se pudo. HAY QUE VOLVER A GUARDAR: aqui quedo el
+ *                     cambio y alla no.
+ */
+export type EspejoDeCuenta = 'apagado' | 'replicado' | 'sin_cuenta_alla' | 'fallo'
+
+export interface UsuarioGuardado {
+  usuario: Usuario
+  espejo: EspejoDeCuenta
+}
+
+export async function guardarUsuario(usuario: Usuario): Promise<UsuarioGuardado> {
+  return contra(() =>
+    pedir<UsuarioGuardado>('/api/usuarios', { metodo: 'PUT', cuerpo: usuario }),
+  )
 }
 
 // ---------------------------------------------------------------------------
