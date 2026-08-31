@@ -168,7 +168,7 @@ export default function Carta() {
         ) : (
           <div className="space-y-16">
             {categorias.map((categoria) => (
-              <section key={categoria.id} id={categoria.id} className="scroll-mt-36">
+              <section key={categoria.id} id={categoria.id} className="revelar scroll-mt-36">
                 <h2 className="font-titulo text-3xl font-light text-oro-300 sm:text-4xl">
                   {categoria.nombre}
                 </h2>

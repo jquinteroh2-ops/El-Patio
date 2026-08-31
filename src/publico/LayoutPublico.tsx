@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Instagram, MapPin, MessageCircle, Phone } from 'lucide-react'
 import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
 import { enlaceInstagram, useFichaSitio } from '@/compartido/sitio'
@@ -9,6 +9,7 @@ import { OtroRestaurante } from './OtroRestaurante'
 const SALUDO_WHATSAPP = `Hola, quisiera información sobre ${RESTAURANTE.nombreCompleto}.`
 
 export default function LayoutPublico() {
+  const { pathname } = useLocation()
   // Direccion, telefono y redes salen de la base: los edita el panel.
   const ficha = useFichaSitio()
   const whatsapp = enlaceWhatsApp(ficha.whatsapp, SALUDO_WHATSAPP)
@@ -77,7 +78,7 @@ export default function LayoutPublico() {
         </nav>
       </header>
 
-      <main className="flex-1">
+      <main key={pathname} className="entrada-de-panel flex-1">
         <Outlet />
       </main>
 

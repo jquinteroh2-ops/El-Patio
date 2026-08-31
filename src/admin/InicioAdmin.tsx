@@ -90,7 +90,7 @@ export default function InicioAdmin() {
   return (
     <div className="space-y-4">
       {/* ---------- Indicadores ---------- */}
-      <section className="entrada-escalonada grid grid-cols-2 gap-2.5 lg:grid-cols-6">
+      <section className="revelar-corto entrada-escalonada grid grid-cols-2 gap-2.5 lg:grid-cols-6">
         {tarjetas.map(({ icono: Icono, etiqueta, valor }) => (
           <div key={etiqueta} className="rounded-2xl border border-noche-800 bg-noche-900 p-3">
             <Icono className="mb-2 h-4 w-4 text-noche-500" aria-hidden />
@@ -102,7 +102,7 @@ export default function InicioAdmin() {
 
       {/* ---------- Alertas ---------- */}
       {alertas.length > 0 && (
-        <section className="rounded-2xl border border-estado-demorado/40 bg-estado-demorado-suave p-3">
+        <section className="revelar-corto rounded-2xl border border-estado-demorado/40 bg-estado-demorado-suave p-3">
           <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-estado-demorado">
             <AlertTriangle className="h-4 w-4" aria-hidden />
             Requieren atención
@@ -132,9 +132,9 @@ export default function InicioAdmin() {
         </section>
       )}
 
-      <div className="entrada-escalonada grid gap-4 lg:grid-cols-3">
+      <div className="revelar-corto entrada-escalonada grid gap-4 lg:grid-cols-3">
         {/* ---------- Mesas activas ---------- */}
-        <section className="rounded-2xl border border-noche-800 bg-noche-900 p-3 lg:col-span-2">
+        <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-3 lg:col-span-2">
           <h2 className="mb-2.5 flex items-center justify-between gap-2 text-sm font-semibold text-crema-100">
             <span className="flex items-center gap-2">
               <Utensils className="h-4 w-4" aria-hidden />
@@ -188,7 +188,7 @@ export default function InicioAdmin() {
         </section>
 
         {/* ---------- Reservas de hoy ---------- */}
-        <section className="rounded-2xl border border-noche-800 bg-noche-900 p-3">
+        <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-3">
           <h2 className="mb-2.5 flex items-center justify-between gap-2 text-sm font-semibold text-crema-100">
             <span className="flex items-center gap-2">
               <CalendarClock className="h-4 w-4" aria-hidden />

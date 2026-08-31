@@ -61,7 +61,7 @@ export function FichaDelSitio() {
   const hayCambios = borrador !== null
 
   return (
-    <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4 lg:col-span-2">
+    <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-4 lg:col-span-2">
       <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-crema-100">
         <Clock className="h-4 w-4" aria-hidden />
         Horario y contacto del sitio

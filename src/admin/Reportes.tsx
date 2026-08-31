@@ -83,7 +83,7 @@ export default function Reportes() {
         <p className="py-12 text-center text-sm text-noche-400">Calculando reportes…</p>
       ) : (
         <>
-          <section className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          <section className="revelar-corto grid grid-cols-2 gap-2.5 lg:grid-cols-4">
             {[
               { etiqueta: `Ventas en ${dias} días`, valor: formatoCOP(totalPeriodo) },
               {

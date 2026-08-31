@@ -119,7 +119,7 @@ export default function Postulaciones() {
   return (
     <div className="space-y-4">
       {/* ---------- Filtros ---------- */}
-      <section className="flex flex-wrap items-end gap-2 rounded-2xl border border-noche-800 bg-noche-900 p-3">
+      <section className="revelar-corto flex flex-wrap items-end gap-2 rounded-2xl border border-noche-800 bg-noche-900 p-3">
         <label className="block">
           <span className="mb-1 block text-xs uppercase tracking-wide text-noche-400">Estado</span>
           <select

@@ -38,7 +38,7 @@ export function Tarjeta({
   accion?: ReactNode
 }) {
   return (
-    <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
+    <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-4">
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-crema-100">{titulo}</h2>

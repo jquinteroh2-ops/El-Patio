@@ -75,7 +75,7 @@ export default function Ventas() {
   return (
     <div className="space-y-4">
       {/* ---------- Filtros ---------- */}
-      <section className="flex flex-wrap items-end gap-2 rounded-2xl border border-noche-800 bg-noche-900 p-3">
+      <section className="revelar-corto flex flex-wrap items-end gap-2 rounded-2xl border border-noche-800 bg-noche-900 p-3">
         <label className="block">
           <span className="mb-1 block text-xs uppercase tracking-wide text-noche-400">Desde</span>
           <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className={CAMPO} />
@@ -125,7 +125,7 @@ export default function Ventas() {
       </section>
 
       {/* ---------- Totales del filtro ---------- */}
-      <section className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+      <section className="revelar-corto grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         {[
           { etiqueta: 'Ventas', valor: formatoCOP(totales.venta) },
           { etiqueta: 'Cuentas', valor: String(ventas.length) },

@@ -28,7 +28,7 @@ export default function Institucional() {
 
   return (
     <section id="quienes-somos" className="border-t border-oro-500/15 bg-onix-900/40">
-      <div className="mx-auto max-w-3xl px-5 py-20">
+      <div className="revelar mx-auto max-w-3xl px-5 py-20">
         {/* El primer bloque manda: es «quiénes somos» y lleva el peso visual.
             Los demás van debajo, más discretos, para que la sección tenga una
             entrada clara en vez de cuatro títulos del mismo tamaño compitiendo. */}

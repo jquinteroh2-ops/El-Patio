@@ -118,7 +118,7 @@ export default function Cierre() {
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-3">
         {/* ---------- Resumen del turno ---------- */}
-        <section className="rounded-2xl border border-oro-500/30 bg-noche-900 p-4 lg:col-span-2">
+        <section className="revelar-corto rounded-2xl border border-oro-500/30 bg-noche-900 p-4 lg:col-span-2">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-crema-100">
@@ -251,7 +251,7 @@ export default function Cierre() {
         </section>
 
         {/* ---------- Cierres anteriores ---------- */}
-        <section className="rounded-2xl border border-noche-800 bg-noche-900 p-3">
+        <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-3">
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-crema-100">Cierres anteriores</h2>
             {/* Los últimos 90 días: es el rango con el que el contador arma la

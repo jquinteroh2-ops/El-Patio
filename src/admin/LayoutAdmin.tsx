@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { BarChart3, BookOpen, CalendarClock, FileCheck2, LayoutDashboard, Megaphone, Receipt, FileText, MessageSquare, Settings, Users, Wallet } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import { useSesionActiva } from '@/compartido/auth'
@@ -51,6 +51,7 @@ const SECCIONES = [
 
 export default function LayoutAdmin() {
   const sesion = useSesionActiva()
+  const { pathname } = useLocation()
   const visibles = SECCIONES.filter((s) => !s.soloAdmin || sesion.rol === 'administrador')
 
   return (
@@ -91,7 +92,13 @@ export default function LayoutAdmin() {
         </div>
       </nav>
 
-      <main className="flex-1 px-3 py-4 sm:px-4">
+      {/*
+        La `key` es lo que hace que la animacion vuelva a correr.
+        Sin ella el contenedor es el mismo elemento entre una seccion y otra
+        —solo cambian los hijos— y el navegador no tiene motivo para reiniciar
+        nada: la clase esta puesta desde el primer render y ya se gasto.
+      */}
+      <main key={pathname} className="entrada-de-panel flex-1 px-3 py-4 sm:px-4">
         <Outlet />
       </main>
 

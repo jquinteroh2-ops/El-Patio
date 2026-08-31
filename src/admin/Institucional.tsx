@@ -84,7 +84,7 @@ function Tarjeta({
   }
 
   return (
-    <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
+    <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {visible ? (

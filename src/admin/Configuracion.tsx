@@ -166,7 +166,7 @@ export default function Configuracion() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {/* ---------- Impuesto ---------- */}
-      <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
+      <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-4">
         <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-crema-100">
           <Percent className="h-4 w-4" aria-hidden />
           Impuesto al consumo
@@ -217,7 +217,7 @@ export default function Configuracion() {
       <ZonasDomicilio ajustes={ajustes} />
 
       {/* ---------- Usuarios ---------- */}
-      <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
+      <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-crema-100">
             <Users className="h-4 w-4" aria-hidden />
@@ -293,7 +293,7 @@ export default function Configuracion() {
       />
 
       {/* ---------- Mesas ---------- */}
-      <section className="rounded-2xl border border-noche-800 bg-noche-900 p-4">
+      <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-crema-100">
             <Utensils className="h-4 w-4" aria-hidden />

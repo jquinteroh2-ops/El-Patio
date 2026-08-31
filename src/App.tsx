@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProveedorSesion } from '@/compartido/auth'
 import * as api from '@/compartido/mockApi'
 import { MetaDeRuta } from '@/compartido/seo'
+import { RevelarAlDesplazar } from '@/compartido/revelar'
 import { precargarFichaSitio } from '@/compartido/sitio'
 import { Cargando } from '@/componentes/ui/Cargando'
 import { GuardaRuta } from '@/componentes/GuardaRuta'
@@ -60,6 +61,9 @@ export default function App() {
     <BrowserRouter>
       {/* Ajusta titulo, descripcion y canonica segun la ruta. No pinta nada. */}
       <MetaDeRuta />
+      {/* Hace subir flotando lo que lleve la clase `revelar`. Tampoco pinta
+          nada: solo observa y va marcando lo que entra en pantalla. */}
+      <RevelarAlDesplazar />
       <ProveedorSesion>
         <ProveedorAvisos>
           <Routes>

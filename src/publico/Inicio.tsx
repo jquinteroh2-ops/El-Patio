@@ -148,7 +148,7 @@ export default function Inicio() {
           la portada para no decir nada. */}
       {anuncios.length > 0 && (
         <section className="border-t border-oro-500/15 bg-onix-900/40">
-          <div className="mx-auto max-w-5xl px-5 py-16">
+          <div className="revelar mx-auto max-w-5xl px-5 py-16">
             <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">
               Ahora en El Patio
             </p>
@@ -208,7 +208,7 @@ export default function Inicio() {
           escalones. */}
       {galeria.length > 0 && (
         <section className="border-t border-oro-500/15">
-          <div className="mx-auto max-w-5xl px-5 py-20">
+          <div className="revelar mx-auto max-w-5xl px-5 py-20">
             <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">
               El local
             </p>
@@ -247,7 +247,7 @@ export default function Inicio() {
       )}
 
       {/* ---------------- El lugar ---------------- */}
-      <section className="mx-auto max-w-3xl px-5 py-20 text-center">
+      <section className="revelar mx-auto max-w-3xl px-5 py-20 text-center">
         <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">El lugar</p>
         <h2 className="mt-4 font-titulo text-4xl font-light leading-tight text-crema-100 sm:text-5xl">
           Mantel largo, aire fresco
@@ -269,7 +269,7 @@ export default function Inicio() {
 
       {/* ---------------- Distintivos ---------------- */}
       <section className="border-t border-oro-500/15 bg-onix-900/40">
-        <div className="mx-auto grid max-w-5xl gap-10 px-5 py-20 sm:grid-cols-3">
+        <div className="revelar mx-auto grid max-w-5xl gap-10 px-5 py-20 sm:grid-cols-3">
           {DISTINTIVOS.map(({ icono: Icono, titulo, texto }) => (
             <article key={titulo} className="text-center">
               <Icono className="mx-auto h-7 w-7 text-oro-400" strokeWidth={1.25} aria-hidden />
@@ -282,7 +282,7 @@ export default function Inicio() {
 
       {/* ---------------- Ubicación y horario ---------------- */}
       <section className="mx-auto max-w-5xl px-5 py-20">
-        <div className="entrada-escalonada grid gap-12 sm:grid-cols-2">
+        <div className="revelar grid gap-12 sm:grid-cols-2">
           <div>
             <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Encuéntrenos</p>
             <h2 className="mt-4 font-titulo text-4xl font-light text-crema-100">Dónde estamos</h2>
@@ -366,7 +366,7 @@ export default function Inicio() {
 
       {/* ---------------- Cierre ---------------- */}
       <section className="border-t border-oro-500/15">
-        <div className="mx-auto max-w-3xl px-5 py-20 text-center">
+        <div className="revelar mx-auto max-w-3xl px-5 py-20 text-center">
           <Ornamento className="mx-auto mb-7 h-14 w-24 text-oro-400/60" />
           <h2 className="font-titulo text-4xl font-light leading-tight text-crema-100 sm:text-5xl">
             Reserve su mesa
