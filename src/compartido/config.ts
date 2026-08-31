@@ -355,6 +355,8 @@ export const URL_WS =
 export const RESTAURANTE_HERMANO = {
   nombre: 'La Carreta',
   nombreCompleto: 'Restaurante La Carreta Gourmet',
+  /** Lo que se lee bajo su nombre en el pie del sitio publico. */
+  descripcionCorta: 'Parrilla y cocina de autor del Caribe',
   /** URL del otro sitio, sin barra final. Vacia = no hay hermano configurado. */
   url: sinBarraFinal(import.meta.env.VITE_URL_HERMANO ?? ''),
 } as const

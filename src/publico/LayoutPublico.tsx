@@ -4,6 +4,7 @@ import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
 import { enlaceInstagram, useFichaSitio } from '@/compartido/sitio'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import { Emblema, MarcaConNombre } from './Marca'
+import { OtroRestaurante } from './OtroRestaurante'
 
 const SALUDO_WHATSAPP = `Hola, quisiera información sobre ${RESTAURANTE.nombreCompleto}.`
 
@@ -128,6 +129,8 @@ export default function LayoutPublico() {
             </a>
           </div>
         </div>
+
+        <OtroRestaurante />
 
         <div className="border-t border-oro-500/15">
           <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-5 py-5 text-center sm:flex-row sm:justify-between">
