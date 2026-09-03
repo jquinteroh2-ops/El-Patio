@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type FormEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -10,6 +10,18 @@ interface Props {
   children: ReactNode
   /** Barra fija al pie, para la accion que confirma. */
   pie?: ReactNode
+  /**
+   * Si se pasa, la hoja ES UN FORMULARIO y esto corre al enviarlo.
+   *
+   * Lo que gana con serlo: Enter envia desde cualquier campo, el teclado del
+   * celular ofrece «Listo» en vez de un salto de linea, y los `required` y los
+   * `type="number"` de los campos se validan solos antes de llegar aqui.
+   *
+   * Sin esto la hoja sigue siendo un `div`, que es lo correcto para las que
+   * solo muestran algo —un comprobante, la ficha de una postulacion— y no
+   * tienen nada que enviar.
+   */
+  onEnviar?: () => void
 }
 
 /**
@@ -72,7 +84,15 @@ const ENFOCABLES =
  * en un sistema donde el que anade la animacion no es el que escribio la hoja.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-export function HojaInferior({ abierta, titulo, descripcion, onCerrar, children, pie }: Props) {
+export function HojaInferior({
+  abierta,
+  titulo,
+  descripcion,
+  onCerrar,
+  children,
+  pie,
+  onEnviar,
+}: Props) {
   const dialogo = useRef<HTMLDivElement>(null)
   /** Quien tenia el foco antes de abrir, para devolverselo al cerrar. */
   const focoAnterior = useRef<HTMLElement | null>(null)
@@ -141,6 +161,76 @@ export function HojaInferior({ abierta, titulo, descripcion, onCerrar, children,
 
   if (!abierta) return null
 
+  /*
+   * El contenido, y el marco que lo envuelve.
+   *
+   * Cuando la hoja recibe `onEnviar` el marco es un `<form>` DE VERDAD, y no un
+   * `div` con un boton que llama a una funcion. La diferencia se nota en el
+   * mostrador: Enter envia desde cualquier campo, el teclado del celular ofrece
+   * «Listo» en vez de un salto de linea, y los `required` de los campos se
+   * comprueban solos antes de que corra nada.
+   *
+   * Las dos ramas llevan las mismas clases para que el reparto vertical no
+   * cambie: la cabecera y el pie fijos, y el cuerpo como unico que se encoge.
+   */
+  const contenido = (
+    <>
+      <header className="flex items-start gap-3 border-b border-noche-800 px-4 py-3.5">
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-base font-semibold text-crema-100">{titulo}</h2>
+          {descripcion && <p className="mt-0.5 text-sm text-noche-400">{descripcion}</p>}
+        </div>
+        <button
+          type="button"
+          onClick={onCerrar}
+          aria-label="Cerrar"
+          className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-noche-400 transition hover:bg-noche-800 hover:text-crema-100"
+        >
+          <X className="h-5 w-5" aria-hidden />
+        </button>
+      </header>
+
+      {/*
+        `overscroll-contain` evita que al llegar al final de la lista el
+        arrastre siga en la pagina de detras. En iOS, `overflow:hidden` sobre
+        el `body` no detiene el desplazamiento tactil, y sin esto la hoja
+        —que es `fixed`— da un tiron.
+
+        Y cuando NO hay pie, el relleno de abajo lo pone este mismo bloque:
+        si no, el ultimo control queda a 16 px del borde de la pantalla, o
+        sea dentro de la franja de gestos. Pasaba en cuatro hojas, y una de
+        ellas termina en un boton rojo que borra una hoja de vida.
+      */}
+      <div
+        className={`scroll-fino flex-1 overflow-y-auto overscroll-contain px-4 pt-4 ${
+          pie ? 'pb-4' : 'pb-segura'
+        }`}
+      >
+        {children}
+      </div>
+
+      {pie && (
+        <footer className="border-t border-noche-800 bg-noche-900 px-4 pt-3 pb-segura">{pie}</footer>
+      )}
+    </>
+  )
+
+  const marco = 'flex min-h-0 flex-1 flex-col'
+  const envuelto = onEnviar ? (
+    <form
+      className={marco}
+      onSubmit={(e: FormEvent) => {
+        // Sin esto el navegador recarga la pagina entera al enviar.
+        e.preventDefault()
+        onEnviar()
+      }}
+    >
+      {contenido}
+    </form>
+  ) : (
+    <div className={marco}>{contenido}</div>
+  )
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div
@@ -163,43 +253,7 @@ export function HojaInferior({ abierta, titulo, descripcion, onCerrar, children,
            fondo esta bloqueado no hay forma de recuperarlo desplazando. */
         className="relative flex max-h-[88dvh] w-full animate-deslizar flex-col rounded-t-3xl border border-noche-700 bg-noche-900 outline-none sm:max-w-lg sm:rounded-3xl"
       >
-        <header className="flex items-start gap-3 border-b border-noche-800 px-4 py-3.5">
-          <div className="min-w-0 flex-1">
-            <h2 className="truncate text-base font-semibold text-crema-100">{titulo}</h2>
-            {descripcion && <p className="mt-0.5 text-sm text-noche-400">{descripcion}</p>}
-          </div>
-          <button
-            type="button"
-            onClick={onCerrar}
-            aria-label="Cerrar"
-            className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-noche-400 transition hover:bg-noche-800 hover:text-crema-100"
-          >
-            <X className="h-5 w-5" aria-hidden />
-          </button>
-        </header>
-
-        {/*
-          `overscroll-contain` evita que al llegar al final de la lista el
-          arrastre siga en la pagina de detras. En iOS, `overflow:hidden` sobre
-          el `body` no detiene el desplazamiento tactil, y sin esto la hoja
-          —que es `fixed`— da un tiron.
-
-          Y cuando NO hay pie, el relleno de abajo lo pone este mismo bloque:
-          si no, el ultimo control queda a 16 px del borde de la pantalla, o
-          sea dentro de la franja de gestos. Pasaba en cuatro hojas, y una de
-          ellas termina en un boton rojo que borra una hoja de vida.
-        */}
-        <div
-          className={`scroll-fino flex-1 overflow-y-auto overscroll-contain px-4 pt-4 ${
-            pie ? 'pb-4' : 'pb-segura'
-          }`}
-        >
-          {children}
-        </div>
-
-        {pie && (
-          <footer className="border-t border-noche-800 bg-noche-900 px-4 pt-3 pb-segura">{pie}</footer>
-        )}
+        {envuelto}
       </div>
     </div>,
     document.body,

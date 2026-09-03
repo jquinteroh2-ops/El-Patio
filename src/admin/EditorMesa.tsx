@@ -61,6 +61,7 @@ export function EditorMesa({ abierto, mesa, guardando, eliminando, onCerrar, onG
       titulo={mesa ? 'Editar mesa' : 'Nueva mesa'}
       descripcion={mesa ? `Mesa ${mesa.numero}` : 'Se agrega al mapa de sala y al QR del menú'}
       onCerrar={onCerrar}
+      onEnviar={guardar}
       pie={
         <div className="flex gap-2">
           {mesa && (
@@ -73,7 +74,7 @@ export function EditorMesa({ abierto, mesa, guardando, eliminando, onCerrar, onG
               Eliminar
             </Boton>
           )}
-          <Boton variante="principal" bloque cargando={guardando} onClick={guardar}>
+          <Boton variante="principal" bloque cargando={guardando} type="submit">
             Guardar
           </Boton>
         </div>

@@ -124,6 +124,7 @@ export function EditorPublicacion({
         publicacion ? publicacion.titulo : 'Promoción, evento o foto del local'
       }
       onCerrar={onCerrar}
+      onEnviar={guardar}
       pie={
         <div className="flex gap-2">
           {publicacion && onEliminar && (
@@ -141,7 +142,7 @@ export function EditorPublicacion({
             tamano="grande"
             bloque
             cargando={guardando}
-            onClick={guardar}
+            type="submit"
           >
             Guardar
           </Boton>

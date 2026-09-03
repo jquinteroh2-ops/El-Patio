@@ -217,6 +217,7 @@ export function ZonasDomicilio({ ajustes }: { ajustes: Ajustes }) {
         abierta={editando !== null}
         titulo={editando?.id ? `Zona ${editando.nombre}` : 'Nueva zona'}
         descripcion="La tarifa es lo que se le cobra al cliente por llevarle el pedido."
+        onEnviar={guardarZona}
         onCerrar={() => setEditando(null)}
         pie={
           <Boton
@@ -225,7 +226,7 @@ export function ZonasDomicilio({ ajustes }: { ajustes: Ajustes }) {
             bloque
             cargando={guardando}
             disabled={!editando?.nombre.trim()}
-            onClick={guardarZona}
+            type="submit"
           >
             Guardar zona
           </Boton>

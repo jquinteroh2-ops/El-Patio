@@ -143,13 +143,14 @@ export function NuevaReserva({ abierta, onCerrar, mesas, onCreada }: Props) {
       titulo="Nueva reserva"
       descripcion="La que pidieron por WhatsApp, por teléfono o en la puerta."
       onCerrar={onCerrar}
+      onEnviar={guardar}
       pie={
         <Boton
           variante="exito"
           tamano="grande"
           bloque
           cargando={guardando}
-          onClick={guardar}
+          type="submit"
           icono={<CalendarPlus className="h-5 w-5" aria-hidden />}
         >
           {confirmada ? 'Guardar y confirmar' : 'Guardar como solicitud'}

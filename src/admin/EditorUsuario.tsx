@@ -79,8 +79,9 @@ export function EditorUsuario({ abierto, usuario, guardando, onCerrar, onGuardar
       titulo={usuario ? 'Editar cuenta' : 'Nueva cuenta'}
       descripcion={usuario ? usuario.nombre : 'Se crea el acceso para una persona del equipo'}
       onCerrar={onCerrar}
+      onEnviar={guardar}
       pie={
-        <Boton variante="principal" tamano="grande" bloque cargando={guardando} onClick={guardar}>
+        <Boton variante="principal" tamano="grande" bloque cargando={guardando} type="submit">
           Guardar
         </Boton>
       }

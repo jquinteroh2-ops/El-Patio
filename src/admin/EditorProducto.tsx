@@ -157,6 +157,7 @@ export function EditorProducto({
       titulo={producto ? 'Editar producto' : 'Nuevo producto'}
       descripcion={producto ? producto.nombre : 'Se agrega a la carta y a la comandera'}
       onCerrar={onCerrar}
+      onEnviar={guardar}
       pie={
         <div className="flex gap-2">
           {producto && onEliminar && (
@@ -169,7 +170,7 @@ export function EditorProducto({
               Eliminar
             </Boton>
           )}
-          <Boton variante="principal" tamano="grande" bloque cargando={guardando} onClick={guardar}>
+          <Boton variante="principal" tamano="grande" bloque cargando={guardando} type="submit">
             Guardar
           </Boton>
         </div>
