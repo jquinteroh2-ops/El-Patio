@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Check } from 'lucide-react'
 import { NOTAS_RAPIDAS } from '@/compartido/config'
+import { precioVigente } from '@/compartido/calculos'
 import { formatoCOP } from '@/compartido/formato'
 import type { ItemCarta, ModificadorSeleccionado } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
@@ -17,6 +18,15 @@ interface Props {
   item: ItemCarta | null
   /** Valores actuales cuando se esta editando una linea ya agregada. */
   inicial?: SeleccionProducto
+  /**
+   * Lo que va arriba de todo, antes de las opciones.
+   *
+   * La carta publica pone aqui las fotos del plato y su descripcion: el cliente
+   * decide MIRANDO, y separar «ver el plato» de «pedirlo» en dos hojas obliga a
+   * cerrar una para abrir la otra. El mesero no lo pasa: el ya sabe como se ve
+   * el plato, y unas fotos entre el y el termino de la carne solo le estorban.
+   */
+  encabezado?: ReactNode
   onCerrar: () => void
   onConfirmar: (seleccion: SeleccionProducto) => void
 }
@@ -26,7 +36,13 @@ interface Props {
  * tiene modificadores obligatorios: en un restaurante de mantel no puede salir
  * una carne a la parrilla sin termino.
  */
-export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Props) {
+export function HojaModificadores({
+  item,
+  inicial,
+  encabezado,
+  onCerrar,
+  onConfirmar,
+}: Props) {
   const [cantidad, setCantidad] = useState(1)
   const [unicos, setUnicos] = useState<Record<string, string>>({})
   const [multiples, setMultiples] = useState<Record<string, string[]>>({})
@@ -97,7 +113,17 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
   if (!item) return null
 
   const adicionales = seleccionados.reduce((s, m) => s + m.precioAdicional, 0)
-  const total = (item.precio + adicionales) * cantidad
+  /*
+   * El que rige hoy, que puede ser el de promocion.
+   *
+   * Es el mismo que mete el carrito en la linea. Mostrando aqui el de lista, un
+   * plato en promocion anunciaba «Agregar · $58.000» y entraba al carrito por
+   * $45.000: el cliente desconfia del que le cobra de menos igual que del que le
+   * cobra de mas, porque lo que aprende es que los numeros de la pantalla no son
+   * los de la cuenta.
+   */
+  const unitario = precioVigente(item)
+  const total = (unitario + adicionales) * cantidad
 
   const confirmar = () => {
     setIntentado(true)
@@ -130,7 +156,7 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
     <HojaInferior
       abierta
       titulo={item.nombre}
-      descripcion={formatoCOP(item.precio)}
+      descripcion={formatoCOP(unitario)}
       onCerrar={onCerrar}
       pie={
         <div className="flex items-center gap-3">
@@ -142,6 +168,8 @@ export function HojaModificadores({ item, inicial, onCerrar, onConfirmar }: Prop
       }
     >
       <div className="space-y-5">
+        {encabezado}
+
         {(item.modificadores ?? []).map((modificador) => (
           <div key={modificador.id}>
             <p className="mb-2 flex items-center gap-2 text-sm font-medium text-crema-100">

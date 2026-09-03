@@ -9,6 +9,7 @@ import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Repositorios;
 import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,13 +80,20 @@ public class ServicioCarta {
     if (item.getId() == null || item.getId().isBlank()) {
       item.setId(ids.nuevo("p"));
     } else {
-      // Si le cambiaron la foto, la anterior deja de servirle a nadie. Se
-      // borra aqui y no en un aseo posterior, porque este es el unico momento
-      // en que se sabe con certeza que quedo huerfana.
-      carta.porId(item.getId())
-          .map(ItemCarta::getImagen)
-          .filter(previa -> !previa.equals(item.getImagen()))
-          .ifPresent(imagenes::borrar);
+      // Las fotos que el plato deja de usar no le sirven ya a nadie. Se borran
+      // aqui y no en un aseo posterior, porque este es el unico momento en que
+      // se sabe con certeza que quedaron huerfanas.
+      //
+      // Se compara contra TODAS las que quedan —portada y galeria juntas— y no
+      // contra la que ocupaba su mismo sitio. Ascender una foto de la galeria a
+      // portada la deja en otra posicion sin dejar de pertenecer al plato, y
+      // mirando solo su sitio se borraria el archivo que el plato acaba de
+      // empezar a usar de portada.
+      Set<String> siguenEnUso = Set.copyOf(item.fotos());
+      carta.porId(item.getId()).stream()
+          .flatMap(previo -> previo.fotos().stream())
+          .filter(foto -> !siguenEnUso.contains(foto))
+          .forEach(imagenes::borrar);
     }
     ItemCarta guardado = carta.guardarItem(item);
     eventos.publicar(List.of("carta"));

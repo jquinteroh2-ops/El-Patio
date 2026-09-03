@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ImagePlus, Plus, Trash2, X } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
+import { conFotosDePlato, fotosDePlato } from '@/compartido/fotosDePlato'
 import type { CategoriaCarta, ItemCarta, Modificador, TipoModificador } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
@@ -40,6 +41,7 @@ const vacio = (categoriaId: string): ItemCarta => ({
   destino: 'cocina',
   modificadores: [],
   imagen: null,
+  galeria: [],
 })
 
 export function EditorProducto({
@@ -64,17 +66,33 @@ export function EditorProducto({
 
   const cambiar = (cambios: Partial<ItemCarta>) => setBorrador((b) => ({ ...b, ...cambios }))
 
-  const elegirFoto = async (archivos: FileList | null) => {
-    const elegido = archivos?.[0]
-    if (!elegido) return
+  /** Las fotos del borrador como una lista, con la portada de primera. */
+  const fotos = fotosDePlato(borrador)
+
+  const ponerFotos = (nuevas: string[]) => setBorrador((b) => conFotosDePlato(b, nuevas))
+
+  const elegirFotos = async (archivos: FileList | null) => {
+    const elegidos = Array.from(archivos ?? [])
+    if (elegidos.length === 0) return
     setError(null)
     setSubiendo(true)
     try {
-      // La foto sube ya, antes de guardar el producto. Así el administrador la
-      // ve en pantalla y decide, y si después cambia el precio no tiene que
-      // volver a subir los megas desde el celular.
-      const nombre = await api.subirImagenCarta(elegido)
-      cambiar({ imagen: nombre })
+      /*
+       * Suben ya, antes de guardar el plato. Así el administrador las ve en
+       * pantalla y decide, y si después cambia el precio no tiene que volver a
+       * subir los megas desde el celular.
+       *
+       * Una detrás de otra y no todas a la vez: el almacén las reduce al
+       * recibirlas, y ocho fotos de doce megas saliendo en paralelo desde un
+       * celular en datos es justo lo que hace que a la mitad se caiga una y no
+       * se sepa cuáles llegaron. Y cada una se añade EN CUANTO llega, no al
+       * final: si la quinta falla, las cuatro primeras ya están puestas y no
+       * hay que volver a subirlas.
+       */
+      for (const elegido of elegidos) {
+        const nombre = await api.subirImagenCarta(elegido)
+        setBorrador((b) => conFotosDePlato(b, [...fotosDePlato(b), nombre]))
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo subir la foto')
     } finally {
@@ -82,6 +100,9 @@ export function EditorProducto({
       if (archivo.current) archivo.current.value = ''
     }
   }
+
+  /** La lleva al primer puesto sin perder el orden de las demás. */
+  const hacerPortada = (foto: string) => ponerFotos([foto, ...fotos.filter((f) => f !== foto)])
 
   const cambiarModificador = (indice: number, cambios: Partial<Modificador>) =>
     setBorrador((b) => ({
@@ -206,50 +227,90 @@ export function EditorProducto({
           />
         </label>
 
-        {/* ---------- La foto ---------- */}
+        {/* ---------- Las fotos ---------- */}
         <div>
           <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
-            Foto <span className="text-noche-500">· para el menú visual</span>
+            Fotos <span className="text-noche-500">· la primera es la que sale en la carta</span>
           </span>
-          {borrador.imagen ? (
-            <div className="relative overflow-hidden rounded-xl border border-noche-700">
-              <img
-                src={api.urlImagenCarta(borrador.imagen, 700)}
-                alt=""
-                className="max-h-56 w-full object-cover"
-              />
-              <button
-                type="button"
-                aria-label="Quitar la foto"
-                onClick={() => cambiar({ imagen: null })}
-                className="absolute right-2 top-2 rounded-full bg-noche-950/80 p-2 text-crema-100"
-              >
-                <X className="h-4 w-4" aria-hidden />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => archivo.current?.click()}
-              disabled={subiendo}
-              className="flex min-h-[104px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-noche-700 text-noche-300"
-            >
-              <ImagePlus className="h-6 w-6" aria-hidden />
-              <span className="text-sm">
-                {subiendo ? 'Subiendo la foto…' : 'Tocar para elegir una foto'}
-              </span>
-            </button>
+
+          {/*
+            Una sola lista, y la primera manda.
+
+            Por dentro el plato guarda la portada aparte de las demás, pero
+            partir eso en dos cajones en pantalla —«foto principal» y «más
+            fotos»— obliga a explicar la diferencia y a moverlas de un cajón a
+            otro. Aquí se arrastra la que se quiera al primer puesto con un
+            botón y ya está.
+          */}
+          {fotos.length > 0 && (
+            <ul className="mb-2 grid grid-cols-3 gap-2">
+              {fotos.map((foto, i) => (
+                <li
+                  key={foto}
+                  className="relative overflow-hidden rounded-xl border border-noche-700"
+                >
+                  <img
+                    src={api.urlImagenCarta(foto, 400)}
+                    alt=""
+                    className="aspect-square w-full object-cover"
+                  />
+
+                  <button
+                    type="button"
+                    aria-label={`Quitar la foto ${i + 1}`}
+                    onClick={() => ponerFotos(fotos.filter((f) => f !== foto))}
+                    className="absolute right-1 top-1 rounded-full bg-noche-950/85 p-1.5 text-crema-100"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+
+                  {i === 0 ? (
+                    <span className="absolute inset-x-0 bottom-0 bg-noche-950/85 py-1 text-center text-[0.65rem] uppercase tracking-wide text-oro-300">
+                      Portada
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => hacerPortada(foto)}
+                      className="absolute inset-x-0 bottom-0 bg-noche-950/85 py-1 text-center text-[0.65rem] uppercase tracking-wide text-noche-300 hover:text-crema-100"
+                    >
+                      Hacer portada
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
+
+          <button
+            type="button"
+            onClick={() => archivo.current?.click()}
+            disabled={subiendo}
+            className="flex min-h-[64px] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-noche-700 text-noche-300"
+          >
+            <ImagePlus className="h-5 w-5" aria-hidden />
+            <span className="text-sm">
+              {subiendo
+                ? 'Subiendo las fotos…'
+                : fotos.length === 0
+                  ? 'Tocar para elegir fotos'
+                  : 'Agregar más fotos'}
+            </span>
+          </button>
+
+          {/* `multiple`: se eligen todas las del plato de una vez desde el
+              carrete, que es como están guardadas después de la sesión. */}
           <input
             ref={archivo}
             type="file"
             accept="image/*"
+            multiple
             className="hidden"
-            onChange={(e) => void elegirFoto(e.target.files)}
+            onChange={(e) => void elegirFotos(e.target.files)}
           />
           <p className="mt-1.5 text-xs text-noche-400">
-            Se reduce sola al subirla. Sin foto, el plato igual sale en la carta y en el menú, solo que
-            sin imagen.
+            Se reducen solas al subirlas. El cliente las ve todas al tocar el plato en la carta. Sin
+            fotos, el plato igual sale, solo que sin imagen.
           </p>
         </div>
 

@@ -1,6 +1,8 @@
 package co.elpatio.dominio.carta;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** Un producto de la carta. */
@@ -28,6 +30,14 @@ public class ItemCarta {
   private List<Modificador> modificadores;
   /** Nombre del archivo en el almacen de imagenes, o nulo si el plato no tiene foto. */
   private String imagen;
+  /**
+   * Las demas fotos del plato, en el orden en que se muestran.
+   *
+   * NO incluye la portada. Separarlas evita que algo tenga que decidir cual de
+   * un arreglo es la principal, y deja que quitar una foto de la ficha no
+   * cambie cual identifica al plato en el listado.
+   */
+  private List<String> galeria = List.of();
 
   public ItemCarta() {}
 
@@ -79,4 +89,35 @@ public class ItemCarta {
   public void setModificadores(List<Modificador> modificadores) { this.modificadores = modificadores; }
   public String getImagen() { return imagen; }
   public void setImagen(String imagen) { this.imagen = imagen; }
+  public List<String> getGaleria() { return galeria; }
+  public void setGaleria(List<String> galeria) {
+    // Copia, no la lista que le pasaron: quedandose con la de fuera, quien la
+    // modifique despues le estaria cambiando las fotos al plato sin saberlo.
+    // Se copia con `ArrayList` y no con `List.copyOf` porque esa ultima
+    // revienta si dentro viene un nulo, y un nulo es justo lo que puede traer
+    // el JSON del panel; filtrarlo es cosa de `fotos()`, no motivo para tumbar
+    // la peticion con un 500.
+    this.galeria =
+        galeria == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(galeria));
+  }
+
+  /**
+   * Todos los archivos a los que apunta el plato: la portada primero.
+   *
+   * Es lo que hay que recorrer para saber que imagenes le pertenecen, y por eso
+   * vive aqui: si viviera en el servicio, quien anadiera un tercer sitio para
+   * fotos tendria que acordarse de este recorrido.
+   */
+  public List<String> fotos() {
+    List<String> todas = new ArrayList<>();
+    if (imagen != null && !imagen.isBlank()) {
+      todas.add(imagen);
+    }
+    for (String foto : galeria) {
+      if (foto != null && !foto.isBlank()) {
+        todas.add(foto);
+      }
+    }
+    return List.copyOf(todas);
+  }
 }

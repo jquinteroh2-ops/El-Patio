@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, ShoppingBag } from 'lucide-react'
+import { Images, Plus, ShoppingBag } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { CategoriaConItems } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
 import { enPromocion } from '@/compartido/calculos'
+import { fotosDePlato } from '@/compartido/fotosDePlato'
 import { useSyncedState } from '@/compartido/useSyncedState'
 import type { EstadoCanal, ItemCarta } from '@/compartido/tipos'
-import { HojaModificadores, type SeleccionProducto } from '@/comandera/HojaModificadores'
+import type { SeleccionProducto } from '@/comandera/HojaModificadores'
+import { FichaDePlato } from './FichaDePlato'
 import { useCarrito } from './carrito'
 import { Filete } from './Ornamento'
 import { Esqueleto, EsqueletoTexto, ZonaCargando } from '@/componentes/ui/Esqueleto'
@@ -32,7 +34,8 @@ export default function Carta() {
   )
 
   const carrito = useCarrito()
-  const [aElegir, setAElegir] = useState<ItemCarta | null>(null)
+  /** El plato cuya ficha esta abierta. */
+  const [enFicha, setEnFicha] = useState<ItemCarta | null>(null)
 
   const [activa, setActiva] = useState<string | null>(null)
   const navRef = useRef<HTMLDivElement>(null)
@@ -77,19 +80,26 @@ export default function Carta() {
     return `Recibimos pedidos entre las ${hora(canal.desde)} y las ${hora(canal.hasta)}. Fuera de ese horario lo esperamos en el salón.`
   }, [canal])
 
-  /** Los productos sin modificadores entran de un toque, sin abrir la hoja. */
+  /**
+   * El atajo: lo que no hay que elegir entra de un toque.
+   *
+   * Una limonada no tiene termino ni guarnicion, y hacerle abrir la ficha para
+   * confirmar que quiere la limonada que acaba de pedir es un paso de mas. Lo
+   * que si hay que elegir abre la ficha, que es donde estan las fotos y las
+   * opciones juntas.
+   */
   const alTocarAgregar = (item: ItemCarta) => {
     if ((item.modificadores?.length ?? 0) === 0) {
       carrito.agregar(item, 1, [])
       return
     }
-    setAElegir(item)
+    setEnFicha(item)
   }
 
   const alConfirmarSeleccion = (seleccion: SeleccionProducto) => {
-    if (!aElegir) return
-    carrito.agregar(aElegir, seleccion.cantidad, seleccion.modificadores, seleccion.nota)
-    setAElegir(null)
+    if (!enFicha) return
+    carrito.agregar(enFicha, seleccion.cantidad, seleccion.modificadores, seleccion.nota)
+    setEnFicha(null)
   }
 
   return (
@@ -175,57 +185,108 @@ export default function Carta() {
                 <span className="mt-3 mb-7 block h-px w-full bg-crema-100/10" aria-hidden />
 
                 <ul className="space-y-7">
-                  {categoria.items.map((item) => (
-                    <li key={item.id} className={item.disponible ? '' : 'opacity-55'}>
-                      <div className="flex items-baseline justify-between gap-4">
-                        <h3 className="font-titulo text-xl font-normal leading-snug text-crema-100">
-                          {item.nombre}
-                          {!item.disponible && (
-                            <span className="ml-2 rounded-sm border border-crema-100/25 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-crema-100/60">
-                              Agotado
-                            </span>
-                          )}
-                          {item.disponible && enPromocion(item) && (
-                            <span className="ml-2 rounded-sm border border-oro-400/50 bg-oro-500/10 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-oro-300">
-                              Promoción
-                            </span>
-                          )}
-                        </h3>
-                        {/* En promoción se muestran los dos precios, con el de
-                            lista tachado. Poner solo el rebajado ahorraría un
-                            renglón y escondería justo lo que hace atractiva la
-                            oferta: cuánto se está ahorrando el cliente. */}
-                        <span className="shrink-0 text-right font-titulo text-xl tabular-nums text-oro-300">
-                          {enPromocion(item) ? (
-                            <>
-                              <span className="mr-2 text-base text-crema-100/40 line-through">
-                                {formatoCOP(item.precio)}
-                              </span>
-                              {formatoCOP(item.precioPromocional!)}
-                            </>
-                          ) : (
-                            formatoCOP(item.precio)
-                          )}
-                        </span>
-                      </div>
-                      {item.descripcion && (
-                        <p className="mt-1.5 max-w-2xl text-[0.95rem] leading-relaxed text-crema-100/60">
-                          {item.descripcion}
-                        </p>
-                      )}
+                  {categoria.items.map((item) => {
+                    const fotos = fotosDePlato(item)
 
-                      {sePuedePedir && item.disponible && (
-                        <button
-                          type="button"
-                          onClick={() => alTocarAgregar(item)}
-                          className="mt-3 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
-                        >
-                          <Plus className="h-4 w-4" aria-hidden />
-                          Agregar
-                        </button>
-                      )}
-                    </li>
-                  ))}
+                    /*
+                      La fila entera se puede tocar, y por eso es `relative`.
+
+                      El nombre lleva un `::after` estirado hasta los bordes de
+                      este `li`, así que el toque vale en cualquier parte de la
+                      fila —la foto, la descripción, el hueco de la derecha—
+                      sin tener que meter el `<h3>` dentro de un botón. Eso
+                      último no sirve: dentro de un botón solo cabe texto, el
+                      `<h3>` habría que cambiarlo por un `<span>`, y la carta
+                      se quedaría sin la jerarquía de títulos con la que la
+                      recorre un lector de pantalla y la lee Google.
+                    */
+                    return (
+                      <li
+                        key={item.id}
+                        className={`relative flex gap-4 ${item.disponible ? '' : 'opacity-55'}`}
+                      >
+                        {fotos.length > 0 && (
+                          <div className="relative shrink-0">
+                            <img
+                              src={api.urlImagenCarta(fotos[0], 240)}
+                              alt=""
+                              loading="lazy"
+                              className="h-20 w-20 rounded-sm object-cover sm:h-24 sm:w-24"
+                            />
+                            {/* Cuántas fotos más hay dentro. Sin esto, la ficha
+                                del plato parece llevar solo la que ya se ve. */}
+                            {fotos.length > 1 && (
+                              <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-sm bg-onix-950/85 px-1.5 py-0.5 text-[0.65rem] text-crema-100/80">
+                                <Images className="h-3 w-3" aria-hidden />
+                                {fotos.length}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline justify-between gap-4">
+                            <h3 className="font-titulo text-xl font-normal leading-snug text-crema-100">
+                              <button
+                                type="button"
+                                onClick={() => setEnFicha(item)}
+                                className="text-left transition after:absolute after:inset-0 after:content-[''] hover:text-oro-300"
+                              >
+                                {item.nombre}
+                              </button>
+                              {!item.disponible && (
+                                <span className="ml-2 rounded-sm border border-crema-100/25 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-crema-100/60">
+                                  Agotado
+                                </span>
+                              )}
+                              {item.disponible && enPromocion(item) && (
+                                <span className="ml-2 rounded-sm border border-oro-400/50 bg-oro-500/10 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-oro-300">
+                                  Promoción
+                                </span>
+                              )}
+                            </h3>
+                            {/* En promoción se muestran los dos precios, con el
+                                de lista tachado. Poner solo el rebajado
+                                ahorraría un renglón y escondería justo lo que
+                                hace atractiva la oferta: cuánto se está
+                                ahorrando el cliente. */}
+                            <span className="shrink-0 text-right font-titulo text-xl tabular-nums text-oro-300">
+                              {enPromocion(item) ? (
+                                <>
+                                  <span className="mr-2 text-base text-crema-100/40 line-through">
+                                    {formatoCOP(item.precio)}
+                                  </span>
+                                  {formatoCOP(item.precioPromocional!)}
+                                </>
+                              ) : (
+                                formatoCOP(item.precio)
+                              )}
+                            </span>
+                          </div>
+
+                          {item.descripcion && (
+                            <p className="mt-1.5 max-w-2xl text-[0.95rem] leading-relaxed text-crema-100/60">
+                              {item.descripcion}
+                            </p>
+                          )}
+
+                          {sePuedePedir && item.disponible && (
+                            <button
+                              type="button"
+                              onClick={() => alTocarAgregar(item)}
+                              /* `relative` lo saca de debajo del `::after` que
+                                 cubre la fila: sin esto, tocar «Agregar»
+                                 abriría la ficha en vez de agregar. */
+                              className="relative mt-3 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
+                            >
+                              <Plus className="h-4 w-4" aria-hidden />
+                              Agregar
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    )
+                  })}
                 </ul>
               </section>
             ))}
@@ -262,11 +323,13 @@ export default function Carta() {
         </div>
       )}
 
-      {/* La misma hoja que usa la comandera: la elección del cliente y la del
-          mesero son la misma decisión, y no tiene sentido tener dos. */}
-      <HojaModificadores
-        item={aElegir}
-        onCerrar={() => setAElegir(null)}
+      {/* La ficha: las fotos, lo que lleva el plato y el pedido en la misma
+          hoja. Por dentro es la misma que usa la comandera —la elección del
+          cliente y la del mesero son la misma decisión— con las fotos encima. */}
+      <FichaDePlato
+        item={enFicha}
+        canalAbierto={sePuedePedir}
+        onCerrar={() => setEnFicha(null)}
         onConfirmar={alConfirmarSeleccion}
       />
     </>

@@ -55,6 +55,11 @@ public class FilaItemCarta {
   /** Nombre del archivo en el almacen de imagenes, o nulo si el plato no tiene foto. */
   private String imagen;
 
+  /** Las demas fotos, como JSONB por lo mismo que los modificadores. */
+  @Type(JsonType.class)
+  @Column(columnDefinition = "jsonb")
+  private List<String> galeria = new ArrayList<>();
+
   public ItemCarta aDominio() {
     ItemCarta item = new ItemCarta();
     item.setId(id);
@@ -70,6 +75,7 @@ public class FilaItemCarta {
     item.setDestino(Destino.de(destino));
     item.setModificadores(modificadores == null ? List.of() : List.copyOf(modificadores));
     item.setImagen(imagen);
+    item.setGaleria(galeria == null ? List.of() : List.copyOf(galeria));
     return item;
   }
 
@@ -89,6 +95,8 @@ public class FilaItemCarta {
     fila.modificadores =
         item.getModificadores() == null ? new ArrayList<>() : new ArrayList<>(item.getModificadores());
     fila.imagen = item.getImagen();
+    fila.galeria =
+        item.getGaleria() == null ? new ArrayList<>() : new ArrayList<>(item.getGaleria());
     return fila;
   }
 

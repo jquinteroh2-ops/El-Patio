@@ -42,8 +42,16 @@ public class AlmacenEnDisco implements AlmacenDeImagenes {
   /** Calidad del JPEG resultante. 0.82 es donde el ojo deja de notar la perdida. */
   private static final float CALIDAD = 0.82f;
 
-  /** Lo que se acepta que entre. Mas que esto es una foto sin recortar. */
-  private static final long PESO_MAXIMO_BYTES = 12L * 1024 * 1024;
+  /**
+   * Lo que se acepta que entre.
+   *
+   * 25 MB da para una foto de camara sin recortar, que es justo lo que sube el
+   * restaurante: la sesion del fotografo son archivos de 12 a 18 MB y el
+   * encuadre y el fondo son parte de la foto, asi que no se tocan antes de
+   * subirlas. Lo que se GUARDA no depende de esto: pase lo que pase, abajo se
+   * reduce a {@code LADO_MAXIMO} y queda en el orden de los 200 KB.
+   */
+  private static final long PESO_MAXIMO_BYTES = 25L * 1024 * 1024;
 
   private final Path carpeta;
 
@@ -62,7 +70,7 @@ public class AlmacenEnDisco implements AlmacenDeImagenes {
       throw new ReglaDeNegocioError("La imagen llego vacia");
     }
     if (contenido.length > PESO_MAXIMO_BYTES) {
-      throw new ReglaDeNegocioError("La imagen pesa mas de 12 MB. Reduzcala antes de subirla");
+      throw new ReglaDeNegocioError("La imagen pesa mas de 25 MB. Reduzcala antes de subirla");
     }
 
     BufferedImage original = leerImagen(contenido);

@@ -163,6 +163,14 @@ export interface ItemCarta {
   modificadores?: Modificador[]
   /** Nombre del archivo en el almacen de imagenes, o nulo si el plato no tiene foto. */
   imagen?: string | null
+  /**
+   * Las demas fotos del plato, en el orden en que se muestran en su ficha.
+   *
+   * NO incluye la portada: `imagen` sigue siendo la que identifica al plato en
+   * el listado, y tenerlas separadas deja que quitar una foto de la ficha no
+   * cambie cual se ve en la carta.
+   */
+  galeria?: string[] | null
 }
 
 // ---------------------------------------------------------------------------

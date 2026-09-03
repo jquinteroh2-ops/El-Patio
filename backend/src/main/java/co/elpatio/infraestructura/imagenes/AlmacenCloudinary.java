@@ -37,7 +37,7 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
   private static final String CARPETA = "elpatio";
 
   /** Lo que se acepta que entre. Igual que en disco: mas es una foto sin recortar. */
-  private static final long PESO_MAXIMO_BYTES = 12L * 1024 * 1024;
+  private static final long PESO_MAXIMO_BYTES = 25L * 1024 * 1024;
 
   private final String nombreNube;
   private final String llave;
@@ -58,7 +58,7 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
       throw new ReglaDeNegocioError("La imagen llego vacia");
     }
     if (contenido.length > PESO_MAXIMO_BYTES) {
-      throw new ReglaDeNegocioError("La imagen pesa mas de 12 MB. Reduzcala antes de subirla");
+      throw new ReglaDeNegocioError("La imagen pesa mas de 25 MB. Reduzcala antes de subirla");
     }
 
     String marca = String.valueOf(Instant.now().getEpochSecond());

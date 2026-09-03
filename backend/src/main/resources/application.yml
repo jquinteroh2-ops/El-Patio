@@ -45,8 +45,13 @@ spring:
       # Lo que se acepta que entre por la red. El almacen vuelve a revisar el
       # peso y ademas reduce la imagen; esto solo evita que un archivo enorme
       # ocupe memoria antes de que nadie lo mire.
-      max-file-size: 12MB
-      max-request-size: 12MB
+      #
+      # 25 MB y no 12: las fotos de la sesion del restaurante son archivos de
+      # camara de 12 a 18 MB y se suben tal cual, sin recortar. Con el tope
+      # anterior —pensado para la foto de un celular, que anda por los 4 MB—
+      # el administrador recibia un error al subir justo las buenas.
+      max-file-size: 25MB
+      max-request-size: 25MB
 
 server:
   port: ${PORT:8080}
