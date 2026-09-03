@@ -17,7 +17,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
  * de pie, con una mano y con afan.
  */
 const VARIANTES: Record<Variante, string> = {
-  principal: 'bg-cobre-500 text-onix-950 hover:bg-cobre-400 active:bg-cobre-600 font-semibold',
+  principal: 'bg-oro-500 text-onix-950 hover:bg-oro-400 active:bg-oro-600 font-semibold',
   secundario: 'bg-noche-700 text-crema-100 hover:bg-noche-600 active:bg-noche-800',
   fantasma: 'bg-transparent text-noche-300 hover:bg-noche-800 hover:text-crema-100',
   peligro: 'bg-estado-demorado/15 text-estado-demorado hover:bg-estado-demorado/25 border border-estado-demorado/40',
