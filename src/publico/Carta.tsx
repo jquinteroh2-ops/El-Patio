@@ -243,7 +243,7 @@ export default function Carta() {
 
       {/* ---------- Botón flotante con el conteo y el total corriente ---------- */}
       {carrito.unidades > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-oro-500/15 bg-onix-950/95 p-4 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-oro-500/15 bg-onix-950/95 px-4 pt-4 pb-segura backdrop-blur">
           <Link
             to="/pedir"
             className="mx-auto flex min-h-[56px] max-w-3xl items-center justify-between gap-4 rounded-sm bg-oro-500 px-5 text-onix-950 transition hover:bg-oro-400"

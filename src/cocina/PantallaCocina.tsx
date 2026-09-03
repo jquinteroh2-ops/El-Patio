@@ -106,8 +106,19 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
   const cambiarTurno = (bloque: TurnoEnCocina) => (estado: EstadoItem) =>
     ejecutar(() => api.cambiarEstadoTurno(bloque.ordenId, bloque.turno, destino, estado))
 
+  /*
+   * `h-dvh` y no `min-h-dvh`: con altura solo mínima, el tablero crece con la
+   * columna más larga y el `overflow-y-auto` de cada columna nunca llega a
+   * desbordar. El resultado era que las tres columnas no se desplazaban por
+   * dentro: había que arrastrar el tablero entero, y las cabeceras de las otras
+   * dos se iban con él. En una pantalla colgada en la cocina, eso es perder de
+   * vista lo que está en preparación para poder ver lo que falta.
+   *
+   * `overflow-hidden` remata: sin él, el tablero desborda la ventana y vuelve a
+   * aparecer la barra de desplazamiento del documento.
+   */
   return (
-    <div className="flex min-h-dvh flex-col bg-noche-950">
+    <div className="flex h-dvh flex-col overflow-hidden bg-noche-950">
       <BarraOperativa
         titulo={esBar ? 'Barra' : 'Cocina'}
         subtitulo={`${bloques.length} ${bloques.length === 1 ? 'comanda activa' : 'comandas activas'}`}
@@ -187,14 +198,14 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
         </button>
       )}
 
-      <main className="grid flex-1 grid-cols-1 gap-px bg-noche-800 md:grid-cols-3">
+      <main className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-noche-800 md:grid-cols-3">
         {COLUMNAS.map((columna) => {
           const deLaColumna = bloques.filter((b) => b.estado === columna.estado)
           const grupos = agruparPorMesa(deLaColumna)
 
           return (
-            <section key={columna.estado} className="flex min-h-[40vh] flex-col bg-noche-950">
-              <header className="sticky top-16 z-10 flex items-center justify-between gap-2 border-b border-noche-800 bg-noche-950/95 px-3 py-2.5 backdrop-blur">
+            <section key={columna.estado} className="flex min-h-0 flex-col bg-noche-950">
+              <header className="flex items-center justify-between gap-2 border-b border-noche-800 bg-noche-950 px-3 py-2.5">
                 <h2 className={`text-sm font-bold uppercase tracking-wider ${columna.acento}`}>
                   {columna.titulo}
                 </h2>

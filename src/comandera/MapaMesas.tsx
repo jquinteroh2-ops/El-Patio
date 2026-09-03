@@ -107,7 +107,7 @@ export default function MapaMesas() {
           </span>
         </div>
 
-        <div className="sin-scrollbar flex gap-2 overflow-x-auto px-4 pb-2.5">
+        <div className="sin-scrollbar flex gap-2 overflow-x-auto px-4 pt-1 pb-2.5">
           {(['todas', ...ZONAS] as const).map((zona) => (
             <button
               key={zona}

@@ -561,7 +561,7 @@ export default function OrdenMesa() {
       </main>
 
       {/* ---------- Acciones principales, siempre al alcance del pulgar ---------- */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-noche-700 bg-noche-900/98 px-3 py-3 pb-segura backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-noche-700 bg-noche-900/98 px-3 pt-3 pb-segura backdrop-blur">
         <div className="flex gap-2">
           <Boton
             variante="secundario"

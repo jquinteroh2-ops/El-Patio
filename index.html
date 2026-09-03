@@ -2,7 +2,17 @@
 <html lang="es-CO">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!--
+      `interactive-widget=resizes-content` es lo que hace que al abrirse el
+      teclado del celular la ventana de diseño ENCOJA, y no solo la visual.
+      Sin esto, el pie de una hoja —anclada con `fixed inset-0`— se queda en el
+      borde de una ventana que el teclado ya está tapando: el cajero escribe
+      con cuánto le pagan y el botón de confirmar el cobro deja de verse.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <!-- El color de la barra del navegador en el celular. Tiene que ser el mismo
          fondo del sitio (onix-950); con otro verde, el telefono pinta una franja
          que no corresponde a nada de la pagina y parece que el diseno cambiara. -->

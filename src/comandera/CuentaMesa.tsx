@@ -371,7 +371,7 @@ export default function CuentaMesa() {
         </Boton>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-noche-700 bg-noche-900/98 px-3 py-3 pb-segura backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-noche-700 bg-noche-900/98 px-3 pt-3 pb-segura backdrop-blur">
         <Boton
           variante="exito"
           tamano="grande"

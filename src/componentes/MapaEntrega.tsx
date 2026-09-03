@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Hand } from 'lucide-react'
 import type { UbicacionEntrega } from '@/compartido/tipos'
 import { enlaceMapaEmbebido, enlaceMapaEmbebidoPorDireccion } from '@/publico/ubicacion'
 
@@ -39,6 +41,10 @@ export function MapaEntrega({
   titulo,
   className = '',
 }: Props) {
+  /* Si el mapa ya recibe el dedo. Arranca apagado: ver el sector es lo comun,
+     moverlo es la excepcion. */
+  const [activo, setActivo] = useState(false)
+
   const escrita = direccion?.trim()
   const fuente = ubicacion
     ? enlaceMapaEmbebido(ubicacion.latitud, ubicacion.longitud)
@@ -51,14 +57,41 @@ export function MapaEntrega({
 
   return (
     <div>
-      <div className={`overflow-hidden ${className}`}>
+      {/*
+        El mapa nace SIN capturar el dedo, y se activa al tocarlo.
+
+        Un iframe de Google se traga el arrastre: dentro de una hoja emergente
+        —la del comprobante de una venta, por ejemplo— el mapa ocupa media
+        superficie desplazable, y quien intenta bajar al detalle mueve el mapa
+        en vez de la hoja. La hoja parece atascada.
+
+        Con la capa encima, el arrastre pasa de largo y desplaza la hoja, que es
+        lo que se quiere el 95% de las veces. Quien de verdad quiera mover el
+        mapa lo toca una vez y ya lo tiene.
+      */}
+      <div className={`relative overflow-hidden ${className}`}>
         <iframe
           title={titulo}
           src={fuente}
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          className={`w-full border-0 ${alto}`}
+          className={`w-full border-0 ${alto} ${activo ? '' : 'pointer-events-none'}`}
         />
+        {!activo && (
+          <button
+            type="button"
+            onClick={() => setActivo(true)}
+            /* `group` para que el rótulo reaccione al pasar por encima sin
+               tapar el mapa mientras tanto: en reposo es casi invisible. */
+            className="group absolute inset-0 flex items-end justify-center pb-2"
+            aria-label="Activar el mapa para poder moverlo"
+          >
+            <span className="flex items-center gap-1.5 rounded-full bg-noche-950/75 px-2.5 py-1 text-xs text-crema-100/80 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+              <Hand className="h-3.5 w-3.5" aria-hidden />
+              Toca para mover el mapa
+            </span>
+          </button>
+        )}
       </div>
       {!ubicacion && (
         <p className="mt-1 text-xs text-noche-400">

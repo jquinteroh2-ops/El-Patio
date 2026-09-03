@@ -110,6 +110,28 @@ export function NuevoPedido({ abierto, onCerrar, onCreado }: Props) {
   const [enHoja, setEnHoja] = useState<ItemCarta | null>(null)
   const [guardando, setGuardando] = useState(false)
 
+  /*
+   * Se comporta como la ventana que es.
+   *
+   * Ocupa la pantalla entera con `fixed inset-0`, pero no bloqueaba el fondo ni
+   * cerraba con Escape: el tablero de pedidos seguía desplazándose por debajo
+   * mientras recepción tomaba el pedido al teléfono, y al cerrar se volvía a un
+   * tablero que se había movido solo.
+   */
+  useEffect(() => {
+    if (!abierto) return
+    const alTeclear = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCerrar()
+    }
+    document.addEventListener('keydown', alTeclear)
+    const desbordeAnterior = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', alTeclear)
+      document.body.style.overflow = desbordeAnterior
+    }
+  }, [abierto, onCerrar])
+
   // Cada vez que se abre arranca limpio: lo del pedido anterior en pantalla
   // solo sirve para mandarle a alguien lo que pidió otro.
   useEffect(() => {
@@ -259,7 +281,12 @@ export function NuevoPedido({ abierto, onCerrar, onCreado }: Props) {
     }`
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-noche-950">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Nuevo pedido"
+      className="fixed inset-0 z-50 flex flex-col bg-noche-950"
+    >
       <header className="flex items-center gap-3 border-b border-noche-800 px-4 py-3">
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-base font-semibold text-crema-100">
@@ -394,7 +421,7 @@ export function NuevoPedido({ abierto, onCerrar, onCreado }: Props) {
             </div>
           </div>
 
-          <footer className="border-t border-noche-800 px-4 py-3">
+          <footer className="border-t border-noche-800 px-4 pt-3 pb-segura">
             <div className="mx-auto max-w-lg">
               {problemaCliente && (
                 <p className="mb-2 text-center text-sm text-noche-400">{problemaCliente}</p>
@@ -436,7 +463,7 @@ export function NuevoPedido({ abierto, onCerrar, onCreado }: Props) {
                 </div>
 
                 {!busqueda.trim() && (
-                  <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+                  <div className="mt-2 flex gap-1.5 overflow-x-auto pt-1 pb-1">
                     {categorias.map((c) => (
                       <button
                         key={c.id}
@@ -528,7 +555,7 @@ export function NuevoPedido({ abierto, onCerrar, onCreado }: Props) {
                 )}
               </div>
 
-              <div className="border-t border-noche-800 p-3">
+              <div className="border-t border-noche-800 px-3 pt-3 pb-segura">
                 <dl className="mb-3 space-y-1 text-sm">
                   <div className="flex justify-between text-noche-300">
                     <dt>Productos</dt>

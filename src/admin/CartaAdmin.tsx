@@ -117,7 +117,7 @@ export default function CartaAdmin() {
         )}
       </div>
 
-      <div className="sin-scrollbar flex gap-2 overflow-x-auto pb-1">
+      <div className="sin-scrollbar flex gap-2 overflow-x-auto pt-1 pb-1">
         {(['todas', ...categorias.map((c) => c.id)] as const).map((id) => (
           <button
             key={id}

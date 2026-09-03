@@ -188,7 +188,7 @@ export default function SelectorProductos() {
         </div>
 
         {!busqueda && (
-          <div className="sin-scrollbar flex gap-2 overflow-x-auto px-3 pb-2.5">
+          <div className="sin-scrollbar flex gap-2 overflow-x-auto px-3 pt-1 pb-2.5">
             {categorias.map((categoria) => (
               <button
                 key={categoria.id}
@@ -278,7 +278,7 @@ export default function SelectorProductos() {
       </main>
 
       {borrador.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-noche-700 bg-noche-900/98 px-3 py-3 pb-segura backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-noche-700 bg-noche-900/98 px-3 pt-3 pb-segura backdrop-blur">
           <div className="flex items-center gap-2">
             <button
               type="button"

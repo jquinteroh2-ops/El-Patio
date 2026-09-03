@@ -306,9 +306,33 @@
     display: none;
   }
 
-  /* Respeta el area segura de celulares con notch */
+  /*
+   * Respeta la franja de gestos de los celulares sin boton de inicio.
+   *
+   * ── NUNCA SE ESCRIBE JUNTO A `py-*`. SOLO CON `pt-*`. ─────────────────────
+   * Esta clase vive en `@layer components` y Tailwind emite ese bloque ANTES
+   * que `@layer utilities`. Con la misma especificidad, gana la que va despues
+   * en la hoja: si al lado hay un `py-3` —que tambien define
+   * `padding-bottom`—, es `py-3` quien manda y el area segura SE PIERDE
+   * ENTERA, sin que nada falle a la vista.
+   *
+   * Asi estuvo, en los cuatro sitios que la usan, hasta que una auditoria lo
+   * midio en el CSS compilado. El sintoma no era un error: era que el ultimo
+   * centimetro del boton de cobrar caia dentro de la franja del gesto del
+   * sistema, el telefono se iba al inicio, y parecia que el boton fallaba a
+   * ratos.
+   *
+   * La solucion no es pelear la especificidad —eso se vuelve a romper solo—
+   * sino no repartir la misma propiedad entre dos clases: arriba `pt-*`, abajo
+   * esta y nada mas.
+   * ──────────────────────────────────────────────────────────────────────────
+   *
+   * El sumando es 0.75rem para que coincida con el `pt-3` que lleva al lado en
+   * los cuatro usos: sin franja de gestos, el relleno queda parejo arriba y
+   * abajo, como estaba antes.
+   */
   .pb-segura {
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
   }
 }
 
