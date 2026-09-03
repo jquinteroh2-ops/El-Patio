@@ -213,11 +213,30 @@
    * Sin esto, pasar de «Ventas» a «Cierre de caja» cambia media pantalla de
    * golpe y cuesta un instante entender que lo que se ve ya es otra cosa.
    *
+   * ── SOLO OPACIDAD. NO SE LE PONE `transform` A ESTE ELEMENTO ──────────────
+   * La version anterior subia 8 px con `animation: entrada ... both`, y ese
+   * `both` dejaba puesto el ultimo fotograma —`transform: translateY(0)`— para
+   * siempre. Cero pixeles, pero `transform` al fin, y basta con eso: un
+   * ancestro con `transform` deja de ser transparente para sus descendientes
+   * `position: fixed`, que pasan a medirse contra EL y no contra la ventana.
+   *
+   * Esta clase vive en el `<main>` que envuelve TODO el panel, asi que rompio
+   * las trece ventanas emergentes de administracion y, en el sitio publico, la
+   * barra flotante del carrito. Y como al abrirse una hoja se bloquea el
+   * desplazamiento del fondo, no habia forma de bajar a buscarla: parecia que
+   * el boton no hacia nada.
+   *
+   * Las hojas ahora se dibujan en el `body` y no les afecta ningun ancestro,
+   * pero eso no vuelve inocuo el `transform` de aqui: la barra del carrito y
+   * cualquier `fixed` que se escriba manana dentro del `<main>` seguirian
+   * midiendose mal. Un desvanecido dice lo mismo y no cuesta nada.
+   * ──────────────────────────────────────────────────────────────────────────
+   *
    * Corto de verdad —220 ms— porque esto se atraviesa decenas de veces al dia:
    * una transicion vistosa la primera vez es un estorbo la vigesima.
    */
   .entrada-de-panel {
-    animation: entrada 0.22s ease-out both;
+    animation: aparecer 0.22s ease-out;
   }
 
   /*
@@ -237,7 +256,22 @@
    * aparecer. Se ve como un parpadeo.
    */
   .entrada-escalonada > * {
-    animation: entrada 0.24s ease-out both;
+    /*
+     * `backwards` y NO `both`, que es lo que estaba.
+     *
+     * Los dos evitan el parpadeo del principio —el hijo que espera su turno se
+     * pinta con el primer fotograma en vez de aparecer y esconderse—, pero
+     * `both` incluye ademas `forwards`, que deja el ULTIMO fotograma puesto
+     * para siempre. Y ese ultimo fotograma lleva `transform: translateY(0)`:
+     * cero pixeles, pero `transform` al fin, y un ancestro con `transform`
+     * rompe la posicion de cualquier descendiente `fixed`.
+     *
+     * Hoy ninguno de estos contenedores tiene un `fixed` dentro, asi que no
+     * rompia nada. Era una trampa esperando a que alguien metiera una ventana
+     * emergente dentro de una lista. Con `backwards` no queda nada puesto al
+     * terminar y la trampa desaparece.
+     */
+    animation: entrada 0.24s ease-out backwards;
   }
   .entrada-escalonada > *:nth-child(1) { animation-delay: 0ms; }
   .entrada-escalonada > *:nth-child(2) { animation-delay: 40ms; }
