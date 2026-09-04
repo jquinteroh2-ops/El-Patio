@@ -33,6 +33,7 @@ El detalle del backend está en [`backend/LEEME.md`](backend/LEEME.md).
 - [Respaldos y restauración](#respaldos-y-restauración)
 - [Pedidos y reservas que llegan por WhatsApp](#pedidos-y-reservas-que-llegan-por-whatsapp)
 - [Qué se edita sin desplegar](#qué-se-edita-sin-desplegar)
+- [Las fotos de los platos](#las-fotos-de-los-platos)
 - [Ubicación exacta de los domicilios](#ubicación-exacta-de-los-domicilios)
 - [Impresión en caja](#impresión-en-caja)
 - [Desarrollo local](#desarrollo-local)
@@ -681,6 +682,45 @@ mientras el servidor contesta. Cambiarlos ahí no cambia lo que ve el cliente.
 Las coordenadas del local también se quedan en el código a propósito: no
 cambian, y una coordenada mal escrita desde un formulario manda al repartidor a
 otro barrio.
+
+---
+
+## Las fotos de los platos
+
+Cada plato lleva una **portada** —la que sale en el listado de la carta— y
+tantas fotos más como se quiera. Se suben desde `/admin/carta`, entrando al
+plato: son una sola lista y la primera manda. Para cambiar cuál va de portada
+hay un botón en cada foto, y el cliente las ve todas al tocar el plato.
+
+Lo mismo para la galería de la portada del sitio, en `/admin/publicaciones`
+con tipo *galería*. Ahí el **título importa**: se lee encima de cada foto en el
+mosaico y es lo que oye quien navega con lector de pantalla.
+
+### Por dónde pasa una foto
+
+1. Entra por `POST /api/carta/imagenes`. El tope de la petición son **25 MB**;
+   más que eso no es una foto de plato.
+2. Si hay Cloudinary configurado va allá; si no, al volumen del servidor.
+3. **Cloudinary corta en 10 MB** las imágenes del plan gratuito. Una cámara
+   entrega archivos de 12 a 18, así que por encima de ese peso el backend la
+   encoge a 2600 px de lado mayor antes de subirla. Por debajo sube el original
+   intacto, y entonces la CDN le sirve a cada dispositivo la versión que le
+   toca (`f_auto,q_auto,w_600` en la propia dirección).
+4. En el volumen en disco siempre se reduce, a 1600 px: ahí se sirve un solo
+   archivo para todo el mundo.
+
+> Si algún día el plan de Cloudinary acepta imágenes más grandes, el número a
+> subir es `MAXIMO_DE_CLOUDINARY` en `AlmacenCloudinary`. Encogerlas no se nota
+> en pantalla —2600 px es más de lo que muestra cualquier monitor— pero deja el
+> archivo guardado a menor resolución de la que se pagó.
+
+### Cuándo se borra una foto
+
+Solo al **guardar el plato**: en ese momento se comparan las fotos que tenía
+con las que quedan, y las que ya no están se borran del almacén. No hay forma
+de borrar una imagen suelta, así que una foto subida y nunca asignada a un
+plato se queda ahí ocupando espacio. Si hay que limpiarlas, se hace desde el
+panel de Cloudinary, carpeta `elpatio`.
 
 ---
 
