@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Images, Plus, ShoppingBag } from 'lucide-react'
+import { Plus, ShoppingBag } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { CategoriaConItems } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
@@ -184,7 +184,16 @@ export default function Carta() {
                 </h2>
                 <span className="mt-3 mb-7 block h-px w-full bg-crema-100/10" aria-hidden />
 
-                <ul className="space-y-7">
+                {/*
+                  Una linea fina entre plato y plato, y aire de sobra.
+
+                  El reparto anterior —cuadrado de 80 px pegado al texto— era el
+                  de una aplicacion de domicilios: un catalogo de casillas. Una
+                  carta de mantel largo se lee de arriba abajo, con renglones
+                  separados y un filete que los ordena, y la foto acompana al
+                  nombre en vez de competir con el.
+                */}
+                <ul className="divide-y divide-crema-100/[0.07]">
                   {categoria.items.map((item) => {
                     const fotos = fotosDePlato(item)
 
@@ -203,23 +212,42 @@ export default function Carta() {
                     return (
                       <li
                         key={item.id}
-                        className={`relative flex gap-4 ${item.disponible ? '' : 'opacity-55'}`}
+                        className={`relative flex gap-5 py-7 first:pt-0 last:pb-0 sm:gap-6 ${
+                          item.disponible ? '' : 'opacity-55'
+                        }`}
                       >
                         {fotos.length > 0 && (
-                          <div className="relative shrink-0">
+                          <div className="w-24 shrink-0 sm:w-28">
+                            {/*
+                              Vertical y no cuadrada. Las fotos vienen en 9:16 y
+                              un recorte cuadrado se lleva por delante casi toda
+                              la composición: el fondo, la mesa, el jardín. En
+                              3:4 se reconoce el plato Y de dónde salió, y el
+                              encuadre entero queda a un toque de distancia.
+
+                              El filete de oro es el mismo recurso que ya ordena
+                              la página —los separadores, las versalitas— y es
+                              lo que hace que la foto se lea como enmarcada y no
+                              como pegada.
+                            */}
                             <img
-                              src={api.urlImagenCarta(fotos[0], 240)}
+                              src={api.urlImagenCarta(fotos[0], 400)}
                               alt=""
                               loading="lazy"
-                              className="h-20 w-20 rounded-sm object-cover sm:h-24 sm:w-24"
+                              className="aspect-[3/4] w-full rounded-sm object-cover ring-1 ring-oro-500/25"
                             />
-                            {/* Cuántas fotos más hay dentro. Sin esto, la ficha
-                                del plato parece llevar solo la que ya se ve. */}
+
+                            {/* Un punto por foto: dice que hay más sin gritarlo
+                                como lo hacía la insignia con el número. */}
                             {fotos.length > 1 && (
-                              <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-sm bg-onix-950/85 px-1.5 py-0.5 text-[0.65rem] text-crema-100/80">
-                                <Images className="h-3 w-3" aria-hidden />
-                                {fotos.length}
-                              </span>
+                              <div className="mt-2.5 flex justify-center gap-1" aria-hidden>
+                                {fotos.map((foto) => (
+                                  <span
+                                    key={foto}
+                                    className="h-1 w-1 rounded-full bg-oro-500/40"
+                                  />
+                                ))}
+                              </div>
                             )}
                           </div>
                         )}
@@ -233,6 +261,11 @@ export default function Carta() {
                                 className="text-left transition after:absolute after:inset-0 after:content-[''] hover:text-oro-300"
                               >
                                 {item.nombre}
+                                {/* Lo que los puntos dicen a la vista, dicho
+                                    para quien no los ve. */}
+                                {fotos.length > 1 && (
+                                  <span className="sr-only"> · {fotos.length} fotos</span>
+                                )}
                               </button>
                               {!item.disponible && (
                                 <span className="ml-2 rounded-sm border border-crema-100/25 px-1.5 py-0.5 align-middle text-[0.65rem] uppercase tracking-wider text-crema-100/60">
@@ -265,7 +298,7 @@ export default function Carta() {
                           </div>
 
                           {item.descripcion && (
-                            <p className="mt-1.5 max-w-2xl text-[0.95rem] leading-relaxed text-crema-100/60">
+                            <p className="mt-2 max-w-2xl text-[0.95rem] leading-relaxed text-crema-100/60">
                               {item.descripcion}
                             </p>
                           )}
@@ -277,7 +310,7 @@ export default function Carta() {
                               /* `relative` lo saca de debajo del `::after` que
                                  cubre la fila: sin esto, tocar «Agregar»
                                  abriría la ficha en vez de agregar. */
-                              className="relative mt-3 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
+                              className="relative mt-3.5 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
                             >
                               <Plus className="h-4 w-4" aria-hidden />
                               Agregar
