@@ -39,6 +39,28 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
   /** Lo que se acepta que entre. Igual que en disco: mas es una foto sin recortar. */
   private static final long PESO_MAXIMO_BYTES = 25L * 1024 * 1024;
 
+  /**
+   * Lo que Cloudinary acepta por imagen en el plan gratuito.
+   *
+   * Es de ellos, no nuestro, y por eso esta aparte del limite de arriba. Pasado
+   * este tamano responden 400 y la subida no ocurre por mas veces que se
+   * reintente.
+   */
+  private static final long MAXIMO_DE_CLOUDINARY = 10L * 1024 * 1024;
+
+  /**
+   * El lado mayor al que se encoge una foto que no le cabe a Cloudinary.
+   *
+   * 2600 px es mas de lo que cualquier pantalla necesita —la CDN sirve despues
+   * la version que pide cada dispositivo— y deja el archivo en menos de un
+   * mega. Se pierde resolucion que nadie iba a ver; lo que NO se pierde es el
+   * encuadre, que es lo que hace a la foto.
+   */
+  private static final int LADO_AL_REDUCIR = 2600;
+
+  /** Calidad del JPEG al reducir. La misma que usa el almacen en disco. */
+  private static final float CALIDAD = 0.86f;
+
   private final String nombreNube;
   private final String llave;
   private final String secreto;
@@ -61,13 +83,29 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
       throw new ReglaDeNegocioError("La imagen pesa mas de 25 MB. Reduzcala antes de subirla");
     }
 
+    /*
+     * Se sube el original TAL CUAL mientras le quepa a Cloudinary, que es el
+     * caso normal y lo que hace que cada dispositivo reciba despues la version
+     * que le sirve.
+     *
+     * Pero una camara entrega archivos de 12 a 18 MB y Cloudinary corta en 10:
+     * responde 400 y no hay reintento que lo arregle. Antes eso llegaba al
+     * administrador como «no se pudo hablar con Cloudinary, intente de nuevo en
+     * un momento», o sea invitandolo a repetir para siempre algo imposible.
+     * Encogerla es lo unico que deja subirla, y a 2600 px no se nota.
+     */
+    byte[] aSubir =
+        contenido.length > MAXIMO_DE_CLOUDINARY
+            ? ReductorDeImagenes.aJpeg(contenido, LADO_AL_REDUCIR, CALIDAD)
+            : contenido;
+
     String marca = String.valueOf(Instant.now().getEpochSecond());
     var parametros = new TreeMap<String, String>();
     parametros.put("folder", CARPETA);
     parametros.put("timestamp", marca);
 
     var cuerpo = new LinkedMultiValueMap<String, Object>();
-    cuerpo.add("file", new ByteArrayResource(contenido) {
+    cuerpo.add("file", new ByteArrayResource(aSubir) {
       @Override
       public String getFilename() {
         // Cloudinary necesita un nombre de archivo para aceptar la parte. El
@@ -148,6 +186,19 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
    * la primera vez que alguien sube una foto. Este mapa lo convierte el
    * `FormHttpMessageConverter` de siempre, sin dependencias de mas.
    */
+  /** Lo que Cloudinary explica en el cuerpo, o el codigo si no explica nada. */
+  private String motivo(HttpClientErrorException e) {
+    try {
+      JsonNode mensaje = json.readTree(e.getResponseBodyAsString()).path("error").path("message");
+      if (!mensaje.isMissingNode() && !mensaje.asText().isBlank()) {
+        return mensaje.asText();
+      }
+    } catch (Exception ignorado) {
+      // Respondio algo que no es el JSON de siempre; queda el codigo.
+    }
+    return e.getStatusCode().toString();
+  }
+
   private JsonNode pedir(String accion, MultiValueMap<String, Object> cuerpo) {
     String respuesta;
     try {
@@ -170,7 +221,14 @@ public class AlmacenCloudinary implements AlmacenDeImagenes {
       throw new ReglaDeNegocioError(
           "Cloudinary rechazo la subida. Revise las credenciales del servicio;"
               + " la cuenta configurada es \"" + nombreNube + "\"");
+    } catch (HttpClientErrorException e) {
+      // Cualquier otro «no» de Cloudinary. Su propio mensaje vale mas que uno
+      // nuestro: dice exactamente que rechazo y por que. Esconderlo detras de
+      // «intente de nuevo» ya costo caro una vez, con un «File size too large»
+      // que se leia como un problema de red pasajero.
+      throw new ReglaDeNegocioError("Cloudinary rechazo la subida: " + motivo(e));
     } catch (RestClientException e) {
+      // Aqui si es la red: no hubo respuesta. Reintentar tiene sentido.
       throw new ReglaDeNegocioError(
           "No se pudo hablar con Cloudinary. Intente de nuevo en un momento");
     }
