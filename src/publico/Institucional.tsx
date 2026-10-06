@@ -48,9 +48,12 @@ export default function Institucional() {
         </p>
 
         {resto.length > 0 && (
-          <div className="mt-16 grid gap-10 sm:grid-cols-2">
+          <div className="escalonar mt-16 grid gap-4 sm:grid-cols-2">
             {resto.map((bloque) => (
-              <article key={bloque.clave}>
+              <article
+                key={bloque.clave}
+                className="tarjeta-viva rounded-2xl border border-oro-500/10 bg-onix-950/40 p-6"
+              >
                 <h3 className="font-titulo text-2xl font-light text-oro-300">{bloque.titulo}</h3>
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-crema-100/70">
                   {bloque.cuerpo}
@@ -71,7 +74,7 @@ export default function Institucional() {
           </p>
           <Link
             to="/trabaja-con-nosotros"
-            className="mt-5 inline-flex min-h-toque items-center rounded-sm border border-oro-400 px-6 text-sm uppercase tracking-[0.16em] text-oro-300 transition hover:bg-oro-500/10"
+            className="boton-relleno mt-5 inline-flex min-h-toque items-center rounded-sm border border-oro-400 px-6 text-sm uppercase tracking-[0.16em] text-oro-300"
           >
             Trabaja con nosotros
           </Link>

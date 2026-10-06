@@ -167,7 +167,7 @@ export default function Pedir() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-oro-400/40 bg-oro-500/10">
           <Check className="h-8 w-8 text-oro-300" aria-hidden />
         </div>
-        <h1 className="mt-6 font-titulo text-4xl font-light text-crema-100">Pedido recibido</h1>
+        <h1 className="subir demora-1 mt-6 font-titulo text-4xl font-light text-crema-100">Pedido recibido</h1>
         <Filete className="mx-auto mt-6 w-32 text-oro-400" />
 
         <p className="mt-8 text-[0.7rem] uppercase tracking-[0.3em] text-crema-100/50">
@@ -284,8 +284,8 @@ export default function Pedir() {
         Seguir viendo la carta
       </button>
 
-      <h1 className="font-titulo text-4xl font-light text-crema-100">Su pedido</h1>
-      <Filete className="mt-5 w-24 text-oro-400" />
+      <h1 className="subir font-titulo text-4xl font-light text-crema-100">Su pedido</h1>
+      <Filete className="subir demora-1 mt-5 w-24 text-oro-400" />
 
       {/* ---------- Resumen ---------- */}
       <ul className="mt-8 space-y-3 border-b border-oro-500/15 pb-6">
@@ -339,7 +339,7 @@ export default function Pedir() {
         ))}
       </ul>
 
-      <form onSubmit={enviar} className="mt-8 space-y-6">
+      <form onSubmit={enviar} className="subir demora-2 mt-8 space-y-6">
         {/* ---------- Tipo ---------- */}
         <div>
           <span className={etiquetaCampo}>¿Cómo lo quiere?</span>
@@ -489,7 +489,7 @@ export default function Pedir() {
                       type="button"
                       onClick={tomarUbicacion}
                       disabled={buscandoUbicacion}
-                      className="min-h-[40px] rounded-sm border border-crema-100/20 px-3.5 text-xs text-crema-100/70 transition hover:border-oro-400 hover:text-oro-300 disabled:opacity-60"
+                      className="boton-relleno min-h-[40px] rounded-sm border border-crema-100/20 px-3.5 text-xs text-crema-100/70 disabled:opacity-60"
                     >
                       {buscandoUbicacion ? 'Buscando…' : 'Volver a tomarla'}
                     </button>
@@ -605,7 +605,7 @@ export default function Pedir() {
         <button
           type="submit"
           disabled={enviando}
-          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-sm bg-oro-500 px-5 font-semibold text-onix-950 transition hover:bg-oro-400 disabled:opacity-60"
+          className="boton-brillo flex min-h-[56px] w-full items-center justify-center gap-2 rounded-sm bg-oro-500 px-5 font-semibold text-onix-950 hover:bg-oro-400 disabled:opacity-60"
         >
           {enviando ? 'Enviando…' : 'Confirmar pedido'}
         </button>

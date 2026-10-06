@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Instagram, MapPin, MessageCircle, Phone } from 'lucide-react'
 import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
@@ -14,11 +15,27 @@ export default function LayoutPublico() {
   const ficha = useFichaSitio()
   const whatsapp = enlaceWhatsApp(ficha.whatsapp, SALUDO_WHATSAPP)
 
+  // Arriba del todo el encabezado se funde con la portada; al bajar aparece
+  // su fondo y una sombra, para que se separe de lo que pasa por debajo.
+  const [bajo, setBajo] = useState(false)
+  useEffect(() => {
+    const medir = () => setBajo(window.scrollY > 12)
+    medir()
+    window.addEventListener('scroll', medir, { passive: true })
+    return () => window.removeEventListener('scroll', medir)
+  }, [])
+
   return (
     <div className="flex min-h-dvh flex-col bg-onix-950 text-crema-100">
-      <header className="sticky top-0 z-40 border-b border-oro-500/15 bg-onix-950/90 backdrop-blur">
+      <header
+        className={`sticky top-0 z-40 border-b backdrop-blur transition-[background-color,border-color,box-shadow] duration-500 ${
+          bajo
+            ? 'border-oro-500/15 bg-onix-950/95 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.9)]'
+            : 'border-transparent bg-onix-950/40'
+        }`}
+      >
         {/* Altura fija: la barra de categorías de la carta se pega debajo (top-16). */}
-        <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
+        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-6">
           {/* El símbolo y el nombre son UN solo enlace al inicio, no dos: dos
               enlaces contiguos al mismo sitio obligan a un lector de pantalla a
               anunciarlo dos veces, y con el teclado hay que pasar dos veces por
@@ -32,20 +49,10 @@ export default function LayoutPublico() {
           </Link>
 
           <div className="flex items-center gap-5 text-xs uppercase tracking-[0.16em] sm:gap-7">
-            <NavLink
-              to="/carta"
-              className={({ isActive }) =>
-                `transition hover:text-oro-300 ${isActive ? 'text-oro-300' : 'text-crema-100/70'}`
-              }
-            >
+            <NavLink to="/carta" className={enlace}>
               Carta
             </NavLink>
-            <NavLink
-              to="/pedir"
-              className={({ isActive }) =>
-                `transition hover:text-oro-300 ${isActive ? 'text-oro-300' : 'text-crema-100/70'}`
-              }
-            >
+            <NavLink to="/pedir" className={enlace}>
               Pedir
             </NavLink>
             {/* «Trabaja con nosotros» va en el menú pero SIN el borde del botón:
@@ -54,21 +61,15 @@ export default function LayoutPublico() {
                 busca a propósito. */}
             <NavLink
               to="/trabaja-con-nosotros"
-              className={({ isActive }) =>
-                `hidden transition hover:text-oro-300 sm:inline ${
-                  isActive ? 'text-oro-300' : 'text-crema-100/70'
-                }`
-              }
+              className={(estado) => `hidden sm:inline ${enlace(estado)}`}
             >
               Trabaja con nosotros
             </NavLink>
             <NavLink
               to="/reservar"
               className={({ isActive }) =>
-                `rounded-sm border px-3.5 py-2 transition ${
-                  isActive
-                    ? 'border-oro-400 text-oro-300'
-                    : 'border-crema-100/25 text-crema-100 hover:border-oro-400 hover:text-oro-300'
+                `boton-brillo rounded-sm px-3.5 py-2 font-semibold ${
+                  isActive ? 'bg-oro-400 text-onix-950' : 'bg-oro-500 text-onix-950 hover:bg-oro-400'
                 }`
               }
             >
@@ -114,7 +115,7 @@ export default function LayoutPublico() {
               href={whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-crema-100/70 transition hover:text-oro-300"
+              className="subrayado flex w-fit items-center gap-2 text-sm text-crema-100/70 transition hover:text-oro-300"
             >
               <MessageCircle className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
               WhatsApp
@@ -123,7 +124,7 @@ export default function LayoutPublico() {
               href={enlaceInstagram(ficha.instagram)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-center gap-2 text-sm text-crema-100/70 transition hover:text-oro-300"
+              className="subrayado mt-3 flex w-fit items-center gap-2 text-sm text-crema-100/70 transition hover:text-oro-300"
             >
               <Instagram className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
               @{ficha.instagram}
@@ -141,7 +142,7 @@ export default function LayoutPublico() {
             <div className="flex items-center gap-4">
               <Link
                 to="/trabaja-con-nosotros"
-                className="text-xs uppercase tracking-[0.18em] text-crema-100/50 transition hover:text-oro-300"
+                className="subrayado text-xs uppercase tracking-[0.18em] text-crema-100/50 transition hover:text-oro-300"
               >
                 Trabaja con nosotros
               </Link>
@@ -149,7 +150,7 @@ export default function LayoutPublico() {
                   servicio, no un llamado a la accion comercial. */}
               <Link
                 to="/pqr"
-                className="text-xs uppercase tracking-[0.18em] text-crema-100/50 transition hover:text-oro-300"
+                className="subrayado text-xs uppercase tracking-[0.18em] text-crema-100/50 transition hover:text-oro-300"
               >
                 PQR
               </Link>
@@ -172,4 +173,11 @@ export default function LayoutPublico() {
       </footer>
     </div>
   )
+}
+
+function enlace({ isActive }: { isActive: boolean }) {
+  // El subrayado de oro crece al pasar el cursor y se queda en la activa.
+  return `subrayado py-1 transition ${
+    isActive ? 'activo text-oro-300' : 'text-crema-100/70 hover:text-crema-50'
+  }`
 }

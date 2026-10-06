@@ -77,7 +77,7 @@ export default function Reservar() {
           <Check className="h-7 w-7" aria-hidden />
         </span>
 
-        <h1 className="mt-8 font-titulo text-4xl font-light leading-tight text-crema-100 sm:text-5xl">
+        <h1 className="subir demora-1 mt-8 font-titulo text-4xl font-light leading-tight text-crema-100 sm:text-5xl">
           Recibimos tu solicitud
         </h1>
         <p className="mt-5 text-lg text-crema-100/75">Te confirmamos por WhatsApp.</p>
@@ -118,14 +118,14 @@ export default function Reservar() {
             )}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-sm border border-crema-100/30 px-8 text-sm uppercase tracking-[0.16em] text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
+            className="boton-relleno inline-flex min-h-[52px] items-center justify-center gap-2 rounded-sm border border-crema-100/30 px-8 text-sm uppercase tracking-[0.16em] text-crema-100"
           >
             <MessageCircle className="h-4 w-4" aria-hidden />
             Escribir por WhatsApp
           </a>
           <Link
             to="/carta"
-            className="min-h-[52px] rounded-sm bg-oro-500 px-8 text-sm font-semibold uppercase tracking-[0.16em] leading-[52px] text-onix-950 transition hover:bg-oro-400"
+            className="boton-brillo min-h-[52px] rounded-sm bg-oro-500 px-8 text-sm font-semibold uppercase tracking-[0.16em] leading-[52px] text-onix-950 hover:bg-oro-400"
           >
             Ver la carta
           </Link>
@@ -139,14 +139,14 @@ export default function Reservar() {
     <section className="mx-auto max-w-xl px-5 py-16">
       <div className="text-center">
         <Ornamento className="mx-auto mb-6 h-14 w-24 text-oro-400/60" />
-        <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Reservas</p>
-        <h1 className="mt-4 font-titulo text-5xl font-light text-crema-100">Reserve su mesa</h1>
-        <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-crema-100/65">
+        <p className="subir text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Reservas</p>
+        <h1 className="subir demora-1 mt-4 font-titulo text-5xl font-light text-crema-100">Reserve su mesa</h1>
+        <p className="subir demora-2 mx-auto mt-5 max-w-md text-base leading-relaxed text-crema-100/65">
           Déjenos sus datos y le confirmamos por WhatsApp. Toma menos de un minuto.
         </p>
       </div>
 
-      <form onSubmit={enviar} className="mt-10 space-y-5">
+      <form onSubmit={enviar} className="subir demora-3 mt-10 space-y-5">
         <label className="block">
           <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-crema-100/55">
             Nombre completo
@@ -279,7 +279,7 @@ export default function Reservar() {
         <button
           type="submit"
           disabled={enviando}
-          className="min-h-[56px] w-full rounded-sm bg-oro-500 text-sm font-semibold uppercase tracking-[0.18em] text-onix-950 transition hover:bg-oro-400 disabled:opacity-60"
+          className="boton-brillo min-h-[56px] w-full rounded-sm bg-oro-500 text-sm font-semibold uppercase tracking-[0.18em] text-onix-950 hover:bg-oro-400 disabled:opacity-60"
         >
           {enviando ? 'Enviando…' : 'Solicitar reserva'}
         </button>

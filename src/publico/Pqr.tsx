@@ -30,10 +30,10 @@ export default function Pqr() {
     <div className="mx-auto max-w-2xl px-5 py-12 sm:py-16">
       <header className="text-center">
         <Ornamento />
-        <h1 className="mt-4 font-titulo text-3xl text-crema-100 sm:text-4xl">
+        <h1 className="subir demora-1 mt-4 font-titulo text-3xl text-crema-100 sm:text-4xl">
           Peticiones, quejas y sugerencias
         </h1>
-        <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-crema-100/65">
+        <p className="subir demora-2 mx-auto mt-3 max-w-lg text-sm leading-relaxed text-crema-100/65">
           Cuéntenos qué pasó. Toda solicitud recibe un número de radicado y una respuesta.
         </p>
       </header>
@@ -41,7 +41,7 @@ export default function Pqr() {
       {/* Dos pestañas y no dos páginas: quien viene a consultar suele llegar
           desde el correo del acuse, y buscar un enlace distinto sería una
           fricción de más para alguien que ya está molesto. */}
-      <div className="mt-8 flex gap-2 border-b border-crema-100/15">
+      <div className="subir demora-2 mt-8 flex gap-2 border-b border-crema-100/15">
         {(
           [
             ['radicar', 'Radicar una solicitud'],
@@ -177,7 +177,7 @@ function Radicar() {
   }
 
   return (
-    <form ref={formulario} onSubmit={enviar} className="mt-8 space-y-5">
+    <form ref={formulario} onSubmit={enviar} className="subir demora-3 mt-8 space-y-5">
       {/* El señuelo. Ver `Trabaja.tsx`. */}
       <div className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden>
         <label htmlFor="pqr-sitioWeb">Sitio web</label>
@@ -364,7 +364,7 @@ function Radicar() {
       <button
         type="submit"
         disabled={enviando}
-        className="flex min-h-toque w-full items-center justify-center gap-2 rounded-sm bg-oro-500 px-6 text-sm font-medium uppercase tracking-[0.16em] text-onix-950 transition hover:bg-oro-400 disabled:opacity-60"
+        className="boton-brillo flex min-h-toque w-full items-center justify-center gap-2 rounded-sm bg-oro-500 px-6 text-sm font-medium uppercase tracking-[0.16em] text-onix-950 hover:bg-oro-400 disabled:opacity-60"
       >
         {enviando && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
         {enviando ? 'Radicando…' : 'Radicar solicitud'}

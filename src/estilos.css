@@ -345,3 +345,221 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================================
+ * MOVIMIENTO DEL SITIO PÚBLICO
+ *
+ * El mismo lenguaje de movimiento del sitio de Carly's, vestido con la paleta
+ * de la casa: ónix, crema y oro. Lo que entra, entra deslizándose; lo que se
+ * puede tocar, responde. Todo con la misma curva de frenado suave
+ * (cubic-bezier 0.16, 1, 0.3, 1) para que el sitio entero se mueva con un solo
+ * carácter.
+ *
+ * Tres reglas que se respetan en todo el bloque:
+ *   1. Las animaciones de entrada van con `backwards`, nunca `both`: no dejan
+ *      un `transform` puesto al terminar, que rompería la barra del carrito
+ *      (ver `.entrada-de-panel`).
+ *   2. Solo se animan `opacity`, `transform`, `filter` y fondos: lo que la
+ *      tarjeta gráfica mueve sola, sin recalcular la página en un celular.
+ *   3. Quien pide menos movimiento no ve nada de esto: la regla global de
+ *      arriba lo lleva a un milisegundo y `revelar.tsx` revela todo de golpe.
+ * ==========================================================================*/
+@layer components {
+  /* ---- Entradas en cadena (portada y cabeceras) ---- */
+  @keyframes subir-suave {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .subir { animation: subir-suave 1s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  .demora-1 { animation-delay: 0.15s; }
+  .demora-2 { animation-delay: 0.3s; }
+  .demora-3 { animation-delay: 0.45s; }
+  .demora-4 { animation-delay: 0.6s; }
+  .demora-5 { animation-delay: 0.75s; }
+  .demora-6 { animation-delay: 0.9s; }
+
+  /* ---- El nombre, letra por letra ----
+     Cada letra sube desde un poco más abajo y desenfocada, y se asienta. El
+     retraso de cada una lo pone el componente con `--i`. */
+  @keyframes letra-entra {
+    from { opacity: 0; transform: translateY(0.35em); filter: blur(10px); }
+    to   { opacity: 1; transform: none; filter: blur(0); }
+  }
+  .letra {
+    display: inline-block;
+    animation: letra-entra 1.1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: calc(0.2s + var(--i, 0) * 0.07s);
+  }
+
+  /* ---- El filete de oro que se dibuja ----
+     Fuera de un bloque `.revelar` se dibuja al cargar; dentro, espera a que el
+     bloque aparezca en pantalla. Crece desde el centro porque los filetes de la
+     casa van centrados. */
+  @keyframes trazar-linea {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  .linea-dorada {
+    transform-origin: center;
+    animation: trazar-linea 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+    transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.25s;
+  }
+  .linea-dorada.desde-la-izquierda { transform-origin: left center; }
+  .revelar:not(.revelado) .linea-dorada { transform: scaleX(0); }
+
+  /* ---- La luz de la portada ----
+     Un resplandor cálido muy tenue que se desplaza despacio detrás del nombre,
+     como la de un salón de noche. Es un elemento decorativo aparte —no un
+     ancestro del contenido—, así que su `transform` no afecta a nada. */
+  @keyframes derivar {
+    0%   { transform: translate(-8%, -6%) scale(1); }
+    50%  { transform: translate(10%, 8%) scale(1.15); }
+    100% { transform: translate(-4%, 12%) scale(0.95); }
+  }
+  .luz-dorada {
+    background: radial-gradient(closest-side, rgba(198, 140, 40, 0.22), rgba(198, 140, 40, 0));
+    animation: derivar 18s ease-in-out infinite alternate;
+    filter: blur(20px);
+  }
+  .luz-dorada.a-destiempo { animation-duration: 23s; animation-direction: alternate-reverse; }
+
+  /* ---- El ornamento que se dibuja trazo por trazo ----
+     Cada trazo lleva `pathLength="1"`, así que el mismo guion de largo 1 sirve
+     para el arco y para una hoja. Como la línea dorada: al cargar, o al
+     aparecer su bloque si está dentro de un `.revelar`. */
+  @keyframes dibujar-trazo {
+    from { stroke-dashoffset: 1; }
+    to   { stroke-dashoffset: 0; }
+  }
+  .trazo {
+    stroke-dasharray: 1;
+    animation: dibujar-trazo 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s backwards;
+    transition: stroke-dashoffset 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s;
+  }
+  .trazo-2 { animation-delay: 0.7s; transition-delay: 0.7s; }
+  .trazo-3 { animation-delay: 0.95s; transition-delay: 0.95s; }
+  .trazo-4 { animation-delay: 1.15s; transition-delay: 1.15s; }
+  .trazo-5 { animation-delay: 1.35s; transition-delay: 1.35s; }
+  .revelar:not(.revelado) .trazo { stroke-dashoffset: 1; }
+
+  @keyframes asentar-remate {
+    from { opacity: 0; transform: scale(0); }
+    to   { opacity: 1; transform: none; }
+  }
+  .remate {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: asentar-remate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.9s backwards;
+    transition: opacity 0.6s 1.9s, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.9s;
+  }
+  .revelar:not(.revelado) .remate { opacity: 0; transform: scale(0); }
+
+  /* ---- El ornamento que respira ---- */
+  @keyframes respirar-ornamento {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%      { opacity: 1; transform: scale(1.04); }
+  }
+  .ornamento-vivo { animation: respirar-ornamento 6s ease-in-out infinite; }
+
+  /* ---- Botón de oro: un destello que lo cruza ---- */
+  .boton-brillo {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transition: background-color 0.3s, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s;
+  }
+  .boton-brillo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .boton-brillo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -10px rgba(192, 154, 51, 0.6);
+  }
+  .boton-brillo:hover::after { transform: translateX(120%); }
+  .boton-brillo:active { transform: translateY(0); }
+
+  /* ---- Botón de borde: se rellena de oro desde la izquierda ---- */
+  .boton-relleno {
+    background-image: linear-gradient(theme('colors.oro.500'), theme('colors.oro.500'));
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 0% 100%;
+    transition: background-size 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s,
+      border-color 0.3s, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .boton-relleno:hover {
+    background-size: 100% 100%;
+    color: theme('colors.onix.950') !important;
+    border-color: theme('colors.oro.500') !important;
+    transform: translateY(-2px);
+  }
+
+  /* ---- Tarjetas que responden ---- */
+  .tarjeta-viva {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s,
+      border-color 0.4s, background-color 0.4s;
+  }
+  .tarjeta-viva:hover {
+    transform: translateY(-4px);
+    border-color: rgba(192, 154, 51, 0.45);
+    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(192, 154, 51, 0.08);
+  }
+  .tarjeta-viva img { transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+  .tarjeta-viva:hover img { transform: scale(1.06); }
+
+  /* ---- Hijos que entran escalonados cuando su bloque aparece ---- */
+  .escalonar > * {
+    /* Incluye lo que anima .tarjeta-viva: si no, esta regla lo pisaría y el
+       borde de oro aparecería de golpe al pasar el cursor. */
+    transition: opacity 0.7s ease-out, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.5s, border-color 0.4s, background-color 0.4s;
+  }
+  .revelar:not(.revelado) .escalonar > *,
+  .revelar:not(.revelado).escalonar > * {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .escalonar > *:nth-child(2) { transition-delay: 80ms; }
+  .escalonar > *:nth-child(3) { transition-delay: 160ms; }
+  .escalonar > *:nth-child(4) { transition-delay: 240ms; }
+  .escalonar > *:nth-child(5) { transition-delay: 320ms; }
+  .escalonar > *:nth-child(6) { transition-delay: 400ms; }
+  .escalonar > *:nth-child(n + 7) { transition-delay: 460ms; }
+  /* Pasada la entrada, el retraso estorbaría al pasar el cursor por encima. */
+  .revelado .escalonar > *:hover,
+  .revelado.escalonar > *:hover { transition-delay: 0ms; }
+
+  /* ---- Enlaces del menú: subrayado que crece desde el centro ---- */
+  .subrayado { position: relative; }
+  .subrayado::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: theme('colors.oro.500');
+    transform: scaleX(0);
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .subrayado:hover::after,
+  .subrayado.activo::after { transform: scaleX(1); }
+
+  /* ---- La flecha que avanza ---- */
+  .flecha { transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+  .group:hover .flecha { transform: translateX(6px); }
+
+  /* ---- Íconos que respiran (tarjetas de acción) ---- */
+  @keyframes flotar-icono {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  .icono-flota { animation: flotar-icono 3.2s ease-in-out infinite; }
+}

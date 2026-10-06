@@ -88,14 +88,14 @@ export default function Trabaja() {
     return (
       <div className="mx-auto max-w-2xl px-5 py-16 text-center sm:py-24">
         <CheckCircle2 className="mx-auto h-12 w-12 text-oro-400" aria-hidden />
-        <h1 className="mt-5 font-titulo text-3xl text-crema-100 sm:text-4xl">
+        <h1 className="subir demora-1 mt-5 font-titulo text-3xl text-crema-100 sm:text-4xl">
           Hoja de vida recibida
         </h1>
         <p className="mx-auto mt-4 max-w-md text-crema-100/70">{enviada}</p>
         <button
           type="button"
           onClick={() => setEnviada(null)}
-          className="mt-8 min-h-toque rounded-sm border border-crema-100/25 px-5 text-sm uppercase tracking-[0.16em] text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
+          className="boton-relleno mt-8 min-h-toque rounded-sm border border-crema-100/25 px-5 text-sm uppercase tracking-[0.16em] text-crema-100"
         >
           Enviar otra
         </button>
@@ -107,16 +107,16 @@ export default function Trabaja() {
     <div className="mx-auto max-w-2xl px-5 py-12 sm:py-16">
       <header className="text-center">
         <Ornamento />
-        <h1 className="mt-4 font-titulo text-3xl text-crema-100 sm:text-4xl">
+        <h1 className="subir demora-1 mt-4 font-titulo text-3xl text-crema-100 sm:text-4xl">
           Trabaja con nosotros
         </h1>
-        <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-crema-100/65">
+        <p className="subir demora-2 mx-auto mt-3 max-w-lg text-sm leading-relaxed text-crema-100/65">
           Déjenos su hoja de vida. Si su perfil encaja con una vacante en{' '}
           {RESTAURANTE.nombreCompleto}, nos comunicamos con usted.
         </p>
       </header>
 
-      <form ref={formulario} onSubmit={enviar} className="mt-10 space-y-5" noValidate={false}>
+      <form ref={formulario} onSubmit={enviar} className="subir demora-3 mt-10 space-y-5" noValidate={false}>
         {/*
           El señuelo. Va escondido de forma que ni se vea ni entre en el orden
           de tabulación ni lo lea un lector de pantalla: una persona nunca lo
@@ -308,7 +308,7 @@ export default function Trabaja() {
         <button
           type="submit"
           disabled={enviando}
-          className="flex min-h-toque w-full items-center justify-center gap-2 rounded-sm bg-oro-500 px-6 text-sm font-medium uppercase tracking-[0.16em] text-onix-950 transition hover:bg-oro-400 disabled:opacity-60"
+          className="boton-brillo flex min-h-toque w-full items-center justify-center gap-2 rounded-sm bg-oro-500 px-6 text-sm font-medium uppercase tracking-[0.16em] text-onix-950 hover:bg-oro-400 disabled:opacity-60"
         >
           {enviando && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           {enviando ? 'Enviando…' : 'Enviar hoja de vida'}

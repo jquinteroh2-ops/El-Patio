@@ -105,10 +105,10 @@ export default function Carta() {
   return (
     <>
       <section className="mx-auto max-w-3xl px-5 pb-10 pt-16 text-center">
-        <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Nuestra carta</p>
-        <h1 className="mt-4 font-titulo text-5xl font-light text-crema-100">La carta</h1>
-        <Filete className="mx-auto mt-6 w-32 text-oro-400" />
-        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-crema-100/65">
+        <p className="subir text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">Nuestra carta</p>
+        <h1 className="subir demora-1 mt-4 font-titulo text-5xl font-light text-crema-100">La carta</h1>
+        <Filete className="subir demora-2 mx-auto mt-6 w-32 text-oro-400" />
+        <p className="subir demora-3 mx-auto mt-6 max-w-xl text-base leading-relaxed text-crema-100/65">
           Cocina de fusión con producto del Caribe. Los precios están en pesos colombianos e
           incluyen el impuesto al consumo al momento de la cuenta.
         </p>
@@ -182,7 +182,12 @@ export default function Carta() {
                 <h2 className="font-titulo text-3xl font-light text-oro-300 sm:text-4xl">
                   {categoria.nombre}
                 </h2>
-                <span className="mt-3 mb-7 block h-px w-full bg-crema-100/10" aria-hidden />
+                {/* El filete se dibuja de izquierda a derecha cuando la
+                    categoría aparece en pantalla. */}
+                <span
+                  className="linea-dorada desde-la-izquierda mt-3 mb-7 block h-px w-full bg-oro-500/25"
+                  aria-hidden
+                />
 
                 {/*
                   Una linea fina entre plato y plato, y aire de sobra.
@@ -193,7 +198,7 @@ export default function Carta() {
                   separados y un filete que los ordena, y la foto acompana al
                   nombre en vez de competir con el.
                 */}
-                <ul className="divide-y divide-crema-100/[0.07]">
+                <ul className="escalonar divide-y divide-crema-100/[0.07]">
                   {categoria.items.map((item) => {
                     const fotos = fotosDePlato(item)
 
@@ -212,7 +217,7 @@ export default function Carta() {
                     return (
                       <li
                         key={item.id}
-                        className={`relative flex gap-5 py-7 first:pt-0 last:pb-0 sm:gap-6 ${
+                        className={`group relative flex gap-5 py-7 first:pt-0 last:pb-0 sm:gap-6 ${
                           item.disponible ? '' : 'opacity-55'
                         }`}
                       >
@@ -230,12 +235,16 @@ export default function Carta() {
                               lo que hace que la foto se lea como enmarcada y no
                               como pegada.
                             */}
-                            <img
-                              src={api.urlImagenCarta(fotos[0], 400)}
-                              alt=""
-                              loading="lazy"
-                              className="aspect-[3/4] w-full rounded-sm object-cover ring-1 ring-oro-500/25"
-                            />
+                            {/* El marco recorta: la foto se acerca un poco al
+                                pasar el cursor por la fila, sin salirse. */}
+                            <div className="overflow-hidden rounded-sm ring-1 ring-oro-500/25 transition duration-500 group-hover:ring-oro-400/60">
+                              <img
+                                src={api.urlImagenCarta(fotos[0], 400)}
+                                alt=""
+                                loading="lazy"
+                                className="aspect-[3/4] w-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                              />
+                            </div>
 
                             {/* Un punto por foto: dice que hay más sin gritarlo
                                 como lo hacía la insignia con el número. */}
@@ -258,7 +267,7 @@ export default function Carta() {
                               <button
                                 type="button"
                                 onClick={() => setEnFicha(item)}
-                                className="text-left transition after:absolute after:inset-0 after:content-[''] hover:text-oro-300"
+                                className="text-left transition duration-300 after:absolute after:inset-0 after:content-[''] hover:text-oro-300 group-hover:text-oro-200"
                               >
                                 {item.nombre}
                                 {/* Lo que los puntos dicen a la vista, dicho
@@ -310,9 +319,12 @@ export default function Carta() {
                               /* `relative` lo saca de debajo del `::after` que
                                  cubre la fila: sin esto, tocar «Agregar»
                                  abriría la ficha en vez de agregar. */
-                              className="relative mt-3.5 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100 transition hover:border-oro-400 hover:text-oro-300"
+                              className="boton-relleno group/agregar relative mt-3.5 inline-flex min-h-[40px] items-center gap-1.5 rounded-sm border border-crema-100/25 px-3.5 text-sm text-crema-100"
                             >
-                              <Plus className="h-4 w-4" aria-hidden />
+                              <Plus
+                                className="h-4 w-4 transition-transform duration-500 group-hover/agregar:rotate-90"
+                                aria-hidden
+                              />
                               Agregar
                             </button>
                           )}
@@ -340,7 +352,7 @@ export default function Carta() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-oro-500/15 bg-onix-950/95 px-4 pt-4 pb-segura backdrop-blur">
           <Link
             to="/pedir"
-            className="mx-auto flex min-h-[56px] max-w-3xl items-center justify-between gap-4 rounded-sm bg-oro-500 px-5 text-onix-950 transition hover:bg-oro-400"
+            className="boton-brillo mx-auto flex min-h-[56px] max-w-3xl items-center justify-between gap-4 rounded-sm bg-oro-500 px-5 text-onix-950 hover:bg-oro-400"
           >
             <span className="flex items-center gap-2 font-semibold">
               <ShoppingBag className="h-5 w-5" aria-hidden />
