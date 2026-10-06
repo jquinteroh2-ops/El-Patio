@@ -308,14 +308,15 @@ export default function Inicio() {
       )}
 
       {/* ---------------- El local, en collage ----------------
-          Las fotos no van en una rejilla pareja sino en mosaico: la primera
-          manda y las demas la acompanan. Una cuadricula de recuadros iguales
-          se lee como un catalogo; un collage se lee como un lugar.
+          Las fotos no van en una rejilla pareja sino en columnas, como un
+          muro: cada una con su propia forma, entera, sin recortar. Una
+          cuadricula de recuadros iguales se lee como un catalogo; un collage
+          se lee como un lugar.
 
-          El alto de la fila es fijo y las fotos se recortan al ocupar su
-          casilla. Es a proposito: fotos de celular vienen en proporciones
-          distintas, y dejarlas a su aire haria que el mosaico quedara con
-          escalones. */}
+          Antes iban en casillas de alto fijo y se recortaban para llenarlas.
+          Casi todas las fotos del local son verticales, y una casilla ancha
+          les cortaba justo lo que importa: la cara de quien cocina, el arco
+          entero. En columnas cada foto ocupa el alto que pide su ancho. */}
       {galeria.length > 0 && (
         <section className="border-t border-oro-500/15">
           <div className="revelar mx-auto max-w-5xl px-5 py-20">
@@ -326,24 +327,20 @@ export default function Inicio() {
               Así se ve por dentro
             </h2>
 
-            {/* `grid-flow-row-dense` deja que una foto pequeña suba a tapar el
-                hueco que deja una ancha al no caber al final de su fila. */}
-            <div className="escalonar mt-9 grid grid-flow-row-dense auto-rows-[10rem] grid-cols-2 gap-3 sm:auto-rows-[12rem] sm:grid-cols-4">
-              {galeria.map((foto, i) => (
+            {/* `break-inside-avoid` impide que una foto se parta entre dos
+                columnas; el margen inferior hace de separacion vertical
+                porque en columnas `gap` solo separa a los lados. */}
+            <div className="escalonar mt-9 columns-2 gap-3 sm:columns-3 lg:columns-4">
+              {galeria.map((foto) => (
                 <figure
                   key={foto.id}
-                  className={`tarjeta-viva group relative overflow-hidden rounded-2xl border border-oro-500/15 ${
-                    // La primera manda: ocupa cuatro casillas. Cada cuarta de
-                    // las siguientes toma dos de ancho, para que el mosaico no
-                    // caiga en un patron repetido y aburrido.
-                    i === 0 ? 'col-span-2 row-span-2' : i % 4 === 3 ? 'col-span-2' : ''
-                  }`}
+                  className="tarjeta-viva group relative mb-3 break-inside-avoid overflow-hidden rounded-2xl border border-oro-500/15"
                 >
                   <img
-                    src={api.urlImagen(foto.imagen ?? '', i === 0 ? 1000 : 600)}
+                    src={api.urlImagen(foto.imagen ?? '', 600)}
                     alt={foto.titulo}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className="block h-auto w-full"
                   />
                   {/* El titulo se lee sobre la foto, no debajo: un pie de foto
                       por cada casilla romperia el mosaico. El degradado existe

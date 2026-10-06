@@ -224,11 +224,11 @@ export default function Carta() {
                         {fotos.length > 0 && (
                           <div className="w-24 shrink-0 sm:w-28">
                             {/*
-                              Vertical y no cuadrada. Las fotos vienen en 9:16 y
-                              un recorte cuadrado se lleva por delante casi toda
-                              la composición: el fondo, la mesa, el jardín. En
-                              3:4 se reconoce el plato Y de dónde salió, y el
-                              encuadre entero queda a un toque de distancia.
+                              Entera, con su propia forma y sin recortar. Las
+                              fotos vienen casi todas en 9:16 y cualquier recorte
+                              —cuadrado o 3:4— se lleva por delante parte de la
+                              composición: el borde del plato, la mesa, el
+                              jardín. La fila crece al alto de la foto.
 
                               El filete de oro es el mismo recurso que ya ordena
                               la página —los separadores, las versalitas— y es
@@ -242,7 +242,7 @@ export default function Carta() {
                                 src={api.urlImagenCarta(fotos[0], 400)}
                                 alt=""
                                 loading="lazy"
-                                className="aspect-[3/4] w-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                                className="block h-auto w-full transition duration-700 ease-out group-hover:scale-105"
                               />
                             </div>
 
