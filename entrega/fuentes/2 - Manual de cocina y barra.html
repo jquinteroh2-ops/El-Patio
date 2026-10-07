@@ -142,8 +142,8 @@ window.addEventListener('load', function () {
     return ult && ult.getBoundingClientRect().bottom > pie;
   }
   // Títulos, y el párrafo corto que presenta una lista o tabla, no se quedan solos al pie.
-  const atado = el => el.classList.contains('numero') || /^H[1-3]$/.test(el.tagName) || el.classList.contains('rotulo')
-    || (el.tagName === 'P' && el.textContent.length < 260);
+  const atado = (el, sigue) => el.classList.contains('numero') || /^H[1-3]$/.test(el.tagName) || el.classList.contains('rotulo')
+    || (el.tagName === 'P' && el.textContent.length < 260 && /^(UL|TABLE|DIV)$/.test(sigue.tagName));
   let main = nueva();
   for (const bloque of Array.from(flujo.children)) {
     main.appendChild(bloque);
@@ -162,7 +162,7 @@ window.addEventListener('load', function () {
     }
     if (resto) { main = nueva(); main.appendChild(resto); continue; }
     const llevar = [bloque];
-    while (llevar.length < 4 && main.children.length > llevar.length && atado(main.children[main.children.length - llevar.length - 1]))
+    while (main.children.length > llevar.length && atado(main.children[main.children.length - llevar.length - 1], llevar[0]))
       llevar.unshift(main.children[main.children.length - llevar.length - 1]);
     if (llevar.length === main.children.length) continue;  // ocupa la página entera: se queda
     main = nueva();
