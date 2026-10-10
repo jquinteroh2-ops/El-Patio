@@ -166,16 +166,22 @@ public class ServicioPqr {
 
   private void avisarQueLlego(SolicitudPqr solicitud) {
     if (correoDelAdministrador == null || correoDelAdministrador.isBlank()) return;
-    try {
-      correo.enviar(
-          correoDelAdministrador,
-          solicitud.getTipo().etiqueta() + " nueva: " + solicitud.getRadicado(),
-          solicitud.getAsunto()
-              + "\n\nDe "
-              + solicitud.getNombreCompleto()
-              + ".\nEntre al panel para atenderla.");
-    } catch (RuntimeException e) {
-      registro.warn("No se pudo avisar de la PQR {}", solicitud.getRadicado(), e);
+    // Varios destinatarios separados por coma: cada uno se intenta aparte, asi
+    // que un correo mal escrito no le quita el aviso al resto.
+    for (String destinatario : correoDelAdministrador.split(",")) {
+      String limpio = destinatario.trim();
+      if (limpio.isEmpty()) continue;
+      try {
+        correo.enviar(
+            limpio,
+            solicitud.getTipo().etiqueta() + " nueva: " + solicitud.getRadicado(),
+            solicitud.getAsunto()
+                + "\n\nDe "
+                + solicitud.getNombreCompleto()
+                + ".\nEntre al panel para atenderla.");
+      } catch (RuntimeException e) {
+        registro.warn("No se pudo avisar a {} de la PQR {}", limpio, solicitud.getRadicado(), e);
+      }
     }
   }
 

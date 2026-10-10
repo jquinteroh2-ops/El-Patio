@@ -149,16 +149,22 @@ public class ServicioPostulaciones {
    */
   private void avisarAlAdministrador(Postulacion postulacion) {
     if (correoDelAdministrador == null || correoDelAdministrador.isBlank()) return;
-    try {
-      correo.enviar(
-          correoDelAdministrador,
-          "Nueva hoja de vida: " + postulacion.getCargoInteres().etiqueta(),
-          postulacion.getNombreCompleto()
-              + " se postuló para "
-              + postulacion.getCargoInteres().etiqueta()
-              + ".\n\nEntre al panel para ver la hoja de vida.");
-    } catch (RuntimeException e) {
-      registro.warn("No se pudo avisar de la postulación {}", postulacion.getId(), e);
+    // Varios destinatarios separados por coma: cada uno se intenta aparte, asi
+    // que un correo mal escrito no le quita el aviso al resto.
+    for (String destinatario : correoDelAdministrador.split(",")) {
+      String limpio = destinatario.trim();
+      if (limpio.isEmpty()) continue;
+      try {
+        correo.enviar(
+            limpio,
+            "Nueva hoja de vida: " + postulacion.getCargoInteres().etiqueta(),
+            postulacion.getNombreCompleto()
+                + " se postuló para "
+                + postulacion.getCargoInteres().etiqueta()
+                + ".\n\nEntre al panel para ver la hoja de vida.");
+      } catch (RuntimeException e) {
+        registro.warn("No se pudo avisar a {} de la postulación {}", limpio, postulacion.getId(), e);
+      }
     }
   }
 

@@ -40,6 +40,24 @@ spring:
   jackson:
     default-property-inclusion: non_null
 
+  mail:
+    # Vacio = Spring no activa el envio y el sistema sigue con CorreoRegistrado
+    # (el que solo escribe en la bitacora). Asi un despliegue sin proveedor
+    # -como La Carreta mientras no tenga el suyo propio- sigue funcionando igual.
+    host: ${ELPATIO_SMTP_HOST:}
+    port: ${ELPATIO_SMTP_PUERTO:587}
+    username: ${ELPATIO_SMTP_USUARIO:}
+    password: ${ELPATIO_SMTP_CLAVE:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+
   servlet:
     multipart:
       # Lo que se acepta que entre por la red. El almacen vuelve a revisar el
@@ -75,6 +93,13 @@ management:
 elpatio:
   # El día operativo y el turno se calculan en esta zona, nunca en UTC.
   zona-horaria: ${ELPATIO_ZONA:America/Bogota}
+
+  correo:
+    # Misma cuenta que spring.mail.username: existe aparte porque
+    # @ConditionalOnProperty necesita una propiedad para decidir si activa
+    # CorreoPorSmtp, y "activar un adaptador según si hay usuario SMTP" es más
+    # claro leyendo esta clave que leyendo spring.mail.username.
+    usuario: ${ELPATIO_SMTP_USUARIO:}
 
   reclutamiento:
     # A quién se le avisa cuando llega una hoja de vida nueva.
