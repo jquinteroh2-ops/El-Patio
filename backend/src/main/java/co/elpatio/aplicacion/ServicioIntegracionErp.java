@@ -17,6 +17,7 @@ import co.elpatio.dominio.puertos.Reloj;
 import co.elpatio.dominio.puertos.Repositorios;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -229,6 +230,15 @@ public class ServicioIntegracionErp {
       return false;
     }
 
+    return aplicarResultado(envio, resultado, ahora);
+  }
+
+  /**
+   * Anota como le fue a un envio, venga la respuesta del adaptador o del
+   * agente del restaurante. Es un solo lugar a proposito: las dos rutas tienen
+   * que dejar la venta en el mismo estado ante la misma respuesta.
+   */
+  private boolean aplicarResultado(EnvioErp envio, ResultadoFacturacion resultado, Instant ahora) {
     switch (resultado.desenlace()) {
       case CONFIRMADO -> {
         envio.confirmar(resultado, ahora);
@@ -253,6 +263,88 @@ public class ServicioIntegracionErp {
         return false;
       }
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Agente del restaurante
+  // -------------------------------------------------------------------------
+
+  /**
+   * Cuanto tiene el agente para contestar antes de que la venta vuelva sola a
+   * la cola. Diez minutos sobran para entregar una tanda a un ERP que esta en
+   * la misma red; si se pasa, lo mas probable es que se haya apagado el
+   * computador, y para entonces la venta debe estar otra vez disponible.
+   */
+  private static final Duration PLAZO_AGENTE = Duration.ofMinutes(10);
+
+  /** Si la tarea de cada minuto debe mandar ventas o le toca al agente venir por ellas. */
+  public boolean laNubeEntrega() {
+    return erp.entregaDesdeLaNube();
+  }
+
+  /** Con que adaptador esta configurado el sistema. Lo pregunta el agente al arrancar. */
+  public String nombreAdaptador() {
+    return erp.nombre();
+  }
+
+  /** Una venta que el agente se lleva, con el cuerpo tal cual se guardo. */
+  public record EnvioReclamado(String envioId, int intento, VentaParaErp venta) {}
+
+  /**
+   * Le entrega al agente la siguiente tanda.
+   *
+   * Cada venta queda reservada {@link #PLAZO_AGENTE}; si el agente no contesta
+   * en ese tiempo vuelve a la cola. Una venta cuyo cuerpo no se puede leer no
+   * se le manda: se aparta para revision humana, igual que en {@link #procesar}.
+   */
+  @Transactional
+  public List<EnvioReclamado> reclamarParaAgente(int limite) {
+    Instant ahora = reloj.ahora();
+    int tanda = Math.max(1, Math.min(limite, POR_PASADA));
+    List<EnvioReclamado> resultado = new ArrayList<>();
+    for (EnvioErp envio : envios.pendientesListos(ahora, tanda)) {
+      VentaParaErp venta;
+      try {
+        venta = json.readValue(envio.getPayload(), VentaParaErp.class);
+      } catch (JsonProcessingException e) {
+        envio.marcarEnviado("agente", ahora);
+        envio.fallar(
+            "El cuerpo guardado no se puede leer: " + e.getMessage(), null, sinReintentos(), ahora);
+        envios.guardar(envio);
+        continue;
+      }
+      envio.reservarParaAgente(ahora, PLAZO_AGENTE);
+      envios.guardar(envio);
+      resultado.add(new EnvioReclamado(envio.getId(), envio.getIntentos(), venta));
+    }
+    return resultado;
+  }
+
+  /**
+   * Anota lo que el agente dice que paso con una venta.
+   *
+   * Si la venta ya estaba facturada, repetir la misma confirmacion no hace
+   * nada: es el agente reintentando porque no le llego la respuesta. Lo que no
+   * se acepta es otro numero de documento ni un fallo encima de una factura,
+   * porque eso significaria dos documentos para una sola comida.
+   */
+  @Transactional
+  public void registrarResultadoDelAgente(String envioId, ResultadoFacturacion resultado) {
+    EnvioErp envio =
+        envios.porId(envioId).orElseThrow(() -> new NoEncontradoError("Ese envio no existe"));
+
+    if (envio.getEstado() == EstadoEnvioErp.FACTURADA_ERP) {
+      if (resultado.confirmo()
+          && resultado.numeroDocumento().equals(envio.getDocumentoExterno())) {
+        return;
+      }
+      throw new co.elpatio.dominio.error.ReglaDeNegocioError(
+          "Esa venta ya tiene el documento "
+              + envio.getDocumentoExterno()
+              + " en el ERP. No se le puede anotar otro resultado.");
+    }
+
+    aplicarResultado(envio, resultado, reloj.ahora());
   }
 
   /** Politica para lo que no tiene sentido reintentar: cero intentos de margen. */

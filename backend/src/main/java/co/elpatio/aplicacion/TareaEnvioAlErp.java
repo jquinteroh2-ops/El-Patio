@@ -31,6 +31,9 @@ public class TareaEnvioAlErp {
 
   @Scheduled(fixedDelay = 60_000)
   public void ejecutar() {
+    // Con el agente del restaurante es el agente el que viene por las ventas.
+    // Si esta tarea tambien las tomara, una misma venta saldria por dos lados.
+    if (!servicio.laNubeEntrega()) return;
     try {
       for (String envioId : servicio.pendientes()) {
         try {

@@ -104,6 +104,23 @@ class EnvioErpTest {
   }
 
   /**
+   * Si el computador del restaurante se apaga con la venta en la mano, la
+   * venta tiene que volver sola a la cola cuando vence el plazo.
+   */
+  @Test
+  void loQueSeLlevaElAgenteVuelveALaColaSiNoContestaATiempo() {
+    EnvioErp envio = nuevo();
+
+    envio.reservarParaAgente(AHORA, Duration.ofMinutes(10));
+
+    assertThat(envio.getEstado()).isEqualTo(EstadoEnvioErp.PENDIENTE_ENVIO_ERP);
+    assertThat(envio.getAdaptador()).isEqualTo("agente");
+    assertThat(envio.getIntentos()).isEqualTo(1);
+    assertThat(envio.debeIntentarse(AHORA.plusSeconds(60))).isFalse();
+    assertThat(envio.debeIntentarse(AHORA.plus(Duration.ofMinutes(10)))).isTrue();
+  }
+
+  /**
    * Un ERP que dice «listo» sin decir con que numero no confirmo nada: sin ese
    * dato la conciliacion no tiene contra que cruzar la venta.
    */

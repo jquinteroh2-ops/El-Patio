@@ -1,0 +1,29 @@
+# Configuración del agente de El Patio.
+#
+# Copie este archivo como agente.properties en la misma carpeta del
+# AgenteElPatio.exe, llénelo y reinicie el agente. Se abre con el Bloc de notas.
+
+# La dirección del servidor (backend) de El Patio, sin barra al final.
+# NO es la página web: es la API.
+nube.url=https://backend-production-3cd7.up.railway.app
+
+# La llave del agente. Tiene que ser IGUAL a ELPATIO_ERP_AGENTE_TOKEN en Railway.
+# No la escriba en ningún otro lado ni la mande por WhatsApp.
+nube.llave=
+
+# Cómo se le entregan las ventas a Globalsoft. Hoy solo existe "carpeta": deja
+# un archivo por venta para que Globalsoft lo importe.
+entrega.modo=carpeta
+
+# Dónde se dejan esos archivos. Puede ser una ruta completa, ej.:
+# entrega.carpeta=C:/Globalsoft/Importar
+entrega.carpeta=ventas-para-globalsoft
+
+# Dónde guarda el agente su memoria de entregas y su bitácora.
+datos.carpeta=datos
+
+# Cada cuántos segundos pregunta si hay ventas nuevas.
+intervalo.segundos=30
+
+# Cuántas ventas pide por vez.
+tanda=20

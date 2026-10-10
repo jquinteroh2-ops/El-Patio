@@ -116,6 +116,9 @@ elpatio:
     #             conexión HTTP desde la nube no.
     #   rest    — manda la venta por HTTP. INCOMPLETO: falta el contrato real.
     #             No lo active todavía.
+    #   agente  — la nube no manda nada: el agente instalado en el computador
+    #             de Globalsoft viene por las ventas a /api/agente-erp y se las
+    #             entrega allá adentro. Ver la carpeta agente-erp del repositorio.
     #
     # Si alguien se equivoca escribiendo esto, arranca el adaptador manual, que
     # es el que no puede hacer daño.
@@ -132,6 +135,13 @@ elpatio:
       # se activa sin URL, en vez de intentar contra una dirección vacía.
       url: ${ELPATIO_ERP_URL:}
       token: ${ELPATIO_ERP_TOKEN:}
+
+    agente:
+      # La llave con que se identifica el agente del restaurante. La misma en
+      # Railway y en el archivo de configuración del agente. Vacía = la
+      # ventanilla del agente no existe. Larga y al azar: es lo único que
+      # separa la lista de ventas del resto de internet.
+      token: ${ELPATIO_ERP_AGENTE_TOKEN:}
 
   imagenes:
     # Dónde se guardan las fotos de promociones, eventos y galería.

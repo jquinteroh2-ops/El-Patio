@@ -87,6 +87,9 @@ public class ConfiguracionSeguridad {
                     // adelante Meta) no tienen sesion de nadie: se autentican
                     // con su propia firma, verificada dentro del controlador.
                     .requestMatchers("/webhooks/**").permitAll()
+                    // El agente del computador de Globalsoft tampoco: trae su
+                    // propia llave y el controlador la revisa.
+                    .requestMatchers("/api/agente-erp/**").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                     // La carta y las reservas las consulta el sitio publico sin

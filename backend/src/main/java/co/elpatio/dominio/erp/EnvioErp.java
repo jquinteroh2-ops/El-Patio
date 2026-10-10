@@ -1,5 +1,6 @@
 package co.elpatio.dominio.erp;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -59,6 +60,25 @@ public class EnvioErp {
     this.estado = EstadoEnvioErp.ENVIADA_ERP;
     this.adaptador = adaptador;
     this.intentos += 1;
+    this.actualizadoEn = ahora;
+  }
+
+  /**
+   * Se lo lleva el agente del restaurante.
+   *
+   * Sigue PENDIENTE a proposito, solo que con el proximo intento corrido hasta
+   * que vence el plazo. Si el agente se cae entre llevarselo y contestar —se
+   * fue la luz, apagaron el computador—, al vencer el plazo el envio vuelve
+   * solo a la cola y el agente lo encuentra otra vez al prender. Marcarlo
+   * ENVIADA lo dejaria esperando una respuesta que ya nadie va a dar.
+   *
+   * Que lo reciba dos veces no factura dos veces: el agente anota la llave de
+   * idempotencia de cada venta que entrega y no repite ninguna.
+   */
+  public void reservarParaAgente(Instant ahora, Duration plazo) {
+    this.adaptador = "agente";
+    this.intentos += 1;
+    this.proximoIntento = ahora.plus(plazo);
     this.actualizadoEn = ahora;
   }
 

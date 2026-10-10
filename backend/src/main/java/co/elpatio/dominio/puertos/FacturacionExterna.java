@@ -36,6 +36,18 @@ public interface FacturacionExterna {
   /** Manda la venta y dice como quedo. Nunca lanza por un fallo del ERP. */
   ResultadoFacturacion emitirDocumento(VentaParaErp venta);
 
-  /** Como se llama este adaptador en la bitacora: rest, archivo o manual. */
+  /** Como se llama este adaptador en la bitacora: rest, archivo, manual o agente. */
   String nombre();
+
+  /**
+   * Si es la nube la que lleva la venta hasta el ERP.
+   *
+   * Es lo normal, y por eso el valor por defecto. La excepcion es el agente del
+   * restaurante: alla la nube no puede llegar —el ERP esta detras del router—,
+   * asi que es el agente el que viene a buscar las ventas, y la tarea de cada
+   * minuto no tiene nada que mandar.
+   */
+  default boolean entregaDesdeLaNube() {
+    return true;
+  }
 }
