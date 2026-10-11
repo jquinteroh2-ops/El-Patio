@@ -4,8 +4,11 @@ import co.elpatio.aplicacion.ServicioAjustes;
 import co.elpatio.aplicacion.ServicioPedidos;
 import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.comanda.Orden;
+import co.elpatio.dominio.error.ReglaDeNegocioError;
 import co.elpatio.dominio.pedido.ZonaDomicilio;
+import co.elpatio.infraestructura.seguridad.LimitadorDePeticiones;
 import co.elpatio.infraestructura.seguridad.ServicioTokens;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,12 +35,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/pedidos")
 public class ControladorPedidos {
 
+  /**
+   * Cuantos pedidos admite una IP desde el sitio publico por ventana.
+   *
+   * Cinco deja pedir de nuevo a quien olvido algo, y corta al robot que
+   * llenaria el tablero de recepcion y la cocina de pedidos falsos.
+   */
+  private static final int MAXIMO_PEDIDOS_WEB = 5;
+
   private final ServicioPedidos servicio;
   private final ServicioAjustes ajustes;
+  private final LimitadorDePeticiones limitador;
 
-  public ControladorPedidos(ServicioPedidos servicio, ServicioAjustes ajustes) {
+  public ControladorPedidos(
+      ServicioPedidos servicio, ServicioAjustes ajustes, LimitadorDePeticiones limitador) {
     this.servicio = servicio;
     this.ajustes = ajustes;
+    this.limitador = limitador;
   }
 
   // ---------------------------------------------------------------------------
@@ -57,7 +71,15 @@ public class ControladorPedidos {
    * operacion: de aqui sale el evento que enciende la pantalla de recepcion.
    */
   @PostMapping
-  public Dtos.PedidoCreado crearPedidoExterno(@RequestBody Dtos.NuevoPedidoExterno datos) {
+  public Dtos.PedidoCreado crearPedidoExterno(
+      @RequestBody Dtos.NuevoPedidoExterno datos, HttpServletRequest peticion) {
+    String clave = "pedidos:" + ControladorPostulacionesPublico.ipDe(peticion);
+    if (!limitador.permite(clave, MAXIMO_PEDIDOS_WEB)) {
+      long minutos = limitador.minutosParaReintentar(clave);
+      throw new ReglaDeNegocioError(
+          "Ya recibimos varios pedidos desde este dispositivo. Intente de nuevo en "
+              + Math.max(1, minutos) + " minutos o escríbanos por WhatsApp.");
+    }
     return servicio.crearPedidoExterno(datos);
   }
 

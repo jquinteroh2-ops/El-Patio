@@ -2,7 +2,10 @@ package co.elpatio.infraestructura.web;
 
 import co.elpatio.aplicacion.ServicioReservas;
 import co.elpatio.aplicacion.dto.Dtos;
+import co.elpatio.dominio.error.ReglaDeNegocioError;
 import co.elpatio.dominio.reserva.Reserva;
+import co.elpatio.infraestructura.seguridad.LimitadorDePeticiones;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,10 +32,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/reservas")
 public class ControladorReservas {
 
-  private final ServicioReservas servicio;
+  /**
+   * Cuantas reservas admite una IP desde el sitio publico por ventana.
+   *
+   * Cinco cubre a quien reserva para dos fechas o se equivoca y la repite, y
+   * corta al robot que llenaria la pantalla de recepcion de reservas falsas.
+   */
+  private static final int MAXIMO_RESERVAS_WEB = 5;
 
-  public ControladorReservas(ServicioReservas servicio) {
+  private final ServicioReservas servicio;
+  private final LimitadorDePeticiones limitador;
+
+  public ControladorReservas(ServicioReservas servicio, LimitadorDePeticiones limitador) {
     this.servicio = servicio;
+    this.limitador = limitador;
   }
 
   /** Equivale a `listarReservas()`. */
@@ -44,7 +57,15 @@ public class ControladorReservas {
 
   /** Equivale a `crearReserva(datos)`. */
   @PostMapping
-  public Reserva crearReserva(@RequestBody Dtos.NuevaReserva datos) {
+  public Reserva crearReserva(
+      @RequestBody Dtos.NuevaReserva datos, HttpServletRequest peticion) {
+    String clave = "reservas:" + ControladorPostulacionesPublico.ipDe(peticion);
+    if (!limitador.permite(clave, MAXIMO_RESERVAS_WEB)) {
+      long minutos = limitador.minutosParaReintentar(clave);
+      throw new ReglaDeNegocioError(
+          "Ya recibimos varias reservas desde este dispositivo. Intente de nuevo en "
+              + Math.max(1, minutos) + " minutos o escríbanos por WhatsApp.");
+    }
     return servicio.crearReserva(datos);
   }
 

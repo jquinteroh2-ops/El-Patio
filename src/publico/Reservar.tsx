@@ -44,6 +44,14 @@ export default function Reservar() {
     evento.preventDefault()
     setError(null)
 
+    // El señuelo lleno delata a un robot: se le muestra la confirmación sin
+    // mandar nada, para no enseñarle qué campo evitar. Ver `Trabaja.tsx`.
+    const formulario = new FormData(evento.currentTarget as HTMLFormElement)
+    if (String(formulario.get('sitioWeb') ?? '').trim()) {
+      setEnviada({ fechaHora: new Date(`${fecha}T${hora}:00`).toISOString() })
+      return
+    }
+
     const digitos = telefono.replace(/\D/g, '')
     if (digitos.length < 10) {
       setError('Escribe un número de celular de 10 dígitos para poder confirmarte.')
@@ -147,6 +155,11 @@ export default function Reservar() {
       </div>
 
       <form onSubmit={enviar} className="subir demora-3 mt-10 space-y-5">
+        {/* El señuelo. Ver `Trabaja.tsx`. */}
+        <div className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden>
+          <label htmlFor="reservar-sitioWeb">Sitio web</label>
+          <input id="reservar-sitioWeb" name="sitioWeb" type="text" tabIndex={-1} autoComplete="off" />
+        </div>
         <label className="block">
           <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-crema-100/55">
             Nombre completo

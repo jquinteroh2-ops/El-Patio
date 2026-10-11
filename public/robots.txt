@@ -18,7 +18,6 @@ Disallow: /recepcion
 Disallow: /admin
 Disallow: /api/
 
-# Sitemap: https://SU-DOMINIO/sitemap.xml
-# Descomente la linea de arriba con el dominio real cuando lo tenga, y suba el
-# sitemap desde Google Search Console. Sin dominio propio no hace falta: Google
-# igual sigue los enlaces del sitio.
+# El mapa del sitio: las paginas publicas que Google debe conocer. Si se agrega
+# una pagina publica nueva, se agrega tambien en public/sitemap.xml.
+Sitemap: https://www.restauranteelpatio.com/sitemap.xml

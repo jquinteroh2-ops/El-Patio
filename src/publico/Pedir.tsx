@@ -124,6 +124,10 @@ export default function Pedir() {
     setError(null)
     if (problemas.length > 0) return
 
+    // El señuelo lleno delata a un robot: no se manda nada. Ver `Trabaja.tsx`.
+    const formulario = new FormData(evento.currentTarget as HTMLFormElement)
+    if (String(formulario.get('sitioWeb') ?? '').trim()) return
+
     setEnviando(true)
     try {
       const creado = await api.crearPedidoExterno({
@@ -340,6 +344,11 @@ export default function Pedir() {
       </ul>
 
       <form onSubmit={enviar} className="subir demora-2 mt-8 space-y-6">
+        {/* El señuelo. Ver `Trabaja.tsx`. */}
+        <div className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden>
+          <label htmlFor="pedir-sitioWeb">Sitio web</label>
+          <input id="pedir-sitioWeb" name="sitioWeb" type="text" tabIndex={-1} autoComplete="off" />
+        </div>
         {/* ---------- Tipo ---------- */}
         <div>
           <span className={etiquetaCampo}>¿Cómo lo quiere?</span>
