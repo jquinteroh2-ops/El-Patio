@@ -4,6 +4,8 @@ import {
   ArrowLeft,
   ArrowLeftRight,
   Ban,
+  CheckCheck,
+  DoorOpen,
   ClipboardList,
   Clock,
   CloudOff,
@@ -37,7 +39,7 @@ import { useAvisos } from '@/componentes/ui/Avisos'
 import { IndicadorConexion } from '@/componentes/IndicadorConexion'
 import { ETIQUETA_ITEM, NOMBRE_ZONA, TONO_ITEM, colorEspera } from '@/compartido/estados'
 
-type HojaAbierta = 'cargo' | 'traslado' | 'nota' | 'anular' | null
+type HojaAbierta = 'cargo' | 'traslado' | 'nota' | 'anular' | 'liberar' | null
 
 export default function OrdenMesa() {
   const { mesaId = '' } = useParams()
@@ -190,6 +192,34 @@ export default function OrdenMesa() {
       setItemAAnular(null)
       setMotivo('')
       return 'Producto anulado. Queda registrado en la comanda.'
+    })
+
+  // Lo enviado que todavia no se marca entregado: lo que sigue en la pantalla
+  // de cocina. Si ya esta en la mesa, quedarse ahi es invitar a prepararlo dos veces.
+  const porEntregar = orden.items.filter(
+    (i) => i.turnoEnvio > 0 && i.estado !== 'anulado' && i.estado !== 'servido',
+  ).length
+
+  // Se puede desocupar sin cobrar solo si nada llego a cocina y no hay cargos.
+  // La misma regla la aplica el servidor; aqui solo decide si se ofrece.
+  const sinConsumo =
+    !orden.items.some((i) => i.turnoEnvio > 0 && i.estado !== 'anulado') &&
+    orden.cargosAdicionales.length === 0
+
+  const entregarTodo = () =>
+    ejecutar(async () => {
+      await api.marcarTodoEntregado(orden.id)
+      return 'Todo entregado. Ya no aparece en cocina.'
+    })
+
+  const liberar = () =>
+    ejecutar(async () => {
+      if (!motivo.trim()) throw new Error('Escribe por qué se desocupa la mesa')
+      await api.liberarMesaSinConsumo(orden.id, motivo.trim())
+      setHoja(null)
+      setMotivo('')
+      navegar('/comandera', { replace: true })
+      return `${mesa.nombre ?? `Mesa ${mesa.numero}`} quedó libre`
     })
 
   const mesasLibres = mesas.filter((m) => m.estado === 'libre' && m.id !== mesa.id)
@@ -405,7 +435,7 @@ export default function OrdenMesa() {
                           disabled={ocupado}
                           onClick={() =>
                             ejecutar(async () => {
-                              await api.cambiarEstadoItem(orden.id, item.id, 'servido')
+                              await api.marcarEntregado(orden.id, item.id)
                               return `${item.nombre} servido`
                             })
                           }
@@ -557,6 +587,30 @@ export default function OrdenMesa() {
           >
             {orden.estado === 'cuenta_pedida' ? 'Cuenta pedida' : 'Pedir la cuenta'}
           </Boton>
+          {porEntregar > 0 && (
+            <Boton
+              className="col-span-2"
+              icono={<CheckCheck className="h-4 w-4" />}
+              disabled={ocupado}
+              onClick={entregarTodo}
+            >
+              Todo entregado ({porEntregar})
+            </Boton>
+          )}
+          {sinConsumo && (
+            <Boton
+              className="col-span-2"
+              variante="peligro"
+              icono={<DoorOpen className="h-4 w-4" />}
+              disabled={ocupado}
+              onClick={() => {
+                setMotivo('')
+                setHoja('liberar')
+              }}
+            >
+              Desocupar mesa (sin consumo)
+            </Boton>
+          )}
         </div>
       </main>
 
@@ -725,6 +779,43 @@ export default function OrdenMesa() {
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
             placeholder="Motivo de la anulación"
+            className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
+          />
+        </div>
+      </HojaInferior>
+
+      <HojaInferior
+        abierta={hoja === 'liberar'}
+        titulo="Desocupar la mesa"
+        descripcion="No hay nada que cobrar. Queda registrado con el motivo."
+        onCerrar={() => setHoja(null)}
+        pie={
+          <Boton variante="peligro" tamano="grande" bloque cargando={ocupado} onClick={liberar}>
+            Desocupar mesa
+          </Boton>
+        }
+      >
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {['Se fueron sin pedir', 'Cancelaron el pedido', 'Mesa abierta por error'].map((texto) => (
+              <button
+                key={texto}
+                type="button"
+                onClick={() => setMotivo(texto)}
+                className={`min-h-[40px] rounded-xl border px-3 text-sm transition ${
+                  motivo === texto
+                    ? 'border-oro-500 bg-oro-500/15 text-crema-100'
+                    : 'border-noche-700 bg-noche-850 text-noche-300 hover:bg-noche-800'
+                }`}
+              >
+                {texto}
+              </button>
+            ))}
+          </div>
+          <input
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            placeholder="Motivo"
             className="min-h-toque w-full rounded-xl border border-noche-700 bg-noche-850 px-3.5 text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
           />
         </div>

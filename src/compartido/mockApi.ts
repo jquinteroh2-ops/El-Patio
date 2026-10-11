@@ -489,6 +489,30 @@ export async function anularItem(ordenId: string, itemId: string, motivo: string
   )
 }
 
+/** El plato ya esta en la mesa: sale de la pantalla de cocina. */
+export async function marcarEntregado(ordenId: string, itemId: string): Promise<void> {
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/items/${itemId}/entregado`, { metodo: 'POST' }),
+  )
+}
+
+/** Todo lo enviado de la mesa ya se entrego. */
+export async function marcarTodoEntregado(ordenId: string): Promise<void> {
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/entregar-todo`, { metodo: 'POST' }),
+  )
+}
+
+/**
+ * Desocupa una mesa que no consumio nada. El servidor lo rechaza si hay algo
+ * enviado a cocina o cargos: eso se cobra o lo anula el administrador.
+ */
+export async function liberarMesaSinConsumo(ordenId: string, motivo: string): Promise<void> {
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/liberar`, { metodo: 'POST', cuerpo: { motivo } }),
+  )
+}
+
 export interface ResultadoEnvio {
   /** true cuando no habia conexion y la comanda quedo en la cola local. */
   encolado: boolean

@@ -56,6 +56,11 @@ export default function CuentaMesa() {
   const [hojaPago, setHojaPago] = useState(false)
   const [cobrado, setCobrado] = useState<Cobrado | null>(null)
 
+  // El cajero no tiene comandera ni mapa de mesas: llega desde la caja y a la
+  // caja vuelve. Mandarlo al mapa lo rebotaba al inicio del panel.
+  const esCajero = sesion.rol === 'cajero'
+  const rutaVolver = esCajero ? '/admin/caja' : '/comandera'
+
   const orden = detalle?.orden ?? null
   const porcentajeInc = detalle?.porcentajeInc ?? 8
 
@@ -151,9 +156,9 @@ export default function CuentaMesa() {
             variante="principal"
             tamano="grande"
             bloque
-            onClick={() => navegar('/comandera', { replace: true })}
+            onClick={() => navegar(rutaVolver, { replace: true })}
           >
-            Volver al mapa de mesas
+            {esCajero ? 'Volver a la caja' : 'Volver al mapa de mesas'}
           </Boton>
         </div>
       </div>
@@ -168,8 +173,8 @@ export default function CuentaMesa() {
           titulo="Esta mesa no tiene cuenta abierta"
           descripcion="Puede que ya la hayan cobrado desde otra pestaña."
           accion={
-            <Boton variante="principal" onClick={() => navegar('/comandera')}>
-              Volver al mapa de mesas
+            <Boton variante="principal" onClick={() => navegar(rutaVolver)}>
+              {esCajero ? 'Volver a la caja' : 'Volver al mapa de mesas'}
             </Boton>
           }
         />
@@ -220,8 +225,8 @@ export default function CuentaMesa() {
       <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-noche-800 bg-noche-900/95 px-3 py-2.5 backdrop-blur">
         <button
           type="button"
-          onClick={() => navegar(`/comandera/mesa/${mesaId}`)}
-          aria-label="Volver a la comanda"
+          onClick={() => navegar(esCajero ? '/admin/caja' : `/comandera/mesa/${mesaId}`)}
+          aria-label={esCajero ? 'Volver a la caja' : 'Volver a la comanda'}
           className="flex h-toque w-11 shrink-0 items-center justify-center rounded-xl text-noche-300 transition hover:bg-noche-800"
         >
           <ArrowLeft className="h-5 w-5" aria-hidden />

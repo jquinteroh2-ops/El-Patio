@@ -342,6 +342,37 @@ public class ServicioComandas {
     return reemplazo != null ? reemplazo : original;
   }
 
+  /** Ver {@link Orden#marcarEntregados}. `itemId` null entrega todo lo enviado. */
+  @Transactional
+  public int marcarEntregados(String ordenId, String itemId) {
+    Orden orden = exigirOrden(ordenId);
+    int cambiados = orden.marcarEntregados(itemId, reloj.ahora());
+    ordenes.guardar(orden);
+    eventos.publicar(List.of("ordenes", "cocina", "mesas"));
+    return cambiados;
+  }
+
+  /**
+   * Desocupa la mesa de quienes se fueron sin consumir.
+   *
+   * La pareja que se sento, miro la carta y se fue; o la que pidio y cancelo
+   * todo antes de que saliera algo de cocina. Por dentro es una anulacion con
+   * motivo, asi que queda en el historial, pero solo se permite cuando no hay
+   * nada que cobrar.
+   */
+  @Transactional
+  public Orden liberarSinConsumo(String ordenId, String motivo) {
+    Orden orden = exigirOrden(ordenId);
+    if (orden.getEstado().esCerrada()) {
+      throw new ReglaDeNegocioError("Esta cuenta ya está cerrada");
+    }
+    if (!orden.sinConsumo()) {
+      throw new ReglaDeNegocioError(
+          "La mesa tiene productos enviados a cocina o barra: anúlelos primero o cobre la cuenta");
+    }
+    return anularOrden(ordenId, motivo, null);
+  }
+
   // ---------------------------------------------------------------------------
 
   private Orden exigirOrden(String ordenId) {

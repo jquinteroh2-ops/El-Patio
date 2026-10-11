@@ -178,6 +178,40 @@ public class ControladorComandera {
   }
 
   /**
+   * El plato ya esta en la mesa: sale de la pantalla de cocina.
+   *
+   * Antes la comandera usaba la ruta de cocina, que el mesero no tiene
+   * permitida, y el plato se quedaba en "Listos" esperando que alguien lo
+   * volviera a preparar.
+   */
+  @PostMapping("/ordenes/{ordenId}/items/{itemId}/entregado")
+  @PreAuthorize("hasAnyRole('MESERO', 'CAJERO', 'ADMINISTRADOR')")
+  public ResponseEntity<Void> marcarEntregado(@PathVariable String ordenId, @PathVariable String itemId) {
+    comandas.marcarEntregados(ordenId, itemId);
+    return ResponseEntity.noContent().build();
+  }
+
+  /** Todo lo enviado de la mesa ya se entrego. */
+  @PostMapping("/ordenes/{ordenId}/entregar-todo")
+  @PreAuthorize("hasAnyRole('MESERO', 'CAJERO', 'ADMINISTRADOR')")
+  public ResponseEntity<Void> marcarTodoEntregado(@PathVariable String ordenId) {
+    comandas.marcarEntregados(ordenId, null);
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
+   * Desocupa una mesa sin consumo. A diferencia de anular, la puede usar el
+   * mesero: el servicio solo la deja pasar si no hay nada que cobrar.
+   */
+  @PostMapping("/ordenes/{ordenId}/liberar")
+  @PreAuthorize("hasAnyRole('MESERO', 'CAJERO', 'ADMINISTRADOR')")
+  public ResponseEntity<Void> liberarSinConsumo(
+      @PathVariable String ordenId, @RequestBody Dtos.PeticionMotivo peticion) {
+    comandas.liberarSinConsumo(ordenId, peticion.motivo());
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
    * Anula la comanda con motivo.
    *
    * No existia en mockApi.ts. Se agrego porque el plan exige que una comanda ya

@@ -309,6 +309,32 @@ public class Orden {
   }
 
   /**
+   * Marca como entregado en la mesa un producto, o todos los enviados si
+   * `itemId` es null. Devuelve cuantos cambiaron.
+   *
+   * Es lo que saca el plato de la pantalla de cocina. Si el mesero no pudiera
+   * hacerlo, un plato ya servido seguiria en "Listos" y alguien terminaria
+   * preparandolo otra vez. Lo que no se ha enviado no se toca: nadie lo ha
+   * preparado, asi que no se puede haber entregado.
+   */
+  public int marcarEntregados(String itemId, Instant ahora) {
+    exigirEditable();
+    List<ItemOrden> objetivo = itemId == null ? items : List.of(buscarItem(itemId));
+    int cambiados = 0;
+    for (ItemOrden item : objetivo) {
+      if (!item.fueEnviado() || !item.estaVigente() || item.getEstado() == EstadoItem.SERVIDO) continue;
+      if (item.getListoEn() == null) item.setListoEn(ahora);
+      item.setEstado(EstadoItem.SERVIDO);
+      cambiados++;
+    }
+    if (itemId != null && cambiados == 0) {
+      throw new ReglaDeNegocioError("Ese producto no se ha enviado o ya está entregado");
+    }
+    sincronizarEstado();
+    return cambiados;
+  }
+
+  /**
    * Recalcula el estado de la comanda a partir del estado de sus productos.
    * `cuenta_pedida`, `pagada` y `anulada` los fija una accion explicita del
    * cajero y no pueden retroceder porque cocina toque un plato.
@@ -379,6 +405,19 @@ public class Orden {
     estado = EstadoOrden.ANULADA;
     motivoAnulacion = motivo.trim();
     cerradaEn = cuando;
+  }
+
+  /**
+   * Si la mesa se puede desocupar sin cobrar: nada llego a cocina ni a barra y
+   * no hay cargos. Lo que no se envio nadie lo preparo, asi que no cuenta.
+   *
+   * Es el limite de lo que puede hacer el mesero solo. Si algo se envio, o se
+   * cobra o lo anula el administrador con su motivo: una venta no puede
+   * desaparecer desde la tablet.
+   */
+  public boolean sinConsumo() {
+    return items.stream().noneMatch(i -> i.estaVigente() && i.fueEnviado())
+        && cargosAdicionales.isEmpty();
   }
 
   public List<ItemOrden> itemsVigentes() {
