@@ -30,6 +30,8 @@ interface ImportMetaEnv {
    * que se quiere en desarrollo: alli casi nunca estan los dos levantados.
    */
   readonly VITE_URL_HERMANO?: string
+  /** ID de medicion de Google Analytics 4. Si falta, el de config.ts. */
+  readonly VITE_GA_ID?: string
 }
 
 interface ImportMeta {

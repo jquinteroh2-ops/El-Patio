@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { RESTAURANTE } from './config'
+import { ajustarARuta } from './analitica'
 
 /**
  * El titulo y la descripcion de cada pantalla, en un solo sitio.
@@ -120,6 +121,10 @@ export function MetaDeRuta() {
   const { pathname } = useLocation()
 
   useEffect(() => {
+    // Google Analytics: sigue en las publicas si el visitante acepto, y se
+    // corta en las del personal. Ver analitica.ts.
+    ajustarARuta(pathname)
+
     const ficha = PUBLICAS[pathname] ?? INTERNA
 
     document.title = ficha.titulo

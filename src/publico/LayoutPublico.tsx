@@ -6,6 +6,7 @@ import { enlaceInstagram, useFichaSitio } from '@/compartido/sitio'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import { Emblema, MarcaConNombre } from './Marca'
 import { OtroRestaurante } from './OtroRestaurante'
+import { AvisoCookies, EVENTO_ABRIR_AVISO } from './AvisoCookies'
 
 const SALUDO_WHATSAPP = `Hola, quisiera información sobre ${RESTAURANTE.nombreCompleto}.`
 
@@ -160,6 +161,13 @@ export default function LayoutPublico() {
               >
                 Política de datos
               </Link>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event(EVENTO_ABRIR_AVISO))}
+                className="text-xs uppercase tracking-[0.18em] text-crema-100/35 transition hover:text-oro-300"
+              >
+                Cookies
+              </button>
             </div>
             {/* Acceso del personal: existe, pero no compite con la carta ni la reserva. */}
             <Link
@@ -171,6 +179,8 @@ export default function LayoutPublico() {
           </div>
         </div>
       </footer>
+
+      <AvisoCookies />
     </div>
   )
 }

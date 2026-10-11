@@ -93,6 +93,18 @@ export default function PoliticaDatos() {
             publicada en ninguna dirección accesible desde internet.
           </p>
         </section>
+
+        <section>
+          <h2 className="mb-2 font-titulo text-xl text-crema-100">Cookies y analítica</h2>
+          <p>
+            Si usted lo acepta en el aviso de cookies, el sitio usa Google Analytics para contar
+            las visitas y saber qué páginas se consultan. Google recibe datos técnicos de la
+            visita —páginas vistas, tipo de dispositivo, ciudad aproximada—, no su nombre ni sus
+            datos de contacto, y no los usamos para publicidad. Si no acepta, Google Analytics no
+            se carga. Puede cambiar su decisión cuando quiera desde el enlace «Cookies» al pie de
+            cada página. Las pantallas del personal del restaurante nunca se miden.
+          </p>
+        </section>
       </div>
     </div>
   )

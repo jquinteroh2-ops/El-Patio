@@ -325,6 +325,20 @@ export const URL_WS =
   import.meta.env.VITE_URL_WS ?? `${URL_API.replace(/^http/, 'ws')}/ws`
 
 // ---------------------------------------------------------------------------
+// Analitica
+// ---------------------------------------------------------------------------
+
+/**
+ * El ID de medicion de Google Analytics 4.
+ *
+ * La propiedad es de la cuenta de Google del restaurante
+ * (documentacionlacarreta@gmail.com), cuenta «Restaurante El Patio». No es un
+ * secreto: viaja en cada pagina que lo usa. Se puede cambiar con la variable
+ * VITE_GA_ID del servicio del frontend sin tocar el codigo.
+ */
+export const ID_ANALITICA = import.meta.env.VITE_GA_ID ?? 'G-MXHCF9JJ4Z'
+
+// ---------------------------------------------------------------------------
 // El otro restaurante del mismo dueno
 // ---------------------------------------------------------------------------
 
