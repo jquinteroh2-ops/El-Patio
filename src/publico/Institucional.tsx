@@ -19,7 +19,11 @@ export default function Institucional() {
   const [bloques, setBloques] = useState<ContenidoInstitucional[]>([])
 
   useEffect(() => {
-    void api.contenidoInstitucional().then(setBloques).catch(() => setBloques([]))
+    // La politica de datos sale de la misma tabla pero tiene su propia pagina.
+    void api
+      .contenidoInstitucional()
+      .then((todos) => setBloques(todos.filter((b) => b.clave !== api.CLAVE_POLITICA_DATOS)))
+      .catch(() => setBloques([]))
   }, [])
 
   if (bloques.length === 0) return null

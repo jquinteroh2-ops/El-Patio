@@ -30,8 +30,9 @@ export default function Institucional() {
   return (
     <div className="space-y-4">
       <p className="text-sm leading-relaxed text-noche-400">
-        Este es el texto que se lee en la página de inicio del sitio público. Los cambios se
-        ven de inmediato, sin desplegar nada.
+        Este es el texto que se lee en la página de inicio del sitio público, y la política de
+        tratamiento de datos que enlazan los formularios. Los cambios se ven de inmediato, sin
+        desplegar nada.
       </p>
 
       {datos.map((bloque) => (
@@ -70,6 +71,9 @@ function Tarjeta({
   // está publicada con un marcador de posición y conviene que se vea en el
   // panel, no solo en el sitio.
   const esBorrador = bloque.cuerpo.includes('PENDIENTE:')
+  // La política es larga y tiene subtítulos: pide un cuadro más alto y su
+  // propia explicación del formato. Ver PoliticaDatos.tsx.
+  const esPolitica = bloque.clave === api.CLAVE_POLITICA_DATOS
 
   const guardar = async () => {
     setGuardando(true)
@@ -118,12 +122,14 @@ function Tarjeta({
       <textarea
         value={cuerpo}
         onChange={(e) => setCuerpo(e.target.value)}
-        rows={7}
+        rows={esPolitica ? 22 : 7}
         className="w-full rounded-xl border border-noche-700 bg-noche-950 p-3 text-sm leading-relaxed text-crema-100 focus:border-oro-500 focus:outline-none"
         placeholder="Los saltos de línea se respetan tal como los escriba."
       />
       <p className="mt-1.5 text-xs text-noche-500">
-        Texto normal. Los saltos de línea se respetan; no se puede usar HTML ni negritas.
+        {esPolitica
+          ? 'Se publica en la página «Política de datos». Una línea que empiece por «# » es un subtítulo; deje una línea en blanco entre párrafos. No se puede usar HTML ni negritas.'
+          : 'Texto normal. Los saltos de línea se respetan; no se puede usar HTML ni negritas.'}
       </p>
 
       <Boton

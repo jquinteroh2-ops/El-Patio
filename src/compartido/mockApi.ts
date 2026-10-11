@@ -1571,6 +1571,14 @@ export interface ContenidoInstitucional {
   actualizadoEn: string
 }
 
+/**
+ * La clave del bloque que es la politica de tratamiento de datos.
+ *
+ * Vive en la misma tabla que «Quienes somos» para editarse desde el mismo
+ * panel, pero no va en la seccion de la portada: tiene su propia pagina.
+ */
+export const CLAVE_POLITICA_DATOS = 'politica-datos'
+
 /** Lo que se pinta en el sitio: solo lo visible, en orden. Publico. */
 export async function contenidoInstitucional(): Promise<ContenidoInstitucional[]> {
   return contra(() =>

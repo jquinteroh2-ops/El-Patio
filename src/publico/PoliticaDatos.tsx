@@ -1,111 +1,101 @@
-import { AlertTriangle } from 'lucide-react'
-import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
+import { useEffect, useState } from 'react'
+import * as api from '@/compartido/mockApi'
+import type { ContenidoInstitucional } from '@/compartido/mockApi'
+import { formatoFechaLarga } from '@/compartido/formato'
 import { useFichaSitio } from '@/compartido/sitio'
+import { Cargando } from '@/componentes/ui/Cargando'
 
 /**
  * La política de tratamiento de datos personales.
  *
- * Existe porque el formulario de «Trabaja con nosotros» tiene que enlazarla:
- * la Ley 1581 de 2012 exige que quien autoriza pueda leer a qué está
- * autorizando, y una casilla que enlaza a una página que no existe es una
- * autorización que no se sostiene.
+ * Existe porque los formularios del sitio tienen que enlazarla: la Ley 1581 de
+ * 2012 exige que quien autoriza pueda leer a qué está autorizando.
  *
- * EL TEXTO ES UN BORRADOR y lo dice en la propia página. No lo escribió un
- * abogado y el restaurante tiene que reemplazarlo por su política real antes de
- * salir a producción. Se deja visible el aviso a propósito: una política
- * inventada que parezca definitiva es peor que no tener ninguna, porque nadie
- * la revisaría.
+ * El texto no está aquí: es el bloque `politica-datos` del contenido
+ * institucional y el restaurante lo edita en Panel → Institucional, sin
+ * desplegar nada. Es texto plano: una línea que empieza por «# » es un
+ * subtítulo y una línea en blanco separa párrafos. Nada de HTML, por la misma
+ * razón que en «Quiénes somos»: lo escribe una persona desde un formulario.
  */
 export default function PoliticaDatos() {
-  // El domicilio y el telefono del responsable salen de la ficha: si el
-  // restaurante se muda, la politica tiene que mudarse con el.
   const ficha = useFichaSitio()
+  const [politica, setPolitica] = useState<ContenidoInstitucional | null | undefined>(undefined)
+
+  useEffect(() => {
+    void api
+      .contenidoInstitucional()
+      .then((bloques) => setPolitica(bloques.find((b) => b.clave === api.CLAVE_POLITICA_DATOS) ?? null))
+      .catch(() => setPolitica(null))
+  }, [])
+
+  if (politica === undefined) return <Cargando mensaje="Cargando la política" />
+
+  // Oculta desde el panel, o el servidor no contesta. Una página en blanco
+  // parecería un error; se dice qué pasa y por dónde preguntar.
+  if (politica === null) {
+    return (
+      <div className="mx-auto max-w-2xl px-5 py-16 text-center">
+        <h1 className="font-titulo text-3xl text-crema-100 sm:text-4xl">
+          Política de tratamiento de datos personales
+        </h1>
+        <p className="mt-6 text-sm leading-relaxed text-crema-100/70">
+          En este momento no podemos mostrar la política. Si necesita consultarla, comuníquese al{' '}
+          <span className="text-oro-300">{ficha.telefono}</span>.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-12 sm:py-16">
-      <h1 className="font-titulo text-3xl text-crema-100 sm:text-4xl">
-        Política de tratamiento de datos personales
-      </h1>
+      <h1 className="font-titulo text-3xl text-crema-100 sm:text-4xl">{politica.titulo}</h1>
       <p className="mt-2 text-sm text-crema-100/50">
-        {RESTAURANTE.nombreCompleto} · NIT {DATOS_FISCALES.nitCompleto}
+        Actualizada el {formatoFechaLarga(politica.actualizadoEn)}
       </p>
 
-      <div className="mt-6 flex items-start gap-3 rounded-sm border border-oro-500/35 bg-oro-500/10 p-4 text-sm text-oro-200">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-        <p>
-          <strong className="font-semibold">Este texto es un borrador.</strong> El restaurante
-          debe reemplazarlo por su política revisada antes de recibir hojas de vida
-          reales. No lo redactó un abogado.
-        </p>
-      </div>
-
-      <div className="mt-8 space-y-6 text-sm leading-relaxed text-crema-100/75">
-        <section>
-          <h2 className="mb-2 font-titulo text-xl text-crema-100">Quién responde por sus datos</h2>
-          <p>
-            {RESTAURANTE.nombreCompleto}, con NIT {DATOS_FISCALES.nitCompleto} y domicilio en{' '}
-            {ficha.direccion}, {ficha.ciudad}, es el responsable del tratamiento de los
-            datos personales que usted entregue a través de este sitio.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="mb-2 font-titulo text-xl text-crema-100">Para qué los usamos</h2>
-          <p>
-            Los datos que se envían por el formulario de «Trabaja con nosotros» —nombre,
-            documento de identidad, teléfono, correo electrónico y hoja de vida— se usan
-            únicamente para evaluar su candidatura a una vacante y para comunicarnos con
-            usted durante ese proceso. No se venden, no se comparten con terceros con fines
-            comerciales y no se usan para enviarle publicidad.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="mb-2 font-titulo text-xl text-crema-100">Cuánto tiempo los guardamos</h2>
-          <p>
-            Conservamos su hoja de vida mientras el proceso de selección esté abierto y por
-            un periodo razonable después, por si surge una vacante que encaje con su perfil.
-            Usted puede pedir que la eliminemos en cualquier momento.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="mb-2 font-titulo text-xl text-crema-100">Sus derechos</h2>
-          <p>
-            La Ley 1581 de 2012 le da derecho a conocer, actualizar y rectificar sus datos,
-            a solicitar prueba de la autorización que otorgó, a ser informado sobre el uso
-            que se les ha dado, a presentar quejas ante la Superintendencia de Industria y
-            Comercio y a solicitar la supresión de sus datos.
-          </p>
-          <p className="mt-3">
-            Para ejercer cualquiera de estos derechos escríbanos a{' '}
-            <span className="text-oro-300">{DATOS_FISCALES.correo}</span> o comuníquese al{' '}
-            <span className="text-oro-300">{ficha.telefono}</span>. Atendemos su
-            solicitud en los términos que fija la ley.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="mb-2 font-titulo text-xl text-crema-100">Seguridad</h2>
-          <p>
-            Su hoja de vida se guarda en un almacenamiento al que solo accede la
-            administración del restaurante, mediante una sesión autenticada. No queda
-            publicada en ninguna dirección accesible desde internet.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="mb-2 font-titulo text-xl text-crema-100">Cookies y analítica</h2>
-          <p>
-            Si usted lo acepta en el aviso de cookies, el sitio usa Google Analytics para contar
-            las visitas y saber qué páginas se consultan. Google recibe datos técnicos de la
-            visita —páginas vistas, tipo de dispositivo, ciudad aproximada—, no su nombre ni sus
-            datos de contacto, y no los usamos para publicidad. Si no acepta, Google Analytics no
-            se carga. Puede cambiar su decisión cuando quiera desde el enlace «Cookies» al pie de
-            cada página. Las pantallas del personal del restaurante nunca se miden.
-          </p>
-        </section>
+      <div className="mt-8 space-y-4 text-sm leading-relaxed text-crema-100/75">
+        {bloquesDe(politica.cuerpo).map((bloque, i) =>
+          bloque.tipo === 'titulo' ? (
+            <h2 key={i} className="pt-4 font-titulo text-xl text-crema-100">
+              {bloque.texto}
+            </h2>
+          ) : (
+            <p key={i} className="whitespace-pre-line">
+              {bloque.texto}
+            </p>
+          ),
+        )}
       </div>
     </div>
   )
+}
+
+type Bloque = { tipo: 'titulo' | 'parrafo'; texto: string }
+
+/**
+ * Parte el texto en subtítulos y párrafos.
+ *
+ * «# » al empezar una línea la vuelve subtítulo; las líneas seguidas forman un
+ * párrafo, y una línea en blanco lo cierra. Es todo el formato que se admite.
+ */
+function bloquesDe(cuerpo: string): Bloque[] {
+  const bloques: Bloque[] = []
+  let parrafo: string[] = []
+  const cerrar = () => {
+    if (parrafo.length > 0) bloques.push({ tipo: 'parrafo', texto: parrafo.join('\n') })
+    parrafo = []
+  }
+  for (const linea of cuerpo.split(/\r?\n/)) {
+    const limpia = linea.trim()
+    if (limpia.startsWith('# ')) {
+      cerrar()
+      bloques.push({ tipo: 'titulo', texto: limpia.slice(2).trim() })
+    } else if (limpia === '') {
+      cerrar()
+    } else {
+      parrafo.push(limpia)
+    }
+  }
+  cerrar()
+  return bloques
 }
