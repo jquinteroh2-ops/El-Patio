@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, Bell, BellOff, ChefHat, GlassWater, Maximize2, Minimize2, Soup } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { TurnoEnCocina } from '@/compartido/mockApi'
-import { UMBRALES_COCINA } from '@/compartido/config'
 import { minutosDesde } from '@/compartido/formato'
 import { useReloj, useSyncedState } from '@/compartido/useSyncedState'
-import type { Destino, EstadoItem } from '@/compartido/tipos'
+import type { Destino, EstadoItem, ItemCarta } from '@/compartido/tipos'
+import { tiempoEstimadoTurno } from '@/compartido/estados'
 import { BarraOperativa } from '@/componentes/BarraOperativa'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { useAvisos } from '@/componentes/ui/Avisos'
@@ -58,8 +58,29 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
   const claves = useMemo(() => bloques.map((b) => `${b.ordenId}:${b.turno}`), [bloques])
   const recientes = useAvisoNuevaComanda(claves, sonido)
 
+  // El tiempo de cada plato, tal como lo puso el administrador en la carta.
+  // La carta cambia poco: se pide al abrir y cuando alguien la edita.
+  const { datos: carta } = useSyncedState<ItemCarta[]>(
+    () => api.listarCarta(),
+    [],
+    [],
+    ['carta', 'todo'],
+  )
+  const tiempos = useMemo(
+    () =>
+      new Map(
+        carta.filter((p) => p.tiempoPreparacionMin > 0).map((p) => [p.id, p.tiempoPreparacionMin]),
+      ),
+    [carta],
+  )
+  const estimadoDe = (bloque: TurnoEnCocina) => tiempoEstimadoTurno(bloque.items, tiempos)
+
+  // Tarde contra SU tiempo, no contra un umbral fijo: un plato de 35 minutos
+  // no va tarde a los 20.
   const demoradas = bloques.filter(
-    (b) => b.estado !== 'listo' && minutosDesde(b.enviadoEn) >= UMBRALES_COCINA.demorado,
+    (b) =>
+      (b.estado === 'pendiente' || b.estado === 'en_preparacion') &&
+      minutosDesde(b.enviadoEn) > estimadoDe(b),
   )
 
   const alternarSonido = async () => {
@@ -182,8 +203,8 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
         <div className="flex items-center gap-2 border-b border-estado-demorado/40 bg-estado-demorado/15 px-4 py-2.5 text-sm font-semibold text-estado-demorado">
           <AlertTriangle className="h-4 w-4 shrink-0 animate-latido" aria-hidden />
           {demoradas.length === 1
-            ? `${demoradas[0].mesaEtiqueta} pasa de ${UMBRALES_COCINA.demorado} minutos`
-            : `${demoradas.length} comandas pasan de ${UMBRALES_COCINA.demorado} minutos`}
+            ? `${demoradas[0].mesaEtiqueta} pasó su tiempo estimado de ${estimadoDe(demoradas[0])} minutos`
+            : `${demoradas.length} comandas pasaron su tiempo estimado`}
         </div>
       )}
 
@@ -239,6 +260,8 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
                         <TarjetaComanda
                           key={`${bloque.ordenId}-${bloque.turno}`}
                           bloque={bloque}
+                          estimado={estimadoDe(bloque)}
+                          tiempos={tiempos}
                           reciente={recientes.has(`${bloque.ordenId}:${bloque.turno}`)}
                           ocupado={ocupado}
                           onCambiarItem={cambiarItem(bloque)}

@@ -125,6 +125,44 @@ export function colorEspera(minutos: number): string {
   return 'text-estado-listo'
 }
 
+/**
+ * Cuanto deberia tardar un turno de cocina: el plato mas lento que lleva.
+ *
+ * Los platos salen juntos, asi que manda el que mas tarda. El tiempo de cada
+ * plato es el que el administrador pone en la carta; si un plato no lo tiene
+ * (o ya no esta en la carta), se usa el umbral general de demora.
+ */
+export function tiempoEstimadoTurno(
+  items: { itemCartaId: string; estado: string }[],
+  tiempos: Map<string, number>,
+): number {
+  const conTiempo = items
+    .filter((i) => i.estado !== 'anulado')
+    .map((i) => tiempos.get(i.itemCartaId) || UMBRALES_COCINA.demorado)
+  return conTiempo.length > 0 ? Math.max(...conTiempo) : UMBRALES_COCINA.demorado
+}
+
+/**
+ * Cuantos minutos antes del tiempo estimado se pone en amarillo: una cuarta
+ * parte del tiempo, minimo 3. Un plato de 10 min avisa a los 7; uno de 35, a
+ * los 26. Asi la alerta llega con margen para hacer algo.
+ */
+function margenAviso(estimado: number): number {
+  return Math.max(3, Math.round(estimado / 4))
+}
+
+/**
+ * El cronometro de una comanda contra SU tiempo estimado, no contra un umbral
+ * fijo: un plato de 35 minutos no va tarde a los 20, y uno de 10 si va tarde a
+ * los 15.
+ */
+export function fondoEsperaEstimada(minutos: number, estimado: number): string {
+  if (minutos > estimado) return 'bg-estado-demorado text-noche-950 border-estado-demorado'
+  if (minutos >= estimado - margenAviso(estimado))
+    return 'bg-estado-proceso text-noche-950 border-estado-proceso'
+  return 'bg-estado-listo-suave text-estado-listo border-estado-listo/50'
+}
+
 /** Fondo y borde del cronometro, para que se lea desde un metro de distancia. */
 export function fondoEspera(minutos: number): string {
   if (minutos >= UMBRALES_COCINA.demorado)

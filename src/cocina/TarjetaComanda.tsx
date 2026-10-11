@@ -1,11 +1,15 @@
 import { Check, ChefHat, StickyNote } from 'lucide-react'
 import type { TurnoEnCocina } from '@/compartido/mockApi'
 import { formatoHora, minutosDesde } from '@/compartido/formato'
-import { fondoEspera } from '@/compartido/estados'
+import { fondoEsperaEstimada } from '@/compartido/estados'
 import type { EstadoItem } from '@/compartido/tipos'
 
 interface Props {
   bloque: TurnoEnCocina
+  /** Minutos que deberia tardar el turno: el plato mas lento. */
+  estimado: number
+  /** Tiempo de preparacion de cada plato de la carta, por id. */
+  tiempos: Map<string, number>
   /** Recien llegada: se resalta unos segundos para que nadie la pase por alto. */
   reciente: boolean
   ocupado: boolean
@@ -40,9 +44,20 @@ const ACCION: Record<TurnoEnCocina['estado'], { etiqueta: string; siguiente: Est
  * Una comanda de un turno. Pensada para leerse desde un metro de distancia:
  * mesa grande, cronometro con fondo solido y un solo boton que ocupa el ancho.
  */
-export function TarjetaComanda({ bloque, reciente, ocupado, onCambiarItem, onCambiarTurno }: Props) {
+export function TarjetaComanda({
+  bloque,
+  estimado,
+  tiempos,
+  reciente,
+  ocupado,
+  onCambiarItem,
+  onCambiarTurno,
+}: Props) {
   const espera = minutosDesde(bloque.enviadoEn)
   const accion = ACCION[bloque.estado]
+  const restante = estimado - espera
+  // Lo que ya salio de cocina no corre contra el reloj.
+  const corriendo = bloque.estado === 'pendiente' || bloque.estado === 'en_preparacion'
 
   return (
     <article
@@ -59,12 +74,32 @@ export function TarjetaComanda({ bloque, reciente, ocupado, onCambiarItem, onCam
             Turno {bloque.turno} · #{bloque.numeroOrden} · {formatoHora(bloque.enviadoEn)}
           </p>
         </div>
-        <span
-          className={`shrink-0 rounded-xl border px-2.5 py-1.5 text-xl font-bold tabular-nums ${fondoEspera(espera)}`}
-        >
-          {espera}
-          <span className="ml-0.5 text-xs font-semibold">min</span>
-        </span>
+        <div className="shrink-0 text-right">
+          <span
+            className={`inline-block rounded-xl border px-2.5 py-1.5 text-xl font-bold tabular-nums ${
+              corriendo
+                ? fondoEsperaEstimada(espera, estimado)
+                : 'border-noche-700 bg-noche-800 text-noche-300'
+            }`}
+          >
+            {espera}
+            <span className="text-sm font-semibold opacity-75">/{estimado}</span>
+            <span className="ml-0.5 text-xs font-semibold">min</span>
+          </span>
+          {corriendo && (
+            <p
+              className={`mt-0.5 text-xs font-semibold ${
+                restante < 0 ? 'text-estado-demorado' : 'text-noche-400'
+              }`}
+            >
+              {restante < 0
+                ? `${-restante} min tarde`
+                : restante === 0
+                  ? 'Ya debe salir'
+                  : `Faltan ${restante} min`}
+            </p>
+          )}
+        </div>
       </header>
 
       {bloque.notas && (
@@ -115,7 +150,18 @@ export function TarjetaComanda({ bloque, reciente, ocupado, onCambiarItem, onCam
                   )}
                 </span>
 
-                {listo && <Check className="mt-1 h-5 w-5 shrink-0 text-estado-listo" aria-hidden />}
+                {listo ? (
+                  <Check className="mt-1 h-5 w-5 shrink-0 text-estado-listo" aria-hidden />
+                ) : (
+                  tiempos.get(item.itemCartaId) && (
+                    <span
+                      className="mt-1 shrink-0 text-xs font-medium tabular-nums text-noche-400"
+                      title="Tiempo aproximado de preparación"
+                    >
+                      ~{tiempos.get(item.itemCartaId)} min
+                    </span>
+                  )
+                )}
               </button>
             </li>
           )
