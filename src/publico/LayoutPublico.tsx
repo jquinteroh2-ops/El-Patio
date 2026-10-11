@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Instagram, MapPin, MessageCircle, Phone } from 'lucide-react'
-import { DATOS_FISCALES, RESTAURANTE } from '@/compartido/config'
+import { RESTAURANTE } from '@/compartido/config'
 import { enlaceInstagram, useFichaSitio } from '@/compartido/sitio'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import { Emblema, MarcaConNombre } from './Marca'
@@ -138,7 +138,7 @@ export default function LayoutPublico() {
         <div className="border-t border-oro-500/15">
           <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-5 py-5 text-center sm:flex-row sm:justify-between">
             <span className="text-xs text-crema-100/35">
-              {RESTAURANTE.nombreCompleto} · NIT {DATOS_FISCALES.nitCompleto}
+              {RESTAURANTE.nombreCompleto}
             </span>
             <div className="flex items-center gap-4">
               <Link
