@@ -1244,6 +1244,43 @@ export async function reintentarEnvioErp(envioId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Papelera: ventas eliminadas, con su auditoria
+// ---------------------------------------------------------------------------
+
+export interface RegistroPapelera {
+  id: string
+  tipo: 'venta'
+  /** El id del pago eliminado. */
+  referencia: string
+  resumen: string
+  motivo: string
+  eliminadoPor: string
+  eliminadoEn: string
+  restauradoPor?: string
+  restauradoEn?: string
+}
+
+/** Elimina una venta errada. Queda en la papelera, de donde se puede restaurar. */
+export async function eliminarVenta(pagoId: string, motivo: string): Promise<RegistroPapelera> {
+  return contra(() =>
+    pedir<RegistroPapelera>(`/api/admin/ventas/${pagoId}/eliminar`, {
+      metodo: 'POST',
+      cuerpo: { motivo },
+    }),
+  )
+}
+
+export async function listarPapelera(): Promise<RegistroPapelera[]> {
+  return contra(() => pedir<RegistroPapelera[]>('/api/admin/papelera'))
+}
+
+export async function restaurarDePapelera(id: string): Promise<RegistroPapelera> {
+  return contra(() =>
+    pedir<RegistroPapelera>(`/api/admin/papelera/${id}/restaurar`, { metodo: 'POST' }),
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Exportacion de reportes
 // ---------------------------------------------------------------------------
 

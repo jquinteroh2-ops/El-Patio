@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { MenuExportar } from '@/componentes/ui/MenuExportar'
-import { MapPin, Receipt } from 'lucide-react'
+import { MapPin, Receipt, Trash2 } from 'lucide-react'
+import { useSesionActiva } from '@/compartido/auth'
+import { Boton } from '@/componentes/ui/Boton'
+import { useAvisos } from '@/componentes/ui/Avisos'
 import * as api from '@/compartido/mockApi'
 import type { VentaHistorica } from '@/compartido/mockApi'
 import { claveDia, formatoCOP, formatoFecha, formatoHora } from '@/compartido/formato'
@@ -39,6 +42,8 @@ export default function Ventas() {
   const [meseroId, setMeseroId] = useState('')
   const [metodo, setMetodo] = useState<MetodoPago | 'todos'>('todos')
   const [detalle, setDetalle] = useState<VentaHistorica | null>(null)
+  // Eliminar ventas es solo del administrador; el servidor lo vuelve a exigir.
+  const esAdmin = useSesionActiva().rol === 'administrador'
 
   const { datos: usuarios } = useSyncedState<Usuario[]>(
     () => api.listarUsuarios(),
@@ -241,9 +246,87 @@ export default function Ventas() {
               mesaEtiqueta={detalle.mesaEtiqueta}
               meseroNombre={detalle.meseroNombre}
             />
+
+            {esAdmin && (
+              <EliminarVenta
+                key={detalle.pago.id}
+                pagoId={detalle.pago.id}
+                onEliminada={() => setDetalle(null)}
+              />
+            )}
           </>
         )}
       </HojaInferior>
+    </div>
+  )
+}
+
+/**
+ * Eliminar una venta errada. Pide el motivo y confirma: la venta sale de los
+ * reportes y queda en la Papelera, de donde se puede restaurar.
+ */
+function EliminarVenta({ pagoId, onEliminada }: { pagoId: string; onEliminada: () => void }) {
+  const { mostrar } = useAvisos()
+  const [abierto, setAbierto] = useState(false)
+  const [motivo, setMotivo] = useState('')
+  const [eliminando, setEliminando] = useState(false)
+
+  const eliminar = async () => {
+    setEliminando(true)
+    try {
+      await api.eliminarVenta(pagoId, motivo.trim())
+      mostrar('Venta eliminada. Queda en la Papelera por si hay que restaurarla.', 'exito')
+      onEliminada()
+    } catch (e) {
+      mostrar(e instanceof Error ? e.message : 'No se pudo eliminar la venta', 'error')
+    } finally {
+      setEliminando(false)
+    }
+  }
+
+  if (!abierto) {
+    return (
+      <div className="mt-4 border-t border-noche-800 pt-3">
+        <Boton
+          variante="peligro"
+          tamano="compacto"
+          icono={<Trash2 className="h-4 w-4" aria-hidden />}
+          onClick={() => setAbierto(true)}
+        >
+          Eliminar venta
+        </Boton>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-4 space-y-2 rounded-xl border border-estado-demorado/40 bg-estado-demorado/10 p-3">
+      <p className="text-sm text-crema-100">
+        La venta saldrá de los reportes y del cierre del turno. Quedará en la{' '}
+        <strong>Papelera</strong> con su motivo, y desde ahí se puede restaurar.
+      </p>
+      <textarea
+        value={motivo}
+        onChange={(e) => setMotivo(e.target.value)}
+        rows={2}
+        placeholder="¿Por qué se elimina? (obligatorio)"
+        aria-label="Motivo"
+        className="w-full rounded-xl border border-noche-700 bg-noche-900 px-3 py-2 text-sm text-crema-100 placeholder:text-noche-500 focus:border-oro-500 focus:outline-none"
+      />
+      <div className="flex gap-2">
+        <Boton
+          variante="peligro"
+          tamano="compacto"
+          disabled={!motivo.trim()}
+          cargando={eliminando}
+          onClick={eliminar}
+        >
+          Confirmar eliminación
+        </Boton>
+        <Boton variante="fantasma" tamano="compacto" onClick={() => setAbierto(false)}>
+          Cancelar
+        </Boton>
+      </div>
     </div>
   )
 }

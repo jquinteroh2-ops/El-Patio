@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { BarChart3, BookOpen, CalendarClock, ClipboardList, FileCheck2, LayoutDashboard, Megaphone, Receipt, FileText, MessageSquare, Settings, Users, Wallet } from 'lucide-react'
+import { BarChart3, BookOpen, CalendarClock, ClipboardList, FileCheck2, LayoutDashboard, Megaphone, Receipt, FileText, MessageSquare, Settings, Trash2, Users, Wallet } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import { useSesionActiva } from '@/compartido/auth'
 import { useSyncedState } from '@/compartido/useSyncedState'
@@ -43,6 +43,8 @@ const SECCIONES = [
   { ruta: '/admin/caja', etiqueta: 'Caja', icono: ClipboardList, exacta: false, soloAdmin: false, pendientes: cuentasPedidas },
   { ruta: '/admin/ventas', etiqueta: 'Ventas', icono: Receipt, exacta: false, soloAdmin: false },
   { ruta: '/admin/cierre', etiqueta: 'Cierre de caja', icono: Wallet, exacta: false, soloAdmin: false },
+  // Ventas eliminadas, con su auditoria y para restaurarlas. Solo el dueno.
+  { ruta: '/admin/papelera', etiqueta: 'Papelera', icono: Trash2, exacta: false, soloAdmin: true },
   // Muestra la venta completa del periodo: es informacion de cierre contable.
   { ruta: '/admin/conciliacion', etiqueta: 'Conciliación', icono: FileCheck2, exacta: false, soloAdmin: true },
   // Hojas de vida: datos personales de gente que confio en el restaurante. Solo el dueno.
