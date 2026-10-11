@@ -61,11 +61,10 @@ export function guardarDecision(decision: Decision): void {
   } catch {
     // Si no se puede guardar, la decision vale para esta visita y nada mas.
   }
-  if (decision === 'aceptada') {
-    cargar()
-  } else {
-    apagar()
-  }
+  // Al abrir la pagina `ajustarARuta` dejo el envio cortado porque aun no habia
+  // permiso; hay que reajustarlo ya, o quien acepta en su primera visita no
+  // contaria hasta cambiar de pagina.
+  ajustarARuta(window.location.pathname)
 }
 
 let cargada = false
@@ -90,11 +89,6 @@ export function cargar(): void {
   script.async = true
   script.src = `https://www.googletagmanager.com/gtag/js?id=${ID_ANALITICA}`
   document.head.appendChild(script)
-}
-
-/** Corta el envio de datos sin recargar la pagina. */
-function apagar(): void {
-  ;(window as unknown as Record<string, boolean>)[`ga-disable-${ID_ANALITICA}`] = true
 }
 
 /**
