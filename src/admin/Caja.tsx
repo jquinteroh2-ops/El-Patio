@@ -330,6 +330,17 @@ export default function Caja() {
             </dl>
 
             <div className="mt-5 flex flex-wrap justify-end gap-2">
+              {porEntregar > 0 && (
+                <Boton
+                  variante="exito"
+                  className="mr-auto"
+                  icono={<CheckCheck className="h-4 w-4" aria-hidden />}
+                  disabled={ocupado}
+                  onClick={entregarTodo}
+                >
+                  Todo entregado ({porEntregar})
+                </Boton>
+              )}
               {sinConsumo && (
                 <Boton
                   variante="peligro"
@@ -341,11 +352,6 @@ export default function Caja() {
                   }}
                 >
                   Desocupar mesa
-                </Boton>
-              )}
-              {porEntregar > 0 && (
-                <Boton icono={<CheckCheck className="h-4 w-4" aria-hidden />} disabled={ocupado} onClick={entregarTodo}>
-                  Todo entregado ({porEntregar})
                 </Boton>
               )}
               <Boton

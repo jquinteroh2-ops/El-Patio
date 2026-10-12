@@ -241,7 +241,7 @@ export default function OrdenMesa() {
   const mesasLibres = mesas.filter((m) => m.estado === 'libre' && m.id !== mesa.id)
 
   return (
-    <div className="flex min-h-dvh flex-col bg-noche-950 pb-40">
+    <div className={`flex min-h-dvh flex-col bg-noche-950 ${porEntregar > 0 ? 'pb-56' : 'pb-40'}`}>
       <header className="sticky top-0 z-30 border-b border-noche-800 bg-noche-900/95 backdrop-blur">
         <div className="flex items-center gap-2 px-3 py-2.5">
           <button
@@ -650,16 +650,6 @@ export default function OrdenMesa() {
           >
             {orden.estado === 'cuenta_pedida' ? 'Cuenta pedida' : 'Pedir la cuenta'}
           </Boton>
-          {porEntregar > 0 && (
-            <Boton
-              className="col-span-2"
-              icono={<CheckCheck className="h-4 w-4" />}
-              disabled={ocupado}
-              onClick={entregarTodo}
-            >
-              Todo entregado ({porEntregar})
-            </Boton>
-          )}
           {sinConsumo && (
             <Boton
               className="col-span-2"
@@ -679,6 +669,20 @@ export default function OrdenMesa() {
 
       {/* ---------- Acciones principales, siempre al alcance del pulgar ---------- */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-noche-700 bg-noche-900/98 px-3 pt-3 pb-segura backdrop-blur">
+        {/* Aquí y no al final de la página: con la bandeja en la mano nadie
+            baja hasta el fondo, y mientras no se toque la comanda sigue
+            ocupando la pantalla de cocina. */}
+        {porEntregar > 0 && (
+          <button
+            type="button"
+            disabled={ocupado}
+            onClick={entregarTodo}
+            className="mb-2 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl border-2 border-estado-listo bg-estado-listo/15 text-base font-bold text-estado-listo transition hover:bg-estado-listo/25 active:scale-[0.98] disabled:opacity-50"
+          >
+            <CheckCheck className="h-5 w-5" aria-hidden />
+            Todo entregado ({porEntregar})
+          </button>
+        )}
         <div className="flex gap-2">
           <Boton
             variante="secundario"
