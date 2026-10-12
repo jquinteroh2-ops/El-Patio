@@ -28,7 +28,7 @@ import { CARGOS_FRECUENTES } from '@/compartido/config'
 import { useSesionActiva } from '@/compartido/auth'
 import { formatoCOP, formatoHora, minutosDesde, tiempoTranscurrido } from '@/compartido/formato'
 import { useReloj, useSyncedState } from '@/compartido/useSyncedState'
-import type { ItemOrden } from '@/compartido/tipos'
+import type { ItemCarta, ItemOrden } from '@/compartido/tipos'
 import { Boton } from '@/componentes/ui/Boton'
 import { Cargando } from '@/componentes/ui/Cargando'
 import { Contador } from '@/componentes/ui/Contador'
@@ -37,7 +37,13 @@ import { Insignia } from '@/componentes/ui/Insignia'
 import { Vacio } from '@/componentes/ui/Vacio'
 import { useAvisos } from '@/componentes/ui/Avisos'
 import { IndicadorConexion } from '@/componentes/IndicadorConexion'
-import { ETIQUETA_ITEM, NOMBRE_ZONA, TONO_ITEM, colorEspera } from '@/compartido/estados'
+import {
+  ETIQUETA_ITEM,
+  NOMBRE_ZONA,
+  TONO_ITEM,
+  colorPorAvance,
+  tiempoEstimadoTurno,
+} from '@/compartido/estados'
 
 type HojaAbierta = 'cargo' | 'traslado' | 'nota' | 'anular' | 'liberar' | null
 
@@ -54,6 +60,16 @@ export default function OrdenMesa() {
     ['ordenes', 'mesas', 'cocina', 'todo'],
   )
   const { datos: mesas } = useSyncedState<MesaEnMapa[]>(() => api.listarMesas(), [], [], ['mesas', 'todo'])
+
+  // El tiempo de cada plato, el mismo con que cocina mide si un turno va tarde.
+  const { datos: carta } = useSyncedState<ItemCarta[]>(() => api.listarCarta(), [], [], ['carta', 'todo'])
+  const tiempos = useMemo(
+    () =>
+      new Map(
+        carta.filter((p) => p.tiempoPreparacionMin > 0).map((p) => [p.id, p.tiempoPreparacionMin]),
+      ),
+    [carta],
+  )
 
   useReloj(15000)
 
@@ -376,24 +392,71 @@ export default function OrdenMesa() {
           const enviadoEn = items[0]?.enviadoEn
           const espera = enviadoEn ? minutosDesde(enviadoEn) : 0
           const todoServido = items.every((i) => i.estado === 'servido' || i.estado === 'anulado')
+          // Mientras quede algo en cocina, el turno corre contra su plato más
+          // lento, igual que en la pantalla de cocina.
+          const enCocina = items.filter((i) => i.estado === 'pendiente' || i.estado === 'en_preparacion')
+          const corriendo = enCocina.length > 0
+          const estimado = tiempoEstimadoTurno(corriendo ? enCocina : items, tiempos)
+          const restante = estimado - espera
+          const color = colorPorAvance(espera, estimado)
+          const avance = Math.min(100, Math.round((espera / Math.max(estimado, 1)) * 100))
 
           return (
             <section key={turno} className="rounded-2xl border border-noche-800 bg-noche-900 p-3">
-              <div className="mb-2.5 flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-crema-100">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
+                <h2 className="text-base font-semibold text-crema-100">
                   Turno {turno}
                   {enviadoEn && (
-                    <span className="ml-2 text-xs font-normal text-noche-400">
+                    <span className="ml-2 text-sm font-normal text-noche-400">
                       {formatoHora(enviadoEn)}
                     </span>
                   )}
                 </h2>
+                {/* El mismo reloj que ve cocina, en grande: la mesera lo lee de
+                    un vistazo con la bandeja en la mano. Mientras algo sigue en
+                    cocina corre contra el plato más lento; cuando ya salió todo,
+                    se apaga a gris. */}
                 {!todoServido && enviadoEn && (
-                  <span className={`text-xs font-semibold tabular-nums ${colorEspera(espera)}`}>
-                    {espera} min
-                  </span>
+                  <div className="shrink-0 text-right">
+                    <span
+                      className={`inline-flex items-baseline gap-0.5 rounded-xl border px-3 py-1.5 text-2xl font-bold tabular-nums ${
+                        corriendo ? 'text-noche-950' : 'border-noche-700 bg-noche-800 text-noche-300'
+                      }`}
+                      style={corriendo ? { backgroundColor: color, borderColor: color } : undefined}
+                    >
+                      <Clock className="mr-1 h-5 w-5 self-center" aria-hidden />
+                      {espera}
+                      <span className="text-base font-semibold opacity-75">/{estimado}</span>
+                      <span className="ml-0.5 text-sm font-semibold">min</span>
+                    </span>
+                    <p
+                      className={`mt-1 text-sm font-semibold ${
+                        !corriendo
+                          ? 'text-estado-listo'
+                          : restante < 0
+                            ? 'text-estado-demorado'
+                            : 'text-noche-300'
+                      }`}
+                    >
+                      {!corriendo
+                        ? 'Listo para servir'
+                        : restante < 0
+                          ? `${-restante} min tarde`
+                          : restante === 0
+                            ? 'Ya debe salir'
+                            : `Faltan ${restante} min`}
+                    </p>
+                  </div>
                 )}
               </div>
+              {corriendo && enviadoEn && (
+                <div className="mb-2.5 h-2 w-full overflow-hidden rounded-full bg-noche-800" aria-hidden>
+                  <div
+                    className="h-full rounded-full transition-[width,background-color] duration-1000"
+                    style={{ width: `${avance}%`, backgroundColor: color }}
+                  />
+                </div>
+              )}
 
               <ul className="space-y-1.5">
                 {items.map((item) => (
