@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { ImagePlus, Plus, Trash2, X } from 'lucide-react'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import { Clock, ImagePlus, Minus, Plus, Trash2, X } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import { conFotosDePlato, fotosDePlato } from '@/compartido/fotosDePlato'
 import type { CategoriaCarta, ItemCarta, Modificador, TipoModificador } from '@/compartido/tipos'
@@ -314,35 +314,80 @@ export function EditorProducto({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block">
-            <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
-              Precio
-            </span>
-            <input
-              inputMode="numeric"
-              value={borrador.precio || ''}
-              onChange={(e) => cambiar({ precio: Number(e.target.value.replace(/\D/g, '')) || 0 })}
-              className={CAMPO}
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
-              Tiempo promedio (min)
-            </span>
-            <input
-              inputMode="numeric"
-              value={borrador.tiempoPreparacionMin || ''}
-              onChange={(e) =>
-                cambiar({ tiempoPreparacionMin: Number(e.target.value.replace(/\D/g, '')) || 0 })
-              }
-              className={CAMPO}
-            />
-            {/* Lo pone el dueño; el cocinero lo corrige desde su pantalla. */}
-            <span className="mt-1 block text-xs text-noche-500">
-              Cocina también lo puede ajustar.
-            </span>
-          </label>
+        <label className="block">
+          <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
+            Precio
+          </span>
+          <input
+            inputMode="numeric"
+            value={borrador.precio || ''}
+            onChange={(e) => cambiar({ precio: Number(e.target.value.replace(/\D/g, '')) || 0 })}
+            className={CAMPO}
+          />
+        </label>
+
+        {/* ---------- Tiempo estimado ----------
+            Bloque propio y con los mismos botones que ve el cocinero: es el
+            dato contra el que cocina mide si una comanda va tarde. Lo pone el
+            dueño; el cocinero lo corrige desde su pantalla. */}
+        <div className="rounded-xl border border-oro-500/40 bg-oro-500/5 p-3">
+          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-oro-300">
+            <Clock className="h-4 w-4" aria-hidden />
+            Tiempo estimado de preparación
+          </p>
+          <div className="mt-2.5 flex items-center justify-center gap-1.5">
+            {[-5, -1, 1, 5].map((paso, i) => (
+              <Fragment key={paso}>
+                {i === 2 && (
+                  <label className="flex items-baseline gap-1">
+                    <span className="sr-only">Minutos</span>
+                    <input
+                      inputMode="numeric"
+                      value={borrador.tiempoPreparacionMin || ''}
+                      placeholder="–"
+                      onChange={(e) =>
+                        cambiar({
+                          tiempoPreparacionMin: Math.min(
+                            240,
+                            Number(e.target.value.replace(/\D/g, '')) || 0,
+                          ),
+                        })
+                      }
+                      className="h-12 w-16 rounded-lg border border-noche-700 bg-noche-850 text-center text-2xl font-bold tabular-nums text-crema-100 focus:border-oro-500 focus:outline-none"
+                    />
+                    <span className="text-sm font-semibold text-noche-300">min</span>
+                  </label>
+                )}
+                <button
+                  type="button"
+                  aria-label={`${Math.abs(paso)} ${Math.abs(paso) === 1 ? 'minuto' : 'minutos'} ${paso < 0 ? 'menos' : 'más'}`}
+                  onClick={() =>
+                    cambiar({
+                      tiempoPreparacionMin: Math.min(
+                        240,
+                        Math.max(1, (borrador.tiempoPreparacionMin || 0) + paso),
+                      ),
+                    })
+                  }
+                  className="flex h-12 min-w-[48px] items-center justify-center rounded-lg bg-noche-700 px-2 text-base font-bold text-crema-100 transition hover:bg-noche-600 active:scale-95"
+                >
+                  {paso === -1 ? (
+                    <Minus className="h-5 w-5" aria-hidden />
+                  ) : paso === 1 ? (
+                    <Plus className="h-5 w-5" aria-hidden />
+                  ) : paso < 0 ? (
+                    '−5'
+                  ) : (
+                    '+5'
+                  )}
+                </button>
+              </Fragment>
+            ))}
+          </div>
+          <p className="mt-2 text-center text-xs text-noche-400">
+            Lo que tarda en salir. En cocina la comanda pasa de verde a rojo con este tiempo, y el
+            cocinero también lo puede ajustar.
+          </p>
         </div>
 
         {/* ---------- Precio promocional ----------

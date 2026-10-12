@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { BookOpen, GlassWater, Pencil, Plus, Search, Soup } from 'lucide-react'
+import { BookOpen, Clock, GlassWater, Pencil, Plus, Search, Soup } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
 import { enPromocion } from '@/compartido/calculos'
@@ -173,7 +173,10 @@ export default function CartaAdmin() {
                   {item.nombre}
                 </p>
                 <p className="truncate text-xs text-noche-500">
-                  {nombreCategoria(item.categoriaId)} · {item.tiempoPreparacionMin} min
+                  {nombreCategoria(item.categoriaId)}
+                  {/* En pantallas angostas la etiqueta del reloj no cabe y el
+                      tiempo se queda aquí, en la línea de abajo. */}
+                  <span className="sm:hidden"> · {item.tiempoPreparacionMin || '–'} min</span>
                   {item.recomendado && <span className="ml-1.5 text-oro-300">★ Recomendado</span>}
                   {item.modificadores && item.modificadores.length > 0 && (
                     <span className="ml-1.5 text-oro-300">
@@ -183,6 +186,20 @@ export default function CartaAdmin() {
                   )}
                 </p>
               </div>
+
+              {/* El tiempo estimado, a la vista: es contra lo que cocina mide si
+                  un plato va tarde, y el dueño viene aquí a revisarlo. */}
+              <span
+                title="Tiempo estimado de preparación"
+                className={`hidden shrink-0 items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold tabular-nums sm:flex ${
+                  item.tiempoPreparacionMin
+                    ? 'border-oro-500/50 bg-oro-500/10 text-oro-200'
+                    : 'border-noche-700 text-noche-400'
+                }`}
+              >
+                <Clock className="h-3.5 w-3.5" aria-hidden />
+                {item.tiempoPreparacionMin ? `${item.tiempoPreparacionMin} min` : 'Sin tiempo'}
+              </span>
 
               {/* Con promoción se muestran los dos precios, el de lista tachado.
                   Un solo número no dejaría ver que el plato está rebajado, que
