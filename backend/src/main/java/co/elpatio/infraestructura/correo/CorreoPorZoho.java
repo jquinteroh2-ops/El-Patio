@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Primary;
@@ -63,6 +64,9 @@ public class CorreoPorZoho implements NotificadorPorCorreo {
   private String tokenAcceso;
   private Instant venceEn = Instant.EPOCH;
 
+  // Dos constructores: sin @Autowired Spring no sabe cuál usar y busca uno
+  // vacío. El otro es el de las pruebas, con las URL de Zoho a mano.
+  @Autowired
   public CorreoPorZoho(
       @Value("${elpatio.zoho.client-id}") String clienteId,
       @Value("${elpatio.zoho.client-secret}") String clienteSecreto,
