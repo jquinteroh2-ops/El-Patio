@@ -102,8 +102,8 @@ class ServicioPostulacionesTest {
 
     String html = correo.htmls.get(0);
     assertThat(html)
-        .contains("https://www.restauranteelpatio.com/logo.png")
-        .contains("Nueva hoja de vida")
+        .contains("https://www.restauranteelpatio.com/logo-correo.png")
+        .contains("Nueva postulación: Mesero")
         .contains("Ana Pérez")
         .contains("mailto:ana@correo.com")
         .contains("Hoja de vida - Ana Pérez.pdf");
