@@ -4,6 +4,7 @@ import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.canal.Canal;
 import co.elpatio.dominio.error.NoEncontradoError;
 import co.elpatio.dominio.error.ReglaDeNegocioError;
+import co.elpatio.dominio.puertos.CorreoDeReservas;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
 import co.elpatio.dominio.puertos.Repositorios;
@@ -12,6 +13,10 @@ import co.elpatio.dominio.reserva.Reserva;
 import co.elpatio.dominio.salon.EstadoMesa;
 import co.elpatio.dominio.salon.Mesa;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +24,41 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ServicioReservas {
 
+  private static final Logger registro = LoggerFactory.getLogger(ServicioReservas.class);
+
   private final Repositorios.DeReservas reservas;
   private final Repositorios.DeMesas mesas;
   private final GeneradorIds ids;
   private final PublicadorEventos eventos;
+  private final CorreoDeReservas correo;
+  private final String destinatarios;
+  private final String urlSitio;
 
+  @Autowired
   public ServicioReservas(
       Repositorios.DeReservas reservas,
       Repositorios.DeMesas mesas,
       GeneradorIds ids,
-      PublicadorEventos eventos) {
+      PublicadorEventos eventos,
+      CorreoDeReservas correo,
+      @Value("${elpatio.reservas.correo:}") String destinatarios,
+      @Value("${elpatio.reclutamiento.url-sitio:https://www.restauranteelpatio.com}") String urlSitio) {
     this.reservas = reservas;
     this.mesas = mesas;
     this.ids = ids;
     this.eventos = eventos;
+    this.correo = correo;
+    this.destinatarios = destinatarios;
+    this.urlSitio = urlSitio;
+  }
+
+  /** Para las pruebas que no miran el correo: sin destinatarios no se avisa. */
+  ServicioReservas(
+      Repositorios.DeReservas reservas,
+      Repositorios.DeMesas mesas,
+      GeneradorIds ids,
+      PublicadorEventos eventos) {
+    this(reservas, mesas, ids, eventos, null, "", "");
   }
 
   @Transactional(readOnly = true)
@@ -56,7 +82,40 @@ public class ServicioReservas {
 
     Reserva guardada = reservas.guardar(reserva);
     eventos.publicar(List.of("reservas"));
+    avisarAlBuzonDeReservas(guardada);
     return guardada;
+  }
+
+  /**
+   * Avisa al buzón de reservas que llegó una solicitud por el sitio.
+   *
+   * Solo las del sitio: las que anota el personal ya las conoce quien las
+   * anotó. Y nunca tumba la reserva: que el correo no salga es un problema; que
+   * por eso se pierda la reserva de alguien es otro mucho peor.
+   */
+  private void avisarAlBuzonDeReservas(Reserva reserva) {
+    if (correo == null || destinatarios == null || destinatarios.isBlank()) return;
+    String asunto =
+        "Nueva reserva: "
+            + PlantillaAvisoReserva.dia(reserva.getFechaHora())
+            + ", "
+            + PlantillaAvisoReserva.hora(reserva.getFechaHora())
+            + " · "
+            + reserva.getPersonas()
+            + (reserva.getPersonas() == 1 ? " persona" : " personas")
+            + " · "
+            + reserva.getNombreCliente();
+    String texto = PlantillaAvisoReserva.texto(reserva);
+    String html = PlantillaAvisoReserva.html(reserva, urlSitio);
+    for (String destinatario : destinatarios.split(",")) {
+      String limpio = destinatario.trim();
+      if (limpio.isEmpty()) continue;
+      try {
+        correo.notificador().enviarConAdjunto(limpio, asunto, texto, html, null, null);
+      } catch (RuntimeException e) {
+        registro.warn("No se pudo avisar a {} de la reserva {}", limpio, reserva.getId(), e);
+      }
+    }
   }
 
   /**

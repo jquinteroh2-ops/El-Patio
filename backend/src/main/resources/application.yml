@@ -113,6 +113,18 @@ elpatio:
     # Opcionales: si faltan, se leen del buzón dueño del token.
     cuenta: ${ELPATIO_ZOHO_CUENTA:}
     remitente: ${ELPATIO_ZOHO_REMITENTE:}
+    # El buzón de reservas, con su propio «Self Client» (creado con la sesión de
+    # reservas@). Vacío el token = los avisos de reservas salen por el correo
+    # general de arriba. Sin client-id/secret propios se usan los de arriba.
+    reservas:
+      client-id: ${ELPATIO_ZOHO_RESERVAS_CLIENT_ID:${ELPATIO_ZOHO_CLIENT_ID:}}
+      client-secret: ${ELPATIO_ZOHO_RESERVAS_CLIENT_SECRET:${ELPATIO_ZOHO_CLIENT_SECRET:}}
+      refresh-token: ${ELPATIO_ZOHO_RESERVAS_REFRESH_TOKEN:}
+
+  reservas:
+    # A quién le llega el aviso de cada reserva que entra por el sitio. En
+    # producción, reservas@restauranteelpatio.com. Vacío = no se avisa.
+    correo: ${ELPATIO_CORREO_RESERVAS:}
 
   reclutamiento:
     # A quién le llega cada hoja de vida nueva, con el PDF adjunto. En
