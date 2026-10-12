@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, ShoppingBag } from 'lucide-react'
+import { Flame, Plus, ShoppingBag, Star } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { CategoriaConItems } from '@/compartido/mockApi'
 import { formatoCOP } from '@/compartido/formato'
@@ -33,6 +33,35 @@ export default function Carta() {
     ['pedidos', 'ajustes', 'todo'],
   )
 
+  // Los más pedidos los calcula el servidor con las ventas del último mes.
+  const { datos: idsMasPedidos } = useSyncedState<string[]>(
+    () => api.masPedidos(),
+    [],
+    [],
+    ['carta', 'todo'],
+  )
+
+  const destacados = useMemo(() => {
+    const todos = categorias.flatMap((c) => c.items)
+    const porId = new Map(todos.map((i) => [i.id, i]))
+    return {
+      recomendados: todos.filter((i) => i.recomendado && i.disponible),
+      masPedidos: idsMasPedidos
+        .map((id) => porId.get(id))
+        .filter((i): i is ItemCarta => i !== undefined && i.disponible),
+    }
+  }, [categorias, idsMasPedidos])
+
+  /** Las secciones de la barra: primero las destacadas, luego las categorías. */
+  const secciones = useMemo(
+    () => [
+      ...(destacados.recomendados.length > 0 ? [{ id: 'recomendados', nombre: 'Recomendados' }] : []),
+      ...(destacados.masPedidos.length > 0 ? [{ id: 'mas-pedidos', nombre: 'Más pedidos' }] : []),
+      ...categorias.map((c) => ({ id: c.id, nombre: c.nombre })),
+    ],
+    [categorias, destacados],
+  )
+
   const carrito = useCarrito()
   /** El plato cuya ficha esta abierta. */
   const [enFicha, setEnFicha] = useState<ItemCarta | null>(null)
@@ -44,7 +73,7 @@ export default function Carta() {
 
   // Resalta en la barra la categoría que se está leyendo.
   useEffect(() => {
-    if (categorias.length === 0) return
+    if (secciones.length === 0) return
 
     const observador = new IntersectionObserver(
       (entradas) => {
@@ -56,12 +85,12 @@ export default function Carta() {
       { rootMargin: '-140px 0px -60% 0px', threshold: 0 },
     )
 
-    for (const categoria of categorias) {
-      const seccion = document.getElementById(categoria.id)
+    for (const { id } of secciones) {
+      const seccion = document.getElementById(id)
       if (seccion) observador.observe(seccion)
     }
     return () => observador.disconnect()
-  }, [categorias])
+  }, [secciones])
 
   // Mantiene visible la pestaña activa cuando la barra se desborda.
   useEffect(() => {
@@ -123,7 +152,7 @@ export default function Carta() {
       {/* Navegación por categorías, siempre a la vista */}
       <div className="sticky top-16 z-30 border-y border-oro-500/15 bg-onix-950/95 backdrop-blur">
         <div ref={navRef} className="sin-scrollbar mx-auto flex max-w-5xl gap-1 overflow-x-auto px-3 py-2">
-          {categorias.map((categoria) => (
+          {secciones.map((categoria) => (
             <a
               key={categoria.id}
               href={`#${categoria.id}`}
@@ -177,6 +206,27 @@ export default function Carta() {
           </ZonaCargando>
         ) : (
           <div className="space-y-16">
+            {destacados.recomendados.length > 0 && (
+              <FilaDestacada
+                id="recomendados"
+                titulo="Recomendados de la casa"
+                bajada="Los platos que el equipo de El Patio le sugiere probar."
+                icono={<Star className="h-4 w-4" aria-hidden />}
+                platos={destacados.recomendados}
+                onAbrir={setEnFicha}
+              />
+            )}
+            {destacados.masPedidos.length > 0 && (
+              <FilaDestacada
+                id="mas-pedidos"
+                titulo="Los más pedidos"
+                bajada="Lo que más han pedido nuestros clientes este mes."
+                icono={<Flame className="h-4 w-4" aria-hidden />}
+                platos={destacados.masPedidos}
+                onAbrir={setEnFicha}
+                numerada
+              />
+            )}
             {categorias.map((categoria) => (
               <section key={categoria.id} id={categoria.id} className="revelar scroll-mt-36">
                 <h2 className="font-titulo text-3xl font-light text-oro-300 sm:text-4xl">
@@ -378,5 +428,86 @@ export default function Carta() {
         onConfirmar={alConfirmarSeleccion}
       />
     </>
+  )
+}
+
+/**
+ * Una fila de platos destacados, con foto grande y desplazamiento lateral.
+ *
+ * Va arriba de la carta y no mezclada con ella: el plato sigue en su
+ * categoría, esto es solo un atajo para quien no sabe qué pedir. Tocar la
+ * tarjeta abre la misma ficha que abre la carta.
+ */
+function FilaDestacada({
+  id,
+  titulo,
+  bajada,
+  icono,
+  platos,
+  onAbrir,
+  numerada = false,
+}: {
+  id: string
+  titulo: string
+  bajada: string
+  icono: React.ReactNode
+  platos: ItemCarta[]
+  onAbrir: (item: ItemCarta) => void
+  numerada?: boolean
+}) {
+  return (
+    <section id={id} className="revelar scroll-mt-36">
+      <p className="flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.3em] text-oro-400">
+        {icono}
+        {numerada ? 'Ranking del mes' : 'Selección del chef'}
+      </p>
+      <h2 className="mt-2 font-titulo text-3xl font-light text-oro-300 sm:text-4xl">{titulo}</h2>
+      <p className="mt-2 text-sm text-crema-100/55">{bajada}</p>
+      <span
+        className="linea-dorada desde-la-izquierda mt-3 mb-7 block h-px w-full bg-oro-500/25"
+        aria-hidden
+      />
+
+      <ul className="sin-scrollbar -mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2">
+        {platos.map((item, posicion) => {
+          const foto = fotosDePlato(item)[0]
+          return (
+            <li key={item.id} className="w-44 shrink-0 snap-start sm:w-52">
+              <button
+                type="button"
+                onClick={() => onAbrir(item)}
+                className="group block w-full text-left"
+              >
+                <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-onix-900 ring-1 ring-oro-500/25 transition duration-500 group-hover:ring-oro-400/60">
+                  {foto ? (
+                    <img
+                      src={api.urlImagenCarta(foto, 400)}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <span className="flex h-full items-center justify-center font-titulo text-4xl text-oro-500/40">
+                      {item.nombre.charAt(0)}
+                    </span>
+                  )}
+                  {numerada && (
+                    <span className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-onix-950/85 font-titulo text-lg text-oro-300 ring-1 ring-oro-400/50">
+                      {posicion + 1}
+                    </span>
+                  )}
+                </div>
+                <h3 className="mt-3 font-titulo text-lg leading-snug text-crema-100 transition group-hover:text-oro-200">
+                  {item.nombre}
+                </h3>
+                <p className="mt-0.5 font-titulo text-base tabular-nums text-oro-300">
+                  {formatoCOP(enPromocion(item) ? item.precioPromocional! : item.precio)}
+                </p>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }

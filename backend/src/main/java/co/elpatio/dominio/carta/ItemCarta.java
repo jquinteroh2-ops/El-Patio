@@ -25,6 +25,8 @@ public class ItemCarta {
   private LocalDate promocionHasta;
   /** Agotar un plato debe ser un solo clic desde /admin/carta. */
   private boolean disponible;
+  /** Lo marca el administrador para destacarlo en el sitio público. */
+  private boolean recomendado;
   private int tiempoPreparacionMin;
   private Destino destino;
   private List<Modificador> modificadores;
@@ -81,6 +83,8 @@ public class ItemCarta {
   public void setPromocionHasta(LocalDate promocionHasta) { this.promocionHasta = promocionHasta; }
   public boolean isDisponible() { return disponible; }
   public void setDisponible(boolean disponible) { this.disponible = disponible; }
+  public boolean isRecomendado() { return recomendado; }
+  public void setRecomendado(boolean recomendado) { this.recomendado = recomendado; }
   public int getTiempoPreparacionMin() { return tiempoPreparacionMin; }
   public void setTiempoPreparacionMin(int tiempoPreparacionMin) { this.tiempoPreparacionMin = tiempoPreparacionMin; }
   public Destino getDestino() { return destino; }

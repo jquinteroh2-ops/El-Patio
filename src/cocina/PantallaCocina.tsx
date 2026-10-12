@@ -127,6 +127,18 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
   const cambiarTurno = (bloque: TurnoEnCocina) => (estado: EstadoItem) =>
     ejecutar(() => api.cambiarEstadoTurno(bloque.ordenId, bloque.turno, destino, estado))
 
+  // El tiempo nuevo queda en la carta: lo ve el administrador en el editor y
+  // lo usan desde ya todas las comandas que lleven ese plato.
+  const cambiarTiempo = async (itemCartaId: string, minutos: number) => {
+    try {
+      await api.cambiarTiempoPlato(itemCartaId, minutos)
+      mostrar(`Tiempo actualizado a ${minutos} min`, 'exito')
+    } catch (e) {
+      mostrar(e instanceof Error ? e.message : 'No se pudo cambiar el tiempo', 'error')
+      throw e
+    }
+  }
+
   /*
    * `h-dvh` y no `min-h-dvh`: con altura solo mínima, el tablero crece con la
    * columna más larga y el `overflow-y-auto` de cada columna nunca llega a
@@ -266,6 +278,7 @@ export default function PantallaCocina({ destino = 'cocina' }: { destino?: Desti
                           ocupado={ocupado}
                           onCambiarItem={cambiarItem(bloque)}
                           onCambiarTurno={cambiarTurno(bloque)}
+                          onCambiarTiempo={cambiarTiempo}
                         />
                       ))}
                     </div>

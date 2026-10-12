@@ -90,6 +90,10 @@ class ServicioPostulacionesTest {
     // Y se avisó al administrador.
     assertThat(correo.enviados).hasSize(1);
     assertThat(correo.enviados.get(0)).contains("jefe@elpatio.co");
+    // Con los datos de contacto y la hoja de vida adjunta.
+    assertThat(correo.cuerpos.get(0)).contains("Ana Pérez").contains("ana@correo.com");
+    assertThat(correo.adjuntos.get(0)).isEqualTo(PDF);
+    assertThat(correo.nombres.get(0)).isEqualTo("Hoja de vida - Ana Pérez.pdf");
   }
 
   /**
@@ -349,7 +353,19 @@ class ServicioPostulacionesTest {
 
   private static final class CorreoFalso implements NotificadorPorCorreo {
     final List<String> enviados = new ArrayList<>();
+    final List<String> cuerpos = new ArrayList<>();
+    final List<String> nombres = new ArrayList<>();
+    final List<byte[]> adjuntos = new ArrayList<>();
     boolean reventar = false;
+
+    @Override
+    public void enviarConAdjunto(
+        String destinatario, String asunto, String cuerpo, String nombreArchivo, byte[] contenido) {
+      enviar(destinatario, asunto, cuerpo);
+      cuerpos.add(cuerpo);
+      nombres.add(nombreArchivo);
+      adjuntos.add(contenido);
+    }
 
     @Override
     public void enviar(String destinatario, String asunto, String cuerpo) {

@@ -101,13 +101,23 @@ elpatio:
     # claro leyendo esta clave que leyendo spring.mail.username.
     usuario: ${ELPATIO_SMTP_USUARIO:}
 
+  # Correo por la API de Zoho Mail (HTTPS). Es el que se usa en Railway, que
+  # bloquea SMTP en el plan Hobby. Vacío el token = no se activa. Si también
+  # hay SMTP configurado, manda Zoho.
+  zoho:
+    client-id: ${ELPATIO_ZOHO_CLIENT_ID:}
+    client-secret: ${ELPATIO_ZOHO_CLIENT_SECRET:}
+    refresh-token: ${ELPATIO_ZOHO_REFRESH_TOKEN:}
+    # zoho.com salvo que la cuenta esté en otro centro de datos (zoho.eu…).
+    dominio: ${ELPATIO_ZOHO_DOMINIO:zoho.com}
+    # Opcionales: si faltan, se leen del buzón dueño del token.
+    cuenta: ${ELPATIO_ZOHO_CUENTA:}
+    remitente: ${ELPATIO_ZOHO_REMITENTE:}
+
   reclutamiento:
-    # A quién se le avisa cuando llega una hoja de vida nueva.
-    #
-    # Vacío = no se avisa. Y hoy da igual lo que se ponga: el proyecto no tiene
-    # proveedor de correo, así que el aviso solo queda escrito en la bitácora.
-    # La variable existe ya para que el día que haya proveedor no haya que
-    # tocar código.
+    # A quién le llega cada hoja de vida nueva, con el PDF adjunto. En
+    # producción, rrhh@restauranteelpatio.com. Vacío = no se avisa. Sin
+    # proveedor de correo configurado, el aviso solo queda en la bitácora.
     correo-administrador: ${ELPATIO_CORREO_ADMIN:}
 
     # Días durante los cuales no se acepta otra hoja de vida del mismo

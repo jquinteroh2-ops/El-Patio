@@ -1602,3 +1602,26 @@ export async function editarContenidoInstitucional(
     }),
   )
 }
+
+/**
+ * El cocinero corrige el tiempo de preparación de un plato.
+ *
+ * Es el mismo tiempo que el administrador pone en la carta: el promedio lo
+ * fija el dueño y quien cocina lo ajusta cuando se quedó corto o largo.
+ */
+export async function cambiarTiempoPlato(itemCartaId: string, minutos: number): Promise<void> {
+  return contra(() =>
+    pedir<void>(`/api/cocina/platos/${itemCartaId}/tiempo`, {
+      metodo: 'PATCH',
+      cuerpo: { minutos },
+    }),
+  )
+}
+
+/**
+ * Los ids de los platos más pedidos del último mes, en orden. Vacío mientras
+ * no haya ventas suficientes para que el ranking diga algo.
+ */
+export async function masPedidos(): Promise<string[]> {
+  return contra(() => pedir<string[]>('/api/carta/mas-pedidos', { sinSesion: true }))
+}

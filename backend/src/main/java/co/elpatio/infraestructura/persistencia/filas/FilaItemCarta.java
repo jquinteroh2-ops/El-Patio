@@ -38,6 +38,8 @@ public class FilaItemCarta {
   private LocalDate promocionHasta;
   private boolean disponible;
 
+  private boolean recomendado;
+
   @Column(name = "tiempo_preparacion_min")
   private int tiempoPreparacionMin;
 
@@ -71,6 +73,7 @@ public class FilaItemCarta {
     item.setPromocionDesde(promocionDesde);
     item.setPromocionHasta(promocionHasta);
     item.setDisponible(disponible);
+    item.setRecomendado(recomendado);
     item.setTiempoPreparacionMin(tiempoPreparacionMin);
     item.setDestino(Destino.de(destino));
     item.setModificadores(modificadores == null ? List.of() : List.copyOf(modificadores));
@@ -90,6 +93,7 @@ public class FilaItemCarta {
     fila.promocionDesde = item.getPromocionDesde();
     fila.promocionHasta = item.getPromocionHasta();
     fila.disponible = item.isDisponible();
+    fila.recomendado = item.isRecomendado();
     fila.tiempoPreparacionMin = item.getTiempoPreparacionMin();
     fila.destino = item.getDestino().codigo();
     fila.modificadores =

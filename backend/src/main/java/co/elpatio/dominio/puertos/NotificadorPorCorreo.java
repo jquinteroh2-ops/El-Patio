@@ -28,6 +28,17 @@ public interface NotificadorPorCorreo {
    */
   void enviar(String destinatario, String asunto, String cuerpo);
 
+  /**
+   * Manda un correo con un archivo adjunto (la hoja de vida, por ejemplo).
+   *
+   * Por defecto lo manda sin el adjunto: un proveedor que no sepa adjuntar
+   * sigue avisando, y quien lo lea entra al panel a buscar el archivo.
+   */
+  default void enviarConAdjunto(
+      String destinatario, String asunto, String cuerpo, String nombreArchivo, byte[] contenido) {
+    enviar(destinatario, asunto, cuerpo);
+  }
+
   /** Si hay un proveedor detras. Sirve para no prometer en pantalla lo que no va a pasar. */
   boolean estaActivo();
 }

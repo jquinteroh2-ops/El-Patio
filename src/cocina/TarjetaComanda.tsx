@@ -1,7 +1,8 @@
-import { Check, ChefHat, StickyNote } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChefHat, Minus, Pencil, Plus, StickyNote, UserRound } from 'lucide-react'
 import type { TurnoEnCocina } from '@/compartido/mockApi'
 import { formatoHora, minutosDesde } from '@/compartido/formato'
-import { fondoEsperaEstimada } from '@/compartido/estados'
+import { colorPorAvance } from '@/compartido/estados'
 import type { EstadoItem } from '@/compartido/tipos'
 
 interface Props {
@@ -15,6 +16,8 @@ interface Props {
   ocupado: boolean
   onCambiarItem: (itemId: string, estado: EstadoItem) => void
   onCambiarTurno: (estado: EstadoItem) => void
+  /** El cocinero corrige el tiempo de un plato de la carta. */
+  onCambiarTiempo: (itemCartaId: string, minutos: number) => Promise<void>
 }
 
 const ACCION: Record<TurnoEnCocina['estado'], { etiqueta: string; siguiente: EstadoItem; clase: string }> = {
@@ -40,6 +43,9 @@ const ACCION: Record<TurnoEnCocina['estado'], { etiqueta: string; siguiente: Est
   },
 }
 
+/** Sin tiempo en la carta, el plato corre contra el umbral general. */
+const TIEMPO_SIN_DEFINIR = 20
+
 /**
  * Una comanda de un turno. Pensada para leerse desde un metro de distancia:
  * mesa grande, cronometro con fondo solido y un solo boton que ocupa el ancho.
@@ -52,19 +58,52 @@ export function TarjetaComanda({
   ocupado,
   onCambiarItem,
   onCambiarTurno,
+  onCambiarTiempo,
 }: Props) {
   const espera = minutosDesde(bloque.enviadoEn)
   const accion = ACCION[bloque.estado]
   const restante = estimado - espera
   // Lo que ya salio de cocina no corre contra el reloj.
   const corriendo = bloque.estado === 'pendiente' || bloque.estado === 'en_preparacion'
+  const tarde = corriendo && restante < 0
+  const color = colorPorAvance(espera, estimado)
+  const avance = Math.min(100, Math.round((espera / Math.max(estimado, 1)) * 100))
+
+  /** El plato cuyo tiempo se esta corrigiendo, con el valor en edicion. */
+  const [editando, setEditando] = useState<{ itemCartaId: string; minutos: number } | null>(null)
+  const [guardando, setGuardando] = useState(false)
+
+  const guardarTiempo = async () => {
+    if (!editando) return
+    setGuardando(true)
+    try {
+      await onCambiarTiempo(editando.itemCartaId, editando.minutos)
+      setEditando(null)
+    } catch {
+      // El aviso del error ya lo dio la pantalla; el editor queda abierto
+      // para volver a intentar.
+    } finally {
+      setGuardando(false)
+    }
+  }
 
   return (
     <article
       className={`overflow-hidden rounded-2xl border-2 bg-noche-900 transition-colors duration-500 ${
-        reciente ? 'animate-destello border-oro-400' : 'border-noche-700'
+        reciente ? 'animate-destello border-oro-400' : tarde ? 'border-estado-demorado' : 'border-noche-700'
       }`}
     >
+      {/* La barra se llena con el tiempo y va pasando de verde a rojo: se lee
+          de lejos sin tener que mirar los números. */}
+      {corriendo && (
+        <div className="h-1.5 w-full bg-noche-800" aria-hidden>
+          <div
+            className={`h-full transition-[width,background-color] duration-1000 ${tarde ? 'animate-latido' : ''}`}
+            style={{ width: `${avance}%`, backgroundColor: color }}
+          />
+        </div>
+      )}
+
       <header className="flex items-center justify-between gap-2 border-b border-noche-800 px-3 py-2.5">
         <div className="min-w-0">
           <p className="truncate text-xl font-bold leading-tight text-crema-100">
@@ -73,14 +112,21 @@ export function TarjetaComanda({
           <p className="text-xs text-noche-400">
             Turno {bloque.turno} · #{bloque.numeroOrden} · {formatoHora(bloque.enviadoEn)}
           </p>
+          {/* Quién tomó el pedido: a quién llamar cuando sale el plato o
+              cuando hay una duda con la comanda. */}
+          {bloque.meseroNombre && (
+            <p className="mt-0.5 flex items-center gap-1 truncate text-sm font-medium text-oro-300">
+              <UserRound className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {bloque.meseroNombre}
+            </p>
+          )}
         </div>
         <div className="shrink-0 text-right">
           <span
             className={`inline-block rounded-xl border px-2.5 py-1.5 text-xl font-bold tabular-nums ${
-              corriendo
-                ? fondoEsperaEstimada(espera, estimado)
-                : 'border-noche-700 bg-noche-800 text-noche-300'
+              corriendo ? 'text-noche-950' : 'border-noche-700 bg-noche-800 text-noche-300'
             }`}
+            style={corriendo ? { backgroundColor: color, borderColor: color } : undefined}
           >
             {espera}
             <span className="text-sm font-semibold opacity-75">/{estimado}</span>
@@ -112,57 +158,109 @@ export function TarjetaComanda({
       <ul className="divide-y divide-noche-800">
         {bloque.items.map((item) => {
           const listo = item.estado === 'listo'
+          const tiempo = tiempos.get(item.itemCartaId)
+          const enEdicion = editando?.itemCartaId === item.itemCartaId
           return (
             <li key={item.id}>
-              <button
-                type="button"
-                disabled={ocupado}
-                onClick={() => onCambiarItem(item.id, listo ? 'en_preparacion' : 'listo')}
-                className={`flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition active:scale-[0.99] ${
-                  listo ? 'bg-estado-listo-suave' : 'hover:bg-noche-850'
-                }`}
-              >
-                <span
-                  className={`mt-0.5 flex h-7 min-w-[28px] items-center justify-center rounded-lg px-1 text-base font-bold ${
-                    listo ? 'bg-estado-listo text-noche-950' : 'bg-noche-700 text-crema-100'
+              <div className="flex items-stretch">
+                <button
+                  type="button"
+                  disabled={ocupado}
+                  onClick={() => onCambiarItem(item.id, listo ? 'en_preparacion' : 'listo')}
+                  className={`flex min-w-0 flex-1 items-start gap-2.5 px-3 py-2.5 text-left transition active:scale-[0.99] ${
+                    listo ? 'bg-estado-listo-suave' : 'hover:bg-noche-850'
                   }`}
                 >
-                  {item.cantidad}
-                </span>
-
-                <span className="min-w-0 flex-1">
                   <span
-                    className={`block text-base font-semibold leading-snug ${
-                      listo ? 'text-estado-listo line-through' : 'text-crema-100'
+                    className={`mt-0.5 flex h-7 min-w-[28px] items-center justify-center rounded-lg px-1 text-base font-bold ${
+                      listo ? 'bg-estado-listo text-noche-950' : 'bg-noche-700 text-crema-100'
                     }`}
                   >
-                    {item.nombre}
+                    {item.cantidad}
                   </span>
-                  {item.modificadoresSeleccionados.length > 0 && (
-                    <span className="mt-0.5 block text-sm font-medium text-oro-300">
-                      {item.modificadoresSeleccionados.map((m) => m.valor).join(' · ')}
-                    </span>
-                  )}
-                  {item.notaCocina && (
-                    <span className="mt-0.5 block text-sm italic text-estado-proceso">
-                      {item.notaCocina}
-                    </span>
-                  )}
-                </span>
 
-                {listo ? (
-                  <Check className="mt-1 h-5 w-5 shrink-0 text-estado-listo" aria-hidden />
-                ) : (
-                  tiempos.get(item.itemCartaId) && (
+                  <span className="min-w-0 flex-1">
                     <span
-                      className="mt-1 shrink-0 text-xs font-medium tabular-nums text-noche-400"
-                      title="Tiempo aproximado de preparación"
+                      className={`block text-base font-semibold leading-snug ${
+                        listo ? 'text-estado-listo line-through' : 'text-crema-100'
+                      }`}
                     >
-                      ~{tiempos.get(item.itemCartaId)} min
+                      {item.nombre}
                     </span>
-                  )
+                    {item.modificadoresSeleccionados.length > 0 && (
+                      <span className="mt-0.5 block text-sm font-medium text-oro-300">
+                        {item.modificadoresSeleccionados.map((m) => m.valor).join(' · ')}
+                      </span>
+                    )}
+                    {item.notaCocina && (
+                      <span className="mt-0.5 block text-sm italic text-estado-proceso">
+                        {item.notaCocina}
+                      </span>
+                    )}
+                  </span>
+
+                  {listo && <Check className="mt-1 h-5 w-5 shrink-0 text-estado-listo" aria-hidden />}
+                </button>
+
+                {/* El tiempo del plato, aparte de la fila: tocarlo lo corrige
+                    sin marcar el plato como listo. */}
+                {!listo && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditando(
+                        enEdicion
+                          ? null
+                          : { itemCartaId: item.itemCartaId, minutos: tiempo || TIEMPO_SIN_DEFINIR },
+                      )
+                    }
+                    title="Cambiar el tiempo de preparación de este plato"
+                    className={`flex shrink-0 items-center gap-1 px-2.5 text-xs font-medium tabular-nums transition hover:bg-noche-850 hover:text-crema-100 ${
+                      enEdicion ? 'bg-noche-850 text-oro-300' : 'text-noche-400'
+                    }`}
+                  >
+                    {tiempo ? `~${tiempo} min` : 'Tiempo'}
+                    <Pencil className="h-3 w-3" aria-hidden />
+                  </button>
                 )}
-              </button>
+              </div>
+
+              {enEdicion && editando && (
+                <div className="flex flex-wrap items-center gap-2 border-t border-noche-800 bg-noche-850 px-3 py-2.5">
+                  <span className="mr-auto text-xs text-noche-300">Tiempo del plato</span>
+                  <button
+                    type="button"
+                    aria-label="Un minuto menos"
+                    onClick={() =>
+                      setEditando({ ...editando, minutos: Math.max(1, editando.minutos - 1) })
+                    }
+                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-noche-700 text-crema-100 active:scale-95"
+                  >
+                    <Minus className="h-4 w-4" aria-hidden />
+                  </button>
+                  <span className="min-w-[4.5rem] text-center text-lg font-bold tabular-nums text-crema-100">
+                    {editando.minutos} min
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Un minuto más"
+                    onClick={() =>
+                      setEditando({ ...editando, minutos: Math.min(240, editando.minutos + 1) })
+                    }
+                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-noche-700 text-crema-100 active:scale-95"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={guardando}
+                    onClick={guardarTiempo}
+                    className="h-10 rounded-lg bg-oro-500 px-3.5 text-sm font-bold text-noche-950 transition hover:bg-oro-400 disabled:opacity-50"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              )}
             </li>
           )
         })}

@@ -4,10 +4,14 @@ import co.elpatio.dominio.puertos.NotificadorPorCorreo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Primary;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,7 +25,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Primary
-@ConditionalOnProperty(prefix = "elpatio.correo", name = "usuario")
+// Solo con usuario SMTP y sin Zoho: un vacio no cuenta como configurado (con
+// @ConditionalOnProperty si contaba), y si estan los dos manda Zoho.
+@ConditionalOnExpression(
+    "!'${elpatio.correo.usuario:}'.isBlank() and '${elpatio.zoho.refresh-token:}'.isBlank()")
 public class CorreoPorSmtp implements NotificadorPorCorreo {
 
   private static final Logger registro = LoggerFactory.getLogger(CorreoPorSmtp.class);
@@ -44,6 +51,28 @@ public class CorreoPorSmtp implements NotificadorPorCorreo {
     mensaje.setText(cuerpo);
     remitente.send(mensaje);
     registro.info("Correo enviado a {}", destinatario);
+  }
+
+  @Override
+  public void enviarConAdjunto(
+      String destinatario, String asunto, String cuerpo, String nombreArchivo, byte[] contenido) {
+    if (contenido == null || contenido.length == 0) {
+      enviar(destinatario, asunto, cuerpo);
+      return;
+    }
+    try {
+      MimeMessage mensaje = remitente.createMimeMessage();
+      MimeMessageHelper ayudante = new MimeMessageHelper(mensaje, true, "UTF-8");
+      ayudante.setFrom(direccionRemitente);
+      ayudante.setTo(destinatario);
+      ayudante.setSubject(asunto);
+      ayudante.setText(cuerpo);
+      ayudante.addAttachment(nombreArchivo, new ByteArrayResource(contenido), "application/pdf");
+      remitente.send(mensaje);
+      registro.info("Correo con adjunto enviado a {}", destinatario);
+    } catch (MessagingException e) {
+      throw new IllegalStateException("No se pudo armar el correo con adjunto", e);
+    }
   }
 
   @Override

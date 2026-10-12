@@ -248,6 +248,9 @@ public final class Dtos {
 
   public record CambioDisponibilidad(boolean disponible) {}
 
+  /** El cocinero corrige cuanto tarda un plato. */
+  public record PeticionTiempoPlato(int minutos) {}
+
   // -------------------------------------------------------------------------
   // Comandas
   // -------------------------------------------------------------------------

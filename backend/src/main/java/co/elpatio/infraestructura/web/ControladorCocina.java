@@ -1,5 +1,6 @@
 package co.elpatio.infraestructura.web;
 
+import co.elpatio.aplicacion.ServicioCarta;
 import co.elpatio.aplicacion.ServicioCocina;
 import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.carta.Destino;
@@ -21,9 +22,24 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControladorCocina {
 
   private final ServicioCocina servicio;
+  private final ServicioCarta carta;
 
-  public ControladorCocina(ServicioCocina servicio) {
+  public ControladorCocina(ServicioCocina servicio, ServicioCarta carta) {
     this.servicio = servicio;
+    this.carta = carta;
+  }
+
+  /**
+   * Equivale a `cambiarTiempoPlato(itemCartaId, minutos)`.
+   *
+   * Va bajo /api/cocina y no bajo /api/carta porque la carta solo la escribe
+   * el administrador, y este cambio lo hace el cocinero.
+   */
+  @PatchMapping("/platos/{itemCartaId}/tiempo")
+  public ResponseEntity<Void> cambiarTiempoPlato(
+      @PathVariable String itemCartaId, @RequestBody Dtos.PeticionTiempoPlato peticion) {
+    carta.cambiarTiempoPreparacion(itemCartaId, peticion.minutos());
+    return ResponseEntity.noContent().build();
   }
 
   /** Equivale a `comandasActivas(destino)`. */

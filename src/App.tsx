@@ -74,7 +74,6 @@ const Publicaciones = pantalla('Publicaciones')
 const Ventas = pantalla('Ventas')
 const Cierre = pantalla('Cierre')
 const Caja = pantalla('Caja')
-const Conciliacion = pantalla('Conciliacion')
 const Papelera = pantalla('Papelera')
 const Postulaciones = pantalla('Postulaciones')
 const PqrAdmin = pantalla('PqrAdmin')
@@ -266,14 +265,9 @@ export default function App() {
                     </GuardaRuta>
                   }
                 />
-                <Route
-                  path="conciliacion"
-                  element={
-                    <GuardaRuta roles={['administrador']}>
-                      <Conciliacion />
-                    </GuardaRuta>
-                  }
-                />
+                {/* Conciliación con Globalsoft: retirada del panel por ahora a
+                    pedido del restaurante. La pantalla y el backend siguen en
+                    el proyecto para volver a ponerla cuando se conecte. */}
                 <Route
                   path="reportes"
                   element={

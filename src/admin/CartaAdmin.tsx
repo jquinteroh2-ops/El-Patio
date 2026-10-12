@@ -174,6 +174,7 @@ export default function CartaAdmin() {
                 </p>
                 <p className="truncate text-xs text-noche-500">
                   {nombreCategoria(item.categoriaId)} · {item.tiempoPreparacionMin} min
+                  {item.recomendado && <span className="ml-1.5 text-oro-300">★ Recomendado</span>}
                   {item.modificadores && item.modificadores.length > 0 && (
                     <span className="ml-1.5 text-oro-300">
                       {item.modificadores.length} modificador

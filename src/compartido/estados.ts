@@ -171,3 +171,17 @@ export function fondoEspera(minutos: number): string {
     return 'bg-estado-proceso text-noche-950 border-estado-proceso'
   return 'bg-estado-listo-suave text-estado-listo border-estado-listo/50'
 }
+
+/**
+ * El color del tiempo de una comanda, que va cambiando de a poco.
+ *
+ * El restaurante pidió que el tiempo «se vaya poniendo rojo» a medida que pasa,
+ * no que salte de verde a rojo de golpe. Se interpola el tono de verde (130°)
+ * a rojo (0°) según la fracción del tiempo estimado que ya se consumió; una
+ * vez pasado, se queda en rojo pleno.
+ */
+export function colorPorAvance(minutos: number, estimado: number): string {
+  if (estimado <= 0 || minutos > estimado) return 'hsl(0 78% 52%)'
+  const fraccion = Math.min(Math.max(minutos / estimado, 0), 1)
+  return `hsl(${Math.round(130 * (1 - fraccion))} 72% 46%)`
+}

@@ -116,7 +116,7 @@ public class ServicioPostulaciones {
     }
 
     Postulacion guardada = postulaciones.guardar(postulacion);
-    avisarAlAdministrador(guardada);
+    avisarAlAdministrador(guardada, datos.hojaDeVida());
     return guardada;
   }
 
@@ -144,10 +144,15 @@ public class ServicioPostulaciones {
    *
    * Nunca tumba la postulación: que el correo no salga es un problema; que por
    * eso se pierda la hoja de vida de quien llenó el formulario es otro mucho
-   * peor. El correo lleva el nombre y el cargo, no el resto de los datos: es un
-   * aviso para que entren a la bandeja, no un volcado del expediente.
+   * peor.
+   *
+   * <p>Va al buzón de recursos humanos (rrhh@restauranteelpatio.com en
+   * producción) con los datos de contacto y la hoja de vida adjunta: el
+   * restaurante pidió que las solicitudes lleguen completas al correo, sin
+   * tener que entrar al panel para leerlas. El buzón es del propio
+   * restaurante, así que los datos no salen de sus manos.
    */
-  private void avisarAlAdministrador(Postulacion postulacion) {
+  private void avisarAlAdministrador(Postulacion postulacion, byte[] hojaDeVida) {
     if (correoDelAdministrador == null || correoDelAdministrador.isBlank()) return;
     // Varios destinatarios separados por coma: cada uno se intenta aparte, asi
     // que un correo mal escrito no le quita el aviso al resto.
@@ -155,17 +160,45 @@ public class ServicioPostulaciones {
       String limpio = destinatario.trim();
       if (limpio.isEmpty()) continue;
       try {
-        correo.enviar(
+        correo.enviarConAdjunto(
             limpio,
-            "Nueva hoja de vida: " + postulacion.getCargoInteres().etiqueta(),
-            postulacion.getNombreCompleto()
-                + " se postuló para "
+            "Nueva hoja de vida: "
                 + postulacion.getCargoInteres().etiqueta()
-                + ".\n\nEntre al panel para ver la hoja de vida.");
+                + " - "
+                + postulacion.getNombreCompleto(),
+            cuerpoDelAviso(postulacion),
+            nombreDelAdjunto(postulacion),
+            hojaDeVida);
       } catch (RuntimeException e) {
         registro.warn("No se pudo avisar a {} de la postulación {}", limpio, postulacion.getId(), e);
       }
     }
+  }
+
+  private static String cuerpoDelAviso(Postulacion p) {
+    StringBuilder cuerpo = new StringBuilder("Llegó una nueva hoja de vida por el sitio web.\n\n");
+    cuerpo.append("Cargo: ").append(p.getCargoInteres().etiqueta()).append('\n');
+    cuerpo.append("Nombre: ").append(p.getNombreCompleto()).append('\n');
+    cuerpo
+        .append("Documento: ")
+        .append(p.getTipoDocumento().codigo())
+        .append(' ')
+        .append(p.getNumeroDocumento())
+        .append('\n');
+    cuerpo.append("Correo: ").append(p.getEmail()).append('\n');
+    cuerpo.append("Teléfono: ").append(p.getTelefono()).append('\n');
+    if (p.getMensaje() != null && !p.getMensaje().isBlank()) {
+      cuerpo.append("\nMensaje del aspirante:\n").append(p.getMensaje().trim()).append('\n');
+    }
+    cuerpo.append("\nLa hoja de vida va adjunta en PDF. También queda en el panel, en Postulaciones.");
+    return cuerpo.toString();
+  }
+
+  /** «Hoja de vida - Ana Pérez.pdf»: que se reconozca en la carpeta de descargas. */
+  private static String nombreDelAdjunto(Postulacion p) {
+    String nombre = p.getNombreCompleto() == null ? "" : p.getNombreCompleto();
+    String limpio = nombre.replaceAll("[\\\\/:*?\"<>|]", "").trim();
+    return "Hoja de vida - " + (limpio.isEmpty() ? p.getId() : limpio) + ".pdf";
   }
 
   // -------------------------------------------------------------------------

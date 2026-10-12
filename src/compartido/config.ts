@@ -19,7 +19,7 @@
 export const RESTAURANTE = {
   nombre: 'El Patio',
   nombreCompleto: 'Restaurante El Patio',
-  descripcionCorta: 'Cocina de fusion y coctelería de autor',
+  descripcionCorta: 'Cocina de fusión y coctelería de autor',
   direccion: 'Calle 26 #31-2',
   ciudad: 'Turbaco, Bolívar',
   /** Numero de contacto del restaurante. */

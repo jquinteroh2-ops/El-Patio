@@ -328,7 +328,7 @@ export function EditorProducto({
           </label>
           <label className="block">
             <span className="mb-1.5 block text-xs uppercase tracking-wide text-noche-400">
-              Preparación (min)
+              Tiempo promedio (min)
             </span>
             <input
               inputMode="numeric"
@@ -338,6 +338,10 @@ export function EditorProducto({
               }
               className={CAMPO}
             />
+            {/* Lo pone el dueño; el cocinero lo corrige desde su pantalla. */}
+            <span className="mt-1 block text-xs text-noche-500">
+              Cocina también lo puede ajustar.
+            </span>
           </label>
         </div>
 
@@ -454,6 +458,20 @@ export function EditorProducto({
             onCambiar={(disponible) => cambiar({ disponible })}
             etiqueta="Disponible"
             descripcion={borrador.disponible ? 'En carta' : 'Agotado'}
+          />
+        </div>
+
+        {/* Los recomendados salen en su propia sección arriba de la carta pública. */}
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-noche-700 bg-noche-850 px-3.5 py-3">
+          <span className="text-sm text-crema-100">
+            Recomendado de la casa
+            <span className="mt-0.5 block text-xs text-noche-400">Se destaca en la carta del sitio</span>
+          </span>
+          <Interruptor
+            activo={borrador.recomendado === true}
+            onCambiar={(recomendado) => cambiar({ recomendado })}
+            etiqueta="Recomendado"
+            descripcion={borrador.recomendado ? 'Sí' : 'No'}
           />
         </div>
 

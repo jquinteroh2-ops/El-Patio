@@ -158,6 +158,8 @@ export interface ItemCarta {
   promocionHasta?: string | null
   /** Agotar un plato debe ser un solo clic desde /admin/carta. */
   disponible: boolean
+  /** Lo marca el administrador: sale en «Recomendados» de la carta pública. */
+  recomendado?: boolean
   tiempoPreparacionMin: number
   destino: Destino
   modificadores?: Modificador[]

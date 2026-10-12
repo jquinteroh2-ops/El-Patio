@@ -4,6 +4,7 @@ import co.elpatio.aplicacion.dto.Dtos;
 import co.elpatio.dominio.carta.CategoriaCarta;
 import co.elpatio.dominio.carta.ItemCarta;
 import co.elpatio.dominio.error.NoEncontradoError;
+import co.elpatio.dominio.error.ReglaDeNegocioError;
 import co.elpatio.dominio.puertos.AlmacenDeImagenes;
 import co.elpatio.dominio.puertos.GeneradorIds;
 import co.elpatio.dominio.puertos.PublicadorEventos;
@@ -73,6 +74,27 @@ public class ServicioCarta {
     item.setDisponible(disponible);
     carta.guardarItem(item);
     eventos.publicar(List.of("carta"));
+  }
+
+  /**
+   * El cocinero ajusta el tiempo de un plato desde su pantalla.
+   *
+   * El administrador pone el tiempo promedio al crear el plato; quien lo
+   * cocina es quien sabe si ese numero se quedo corto o largo, y no tiene por
+   * que pedirle al dueno que entre al panel a cambiarlo. Es el mismo campo:
+   * el cambio se ve tambien en el editor de la carta.
+   */
+  @Transactional
+  public ItemCarta cambiarTiempoPreparacion(String itemId, int minutos) {
+    if (minutos < 1 || minutos > 240) {
+      throw new ReglaDeNegocioError("El tiempo tiene que estar entre 1 y 240 minutos");
+    }
+    ItemCarta item =
+        carta.porId(itemId).orElseThrow(() -> new NoEncontradoError("El producto no existe"));
+    item.setTiempoPreparacionMin(minutos);
+    ItemCarta guardado = carta.guardarItem(item);
+    eventos.publicar(List.of("carta"));
+    return guardado;
   }
 
   @Transactional
