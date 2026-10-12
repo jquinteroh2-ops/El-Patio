@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCheck, ClipboardCopy, DoorOpen, Receipt, Wallet } from 'lucide-react'
+import { Check, CheckCheck, ClipboardCopy, DoorOpen, Receipt, Wallet } from 'lucide-react'
 import * as api from '@/compartido/mockApi'
 import type { MesaEnMapa, OrdenDetallada } from '@/compartido/mockApi'
 import { calcularCuenta, precioItem } from '@/compartido/calculos'
@@ -13,6 +13,7 @@ import { Vacio } from '@/componentes/ui/Vacio'
 import { Esqueleto } from '@/componentes/ui/Esqueleto'
 import { HojaInferior } from '@/componentes/ui/HojaInferior'
 import { useAvisos } from '@/componentes/ui/Avisos'
+import { ETIQUETA_ITEM, TONO_ITEM } from '@/compartido/estados'
 
 /**
  * La caja: las cuentas abiertas del salon, para facturarlas en Globalsoft.
@@ -279,25 +280,62 @@ export default function Caja() {
                     <tr className="border-b border-noche-800 text-left text-xs uppercase tracking-wider text-noche-400">
                       <th className="py-2 pr-3 font-medium">Cant.</th>
                       <th className="py-2 pr-3 font-medium">Producto</th>
+                      <th className="py-2 pr-3 font-medium">Cocina</th>
                       <th className="py-2 pr-3 text-right font-medium">Unitario</th>
                       <th className="py-2 text-right font-medium">Total</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((i) => (
-                      <tr key={i.id} className="border-b border-noche-850 align-top">
-                        <td className="py-2 pr-3 tabular-nums text-crema-100">{i.cantidad}</td>
-                        <td className="py-2 pr-3 text-crema-100">{descripcionItem(i)}</td>
-                        <td className="py-2 pr-3 text-right tabular-nums text-noche-300">
-                          {formatoCOP(unitarioItem(i))}
-                        </td>
-                        <td className="py-2 text-right tabular-nums text-crema-100">{formatoCOP(precioItem(i))}</td>
-                      </tr>
-                    ))}
+                    {items.map((i) => {
+                      // Lo enviado que sigue en la pantalla de cocina. La caja lo
+                      // puede sacar cuando ve salir el plato: el cocinero muchas
+                      // veces tiene las manos ocupadas para marcarlo.
+                      const enCocina =
+                        i.turnoEnvio > 0 &&
+                        (i.estado === 'pendiente' || i.estado === 'en_preparacion' || i.estado === 'listo')
+                      return (
+                        <tr key={i.id} className="border-b border-noche-850 align-middle">
+                          <td className="py-2 pr-3 tabular-nums text-crema-100">{i.cantidad}</td>
+                          <td className="py-2 pr-3 text-crema-100">{descripcionItem(i)}</td>
+                          <td className="py-2 pr-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              {i.turnoEnvio > 0 && (
+                                <Insignia tono={TONO_ITEM[i.estado]}>{ETIQUETA_ITEM[i.estado]}</Insignia>
+                              )}
+                              {enCocina && (
+                                <button
+                                  type="button"
+                                  disabled={ocupado}
+                                  onClick={() =>
+                                    ejecutar(async () => {
+                                      await api.marcarEntregado(orden.id, i.id)
+                                      return `${i.nombre} entregado. Ya no aparece en cocina.`
+                                    })
+                                  }
+                                  className={`flex min-h-[36px] items-center gap-1 rounded-lg px-2.5 text-xs font-bold transition active:scale-95 disabled:opacity-50 ${
+                                    i.estado === 'listo'
+                                      ? 'bg-estado-listo text-noche-950'
+                                      : 'border-2 border-estado-listo text-estado-listo hover:bg-estado-listo/15'
+                                  }`}
+                                >
+                                  <Check className="h-3.5 w-3.5" aria-hidden />
+                                  Entregado
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-2 pr-3 text-right tabular-nums text-noche-300">
+                            {formatoCOP(unitarioItem(i))}
+                          </td>
+                          <td className="py-2 text-right tabular-nums text-crema-100">{formatoCOP(precioItem(i))}</td>
+                        </tr>
+                      )
+                    })}
                     {orden.cargosAdicionales.map((c) => (
                       <tr key={c.id} className="border-b border-noche-850">
                         <td className="py-2 pr-3" />
                         <td className="py-2 pr-3 text-noche-300">{c.nombre} (cargo)</td>
+                        <td className="py-2 pr-3" />
                         <td className="py-2 pr-3" />
                         <td className="py-2 text-right tabular-nums text-crema-100">{formatoCOP(c.valor)}</td>
                       </tr>

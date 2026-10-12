@@ -294,6 +294,9 @@ public class Orden {
     exigirEditable();
     for (ItemOrden item : items) {
       if (item.getTurnoEnvio() != turno || item.getDestino() != destino || !item.estaVigente()) continue;
+      // Lo que el mesero o la caja ya entregaron no vuelve a cocina porque el
+      // cocinero marque el resto del turno.
+      if (item.getEstado() == EstadoItem.SERVIDO) continue;
       item.setEstado(estado);
       if (estado == EstadoItem.LISTO) item.setListoEn(ahora);
     }

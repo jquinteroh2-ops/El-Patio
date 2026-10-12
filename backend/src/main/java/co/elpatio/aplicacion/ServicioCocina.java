@@ -67,8 +67,12 @@ public class ServicioCocina {
       if (mesa == null && !orden.esExterno()) continue;
 
       for (Orden.GrupoTurno grupo : orden.agruparPorTurno(orden.itemsEnviadosDe(destino))) {
-        // Un turno servido por completo ya no ocupa espacio en la pantalla.
-        if (grupo.items().stream().allMatch(i -> i.getEstado() == EstadoItem.SERVIDO)) continue;
+        // Lo ya entregado sale de la pantalla aunque el resto del turno siga en
+        // cocina: el mesero o la caja lo marcan apenas sale, porque el cocinero
+        // tiene las manos ocupadas. Un turno servido por completo no se muestra.
+        List<ItemOrden> enCocina =
+            grupo.items().stream().filter(i -> i.getEstado() != EstadoItem.SERVIDO).toList();
+        if (enCocina.isEmpty()) continue;
 
         bloques.add(
             new Dtos.TurnoEnCocina(
@@ -82,8 +86,8 @@ public class ServicioCocina {
                 grupo.items().get(0).getEnviadoEn() != null
                     ? grupo.items().get(0).getEnviadoEn()
                     : orden.getAbiertaEn(),
-                estadoDeTurno(grupo.items()),
-                grupo.items(),
+                estadoDeTurno(enCocina),
+                enCocina,
                 orden.getNotas()));
       }
     }

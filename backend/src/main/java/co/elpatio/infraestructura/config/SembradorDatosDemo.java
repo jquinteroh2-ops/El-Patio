@@ -256,7 +256,15 @@ public class SembradorDatosDemo implements ApplicationRunner {
 
     // Tambien los pagos de verdad que se hayan cobrado sobre una comanda de
     // demostracion durante la demostracion: sin esto la comanda no se puede
-    // borrar, y el arranque siguiente falla.
+    // borrar, y el arranque siguiente falla. Antes, lo que esos pagos dejaron en
+    // la cola hacia el ERP: la llave foránea no deja borrar el pago con su
+    // aviso todavía pendiente (igual que en la Papelera).
+    total +=
+        jdbc.update(
+            "delete from erp_outbox where pago_id in"
+                + " (select id from pagos where starts_with(id, ?) or starts_with(orden_id, ?))",
+            MARCA,
+            MARCA);
     total +=
         jdbc.update(
             "delete from pagos where starts_with(id, ?) or starts_with(orden_id, ?)", MARCA, MARCA);

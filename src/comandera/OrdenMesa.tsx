@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowLeftRight,
   Ban,
+  Check,
   CheckCheck,
   DoorOpen,
   ClipboardList,
@@ -492,21 +493,32 @@ export default function OrdenMesa() {
                       <span className="text-xs tabular-nums text-noche-400">
                         {formatoCOP(precioItem(item))}
                       </span>
-                      {item.estado === 'listo' && (
-                        <button
-                          type="button"
-                          disabled={ocupado}
-                          onClick={() =>
-                            ejecutar(async () => {
-                              await api.marcarEntregado(orden.id, item.id)
-                              return `${item.nombre} servido`
-                            })
-                          }
-                          className="min-h-[36px] rounded-lg bg-estado-listo px-2.5 text-xs font-bold text-noche-950 transition active:scale-95"
-                        >
-                          Servir
-                        </button>
-                      )}
+                      {/* Lo quita de la pantalla de cocina esté como esté: el
+                          cocinero tiene las manos ocupadas y muchas veces no
+                          alcanza a marcarlo listo antes de que salga. */}
+                      {item.turnoEnvio > 0 &&
+                        (item.estado === 'pendiente' ||
+                          item.estado === 'en_preparacion' ||
+                          item.estado === 'listo') && (
+                          <button
+                            type="button"
+                            disabled={ocupado}
+                            onClick={() =>
+                              ejecutar(async () => {
+                                await api.marcarEntregado(orden.id, item.id)
+                                return `${item.nombre} entregado. Ya no aparece en cocina.`
+                              })
+                            }
+                            className={`flex min-h-[40px] items-center gap-1.5 rounded-lg px-3 text-sm font-bold transition active:scale-95 disabled:opacity-50 ${
+                              item.estado === 'listo'
+                                ? 'bg-estado-listo text-noche-950'
+                                : 'border-2 border-estado-listo text-estado-listo hover:bg-estado-listo/15'
+                            }`}
+                          >
+                            <Check className="h-4 w-4" aria-hidden />
+                            Entregado
+                          </button>
+                        )}
                       {item.estado !== 'anulado' && item.estado !== 'servido' && (
                         <button
                           type="button"
