@@ -96,6 +96,49 @@ class ServicioPostulacionesTest {
     assertThat(correo.nombres.get(0)).isEqualTo("Hoja de vida - Ana Pérez.pdf");
   }
 
+  @Test
+  void elCorreoDeRecursosHumanosVaDisenadoConElLogoDelSitio() {
+    servicio.recibir(datos(PDF, "1050123456"));
+
+    String html = correo.htmls.get(0);
+    assertThat(html)
+        .contains("https://www.restauranteelpatio.com/logo.png")
+        .contains("Nueva hoja de vida")
+        .contains("Ana Pérez")
+        .contains("mailto:ana@correo.com")
+        .contains("Hoja de vida - Ana Pérez.pdf");
+  }
+
+  /** El formulario es público: lo que escriba el aspirante no puede volverse HTML. */
+  @Test
+  void loQueEscribeElAspiranteNoSeVuelveHtmlEnElCorreo() {
+    ServicioPostulaciones.DatosPostulacion base = datos(PDF, "1050999999");
+    servicio.recibir(
+        new ServicioPostulaciones.DatosPostulacion(
+            "<script>alert(1)</script> Ana",
+            base.tipoDocumento(),
+            base.numeroDocumento(),
+            base.email(),
+            base.telefono(),
+            base.cargoInteres(),
+            "<img src=x onerror=alert(1)>",
+            base.autorizacionDatos(),
+            base.ip(),
+            base.hojaDeVidaNombre(),
+            base.hojaDeVida()));
+
+    String html = correo.htmls.get(0);
+    assertThat(html).doesNotContain("<script>").doesNotContain("<img src=x");
+    assertThat(html).contains("&lt;script&gt;").contains("&lt;img src=x onerror=alert(1)&gt;");
+  }
+
+  @Test
+  void elWhatsappSoloSeArmaConUnCelularColombiano() {
+    assertThat(PlantillaAvisoPostulacion.numeroWhatsapp("300 123 4567")).isEqualTo("573001234567");
+    assertThat(PlantillaAvisoPostulacion.numeroWhatsapp("+57 300 123 4567")).isEqualTo("573001234567");
+    assertThat(PlantillaAvisoPostulacion.numeroWhatsapp("605 123 4567")).isEmpty();
+  }
+
   /**
    * El caso que el encargo pide expresamente: un archivo que no es PDF.
    *
@@ -356,7 +399,20 @@ class ServicioPostulacionesTest {
     final List<String> cuerpos = new ArrayList<>();
     final List<String> nombres = new ArrayList<>();
     final List<byte[]> adjuntos = new ArrayList<>();
+    final List<String> htmls = new ArrayList<>();
     boolean reventar = false;
+
+    @Override
+    public void enviarConAdjunto(
+        String destinatario,
+        String asunto,
+        String cuerpo,
+        String cuerpoHtml,
+        String nombreArchivo,
+        byte[] contenido) {
+      enviarConAdjunto(destinatario, asunto, cuerpo, nombreArchivo, contenido);
+      htmls.add(cuerpoHtml);
+    }
 
     @Override
     public void enviarConAdjunto(

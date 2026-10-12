@@ -125,6 +125,9 @@ elpatio:
     # cuando la página tarda. Quien se postuló hace tres meses y no tuvo
     # respuesta sí tiene derecho a volver a intentarlo.
     dias-sin-repetir: ${ELPATIO_DIAS_SIN_REPETIR:30}
+    # El sitio público: de ahí sale el logo del correo a RR. HH. (Gmail no
+    # muestra imágenes incrustadas) y el enlace al panel.
+    url-sitio: ${ELPATIO_URL_SITIO:https://www.restauranteelpatio.com}
 
   documentos:
     # Hojas de vida y adjuntos de PQR.

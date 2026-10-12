@@ -39,6 +39,24 @@ public interface NotificadorPorCorreo {
     enviar(destinatario, asunto, cuerpo);
   }
 
+  /**
+   * Igual, con una versión diseñada en HTML además del texto plano.
+   *
+   * Para los correos que lee una persona del restaurante, como el aviso de una
+   * hoja de vida nueva. El texto plano sigue yendo: es lo que usa quien no
+   * sepa mostrar HTML. Por defecto se manda solo el texto, así que un
+   * proveedor que no sepa de HTML sigue funcionando igual que antes.
+   */
+  default void enviarConAdjunto(
+      String destinatario,
+      String asunto,
+      String cuerpo,
+      String cuerpoHtml,
+      String nombreArchivo,
+      byte[] contenido) {
+    enviarConAdjunto(destinatario, asunto, cuerpo, nombreArchivo, contenido);
+  }
+
   /** Si hay un proveedor detras. Sirve para no prometer en pantalla lo que no va a pasar. */
   boolean estaActivo();
 }

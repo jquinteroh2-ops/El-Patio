@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,9 @@ public class ServicioPostulaciones {
   private final Reloj reloj;
   private final String correoDelAdministrador;
   private final int diasSinRepetir;
+  private final String urlSitio;
 
+  @Autowired
   public ServicioPostulaciones(
       Repositorios.DePostulaciones postulaciones,
       AlmacenDeDocumentos almacen,
@@ -44,7 +47,8 @@ public class ServicioPostulaciones {
       GeneradorIds ids,
       Reloj reloj,
       @Value("${elpatio.reclutamiento.correo-administrador:}") String correoDelAdministrador,
-      @Value("${elpatio.reclutamiento.dias-sin-repetir:30}") int diasSinRepetir) {
+      @Value("${elpatio.reclutamiento.dias-sin-repetir:30}") int diasSinRepetir,
+      @Value("${elpatio.reclutamiento.url-sitio:https://www.restauranteelpatio.com}") String urlSitio) {
     this.postulaciones = postulaciones;
     this.almacen = almacen;
     this.correo = correo;
@@ -52,6 +56,27 @@ public class ServicioPostulaciones {
     this.reloj = reloj;
     this.correoDelAdministrador = correoDelAdministrador;
     this.diasSinRepetir = diasSinRepetir;
+    this.urlSitio = urlSitio;
+  }
+
+  /** Para las pruebas, que no pasan por la configuración. */
+  ServicioPostulaciones(
+      Repositorios.DePostulaciones postulaciones,
+      AlmacenDeDocumentos almacen,
+      NotificadorPorCorreo correo,
+      GeneradorIds ids,
+      Reloj reloj,
+      String correoDelAdministrador,
+      int diasSinRepetir) {
+    this(
+        postulaciones,
+        almacen,
+        correo,
+        ids,
+        reloj,
+        correoDelAdministrador,
+        diasSinRepetir,
+        "https://www.restauranteelpatio.com");
   }
 
   /** Lo que llega del formulario. El archivo viene aparte, ya leido. */
@@ -167,6 +192,7 @@ public class ServicioPostulaciones {
                 + " - "
                 + postulacion.getNombreCompleto(),
             cuerpoDelAviso(postulacion),
+            PlantillaAvisoPostulacion.html(postulacion, urlSitio, nombreDelAdjunto(postulacion)),
             nombreDelAdjunto(postulacion),
             hojaDeVida);
       } catch (RuntimeException e) {

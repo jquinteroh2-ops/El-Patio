@@ -110,6 +110,22 @@ public class CorreoPorZoho implements NotificadorPorCorreo {
   @Override
   public void enviarConAdjunto(
       String destinatario, String asunto, String cuerpo, String nombreArchivo, byte[] contenido) {
+    enviarConAdjunto(destinatario, asunto, cuerpo, null, nombreArchivo, contenido);
+  }
+
+  /**
+   * La API de Zoho manda un solo formato por correo. Con HTML va el HTML; si no
+   * hay, el texto plano de siempre.
+   */
+  @Override
+  public void enviarConAdjunto(
+      String destinatario,
+      String asunto,
+      String cuerpo,
+      String cuerpoHtml,
+      String nombreArchivo,
+      byte[] contenido) {
+    boolean conHtml = cuerpoHtml != null && !cuerpoHtml.isBlank();
     try {
       String token = tokenDeAcceso();
       conocerCuenta(token);
@@ -118,8 +134,8 @@ public class CorreoPorZoho implements NotificadorPorCorreo {
       mensaje.put("fromAddress", remitente);
       mensaje.put("toAddress", destinatario);
       mensaje.put("subject", asunto);
-      mensaje.put("content", cuerpo);
-      mensaje.put("mailFormat", "plaintext");
+      mensaje.put("content", conHtml ? cuerpoHtml : cuerpo);
+      mensaje.put("mailFormat", conHtml ? "html" : "plaintext");
       if (contenido != null && contenido.length > 0) {
         ArrayNode adjuntos = mensaje.putArray("attachments");
         adjuntos.add(subirAdjunto(token, nombreArchivo, contenido));

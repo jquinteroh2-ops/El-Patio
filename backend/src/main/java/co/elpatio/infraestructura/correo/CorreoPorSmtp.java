@@ -56,7 +56,21 @@ public class CorreoPorSmtp implements NotificadorPorCorreo {
   @Override
   public void enviarConAdjunto(
       String destinatario, String asunto, String cuerpo, String nombreArchivo, byte[] contenido) {
-    if (contenido == null || contenido.length == 0) {
+    enviarConAdjunto(destinatario, asunto, cuerpo, null, nombreArchivo, contenido);
+  }
+
+  /** Por SMTP van las dos versiones y cada programa de correo muestra la que sabe. */
+  @Override
+  public void enviarConAdjunto(
+      String destinatario,
+      String asunto,
+      String cuerpo,
+      String cuerpoHtml,
+      String nombreArchivo,
+      byte[] contenido) {
+    boolean conAdjunto = contenido != null && contenido.length > 0;
+    boolean conHtml = cuerpoHtml != null && !cuerpoHtml.isBlank();
+    if (!conAdjunto && !conHtml) {
       enviar(destinatario, asunto, cuerpo);
       return;
     }
@@ -66,8 +80,14 @@ public class CorreoPorSmtp implements NotificadorPorCorreo {
       ayudante.setFrom(direccionRemitente);
       ayudante.setTo(destinatario);
       ayudante.setSubject(asunto);
-      ayudante.setText(cuerpo);
-      ayudante.addAttachment(nombreArchivo, new ByteArrayResource(contenido), "application/pdf");
+      if (conHtml) {
+        ayudante.setText(cuerpo, cuerpoHtml);
+      } else {
+        ayudante.setText(cuerpo);
+      }
+      if (conAdjunto) {
+        ayudante.addAttachment(nombreArchivo, new ByteArrayResource(contenido), "application/pdf");
+      }
       remitente.send(mensaje);
       registro.info("Correo con adjunto enviado a {}", destinatario);
     } catch (MessagingException e) {
