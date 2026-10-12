@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, ChefHat, Minus, Pencil, Plus, StickyNote, UserRound } from 'lucide-react'
+import { Check, ChefHat, Clock, Minus, Pencil, Plus, StickyNote, UserRound } from 'lucide-react'
 import type { TurnoEnCocina } from '@/compartido/mockApi'
 import { formatoHora, minutosDesde } from '@/compartido/formato'
 import { colorPorAvance } from '@/compartido/estados'
@@ -203,62 +203,95 @@ export function TarjetaComanda({
                 </button>
 
                 {/* El tiempo del plato, aparte de la fila: tocarlo lo corrige
-                    sin marcar el plato como listo. */}
+                    sin marcar el plato como listo. Va como botón dorado con
+                    reloj para que el cocinero lo encuentre sin que se lo
+                    señalen. */}
                 {!listo && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setEditando(
+                  <div className="flex shrink-0 items-center pr-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditando(
+                          enEdicion
+                            ? null
+                            : { itemCartaId: item.itemCartaId, minutos: tiempo || TIEMPO_SIN_DEFINIR },
+                        )
+                      }
+                      title="Cambiar el tiempo de preparación de este plato"
+                      className={`flex min-h-[40px] items-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold tabular-nums transition active:scale-95 ${
                         enEdicion
-                          ? null
-                          : { itemCartaId: item.itemCartaId, minutos: tiempo || TIEMPO_SIN_DEFINIR },
-                      )
-                    }
-                    title="Cambiar el tiempo de preparación de este plato"
-                    className={`flex shrink-0 items-center gap-1 px-2.5 text-xs font-medium tabular-nums transition hover:bg-noche-850 hover:text-crema-100 ${
-                      enEdicion ? 'bg-noche-850 text-oro-300' : 'text-noche-400'
-                    }`}
-                  >
-                    {tiempo ? `~${tiempo} min` : 'Tiempo'}
-                    <Pencil className="h-3 w-3" aria-hidden />
-                  </button>
+                          ? 'border-oro-400 bg-oro-500 text-noche-950'
+                          : 'border-oro-500/60 bg-oro-500/10 text-oro-200 hover:bg-oro-500/20'
+                      }`}
+                    >
+                      <Clock className="h-4 w-4" aria-hidden />
+                      {tiempo ? `${tiempo} min` : 'Poner tiempo'}
+                      <Pencil className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                    </button>
+                  </div>
                 )}
               </div>
 
               {enEdicion && editando && (
-                <div className="flex flex-wrap items-center gap-2 border-t border-noche-800 bg-noche-850 px-3 py-2.5">
-                  <span className="mr-auto text-xs text-noche-300">Tiempo del plato</span>
-                  <button
-                    type="button"
-                    aria-label="Un minuto menos"
-                    onClick={() =>
-                      setEditando({ ...editando, minutos: Math.max(1, editando.minutos - 1) })
-                    }
-                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-noche-700 text-crema-100 active:scale-95"
-                  >
-                    <Minus className="h-4 w-4" aria-hidden />
-                  </button>
-                  <span className="min-w-[4.5rem] text-center text-lg font-bold tabular-nums text-crema-100">
-                    {editando.minutos} min
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="Un minuto más"
-                    onClick={() =>
-                      setEditando({ ...editando, minutos: Math.min(240, editando.minutos + 1) })
-                    }
-                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-noche-700 text-crema-100 active:scale-95"
-                  >
-                    <Plus className="h-4 w-4" aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={guardando}
-                    onClick={guardarTiempo}
-                    className="h-10 rounded-lg bg-oro-500 px-3.5 text-sm font-bold text-noche-950 transition hover:bg-oro-400 disabled:opacity-50"
-                  >
-                    Guardar
-                  </button>
+                <div className="border-t-2 border-oro-500/60 bg-noche-850 px-3 py-3">
+                  <p className="flex items-center gap-1.5 text-sm font-semibold text-oro-200">
+                    <Clock className="h-4 w-4" aria-hidden />
+                    ¿Cuánto tarda «{item.nombre}»?
+                  </p>
+                  <p className="mt-0.5 text-xs text-noche-400">
+                    El cambio queda para todas las comandas que lleven este plato.
+                  </p>
+
+                  <div className="mt-2.5 flex items-center justify-center gap-1.5">
+                    {[-5, -1].map((paso) => (
+                      <button
+                        key={paso}
+                        type="button"
+                        aria-label={`${-paso} ${paso === -1 ? 'minuto' : 'minutos'} menos`}
+                        onClick={() =>
+                          setEditando({ ...editando, minutos: Math.max(1, editando.minutos + paso) })
+                        }
+                        className="flex h-12 min-w-[48px] items-center justify-center rounded-lg bg-noche-700 px-2 text-base font-bold text-crema-100 active:scale-95"
+                      >
+                        {paso === -1 ? <Minus className="h-5 w-5" aria-hidden /> : '−5'}
+                      </button>
+                    ))}
+                    <span className="min-w-[5.5rem] text-center text-2xl font-bold tabular-nums text-crema-100">
+                      {editando.minutos}
+                      <span className="ml-1 text-sm font-semibold text-noche-300">min</span>
+                    </span>
+                    {[1, 5].map((paso) => (
+                      <button
+                        key={paso}
+                        type="button"
+                        aria-label={`${paso} ${paso === 1 ? 'minuto' : 'minutos'} más`}
+                        onClick={() =>
+                          setEditando({ ...editando, minutos: Math.min(240, editando.minutos + paso) })
+                        }
+                        className="flex h-12 min-w-[48px] items-center justify-center rounded-lg bg-noche-700 px-2 text-base font-bold text-crema-100 active:scale-95"
+                      >
+                        {paso === 1 ? <Plus className="h-5 w-5" aria-hidden /> : '+5'}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-2.5 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditando(null)}
+                      className="h-11 rounded-lg border border-noche-600 text-sm font-semibold text-crema-100 transition hover:bg-noche-800"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={guardando}
+                      onClick={guardarTiempo}
+                      className="h-11 rounded-lg bg-oro-500 text-sm font-bold text-noche-950 transition hover:bg-oro-400 disabled:opacity-50"
+                    >
+                      {guardando ? 'Guardando…' : 'Guardar'}
+                    </button>
+                  </div>
                 </div>
               )}
             </li>
