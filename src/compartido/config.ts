@@ -143,17 +143,18 @@ export const MOTIVOS_RECHAZO = [
  * esta inscrita, el NIT es el inscrito y las responsabilidades son las de la
  * casilla 53. Escribir aqui algo que el RUT no dice es declarar algo falso.
  *
- * Los valores actuales son DE EJEMPLO y hay que reemplazarlos con los reales
- * antes de emitir nada, incluso en pruebas.
+ * La razon social y el NIT son los reales (los dio el restaurante el
+ * 20-oct-2026). La direccion, el correo, el regimen y las responsabilidades
+ * siguen DE EJEMPLO hasta tener el RUT.
  */
 export const DATOS_FISCALES = {
-  razonSocial: 'Restaurante El Patio S.A.S.',
+  razonSocial: 'El Patio de la Carreta',
   /** Sin puntos ni digito de verificacion: asi entra al XML y al CUFE. */
-  nit: '901234567',
+  nit: '901950413',
   /** El digito de verificacion va en su propio campo. */
-  digitoVerificacion: '8',
+  digitoVerificacion: '2',
   /** El mismo NIT como se lee en el papel. */
-  nitCompleto: '901.234.567-8',
+  nitCompleto: '901.950.413-2',
   direccion: 'Calle 26 #31-2',
   municipio: 'Turbaco',
   departamento: 'Bolívar',
