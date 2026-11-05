@@ -263,9 +263,26 @@ public final class Dtos {
       String itemCartaId,
       int cantidad,
       List<ModificadorSeleccionado> modificadoresSeleccionados,
-      String notaCocina) {}
+      String notaCocina,
+      // Opcional: una comandera vieja, o recepcion, no lo manda y vale false.
+      Boolean paraLlevar) {
+
+    public NuevoItem(
+        String itemCartaId,
+        int cantidad,
+        List<ModificadorSeleccionado> modificadoresSeleccionados,
+        String notaCocina) {
+      this(itemCartaId, cantidad, modificadoresSeleccionados, notaCocina, null);
+    }
+
+    public boolean esParaLlevar() {
+      return Boolean.TRUE.equals(paraLlevar);
+    }
+  }
 
   public record PeticionAgregarItems(List<NuevoItem> items) {}
+
+  public record PeticionParaLlevar(boolean paraLlevar) {}
 
   public record PeticionCantidad(int cantidad) {}
 

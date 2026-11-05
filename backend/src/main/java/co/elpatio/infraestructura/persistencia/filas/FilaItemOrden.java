@@ -41,6 +41,9 @@ public class FilaItemOrden {
   @Column(name = "nota_cocina")
   private String notaCocina;
 
+  @Column(name = "para_llevar")
+  private boolean paraLlevar;
+
   private String estado;
   private String destino;
 
@@ -67,6 +70,7 @@ public class FilaItemOrden {
     item.setModificadoresSeleccionados(
         modificadoresSeleccionados == null ? new ArrayList<>() : new ArrayList<>(modificadoresSeleccionados));
     item.setNotaCocina(notaCocina);
+    item.setParaLlevar(paraLlevar);
     item.setEstado(EstadoItem.de(estado));
     item.setDestino(Destino.de(destino));
     item.setEnviadoEn(enviadoEn);
@@ -85,6 +89,7 @@ public class FilaItemOrden {
     fila.cantidad = item.getCantidad();
     fila.modificadoresSeleccionados = new ArrayList<>(item.getModificadoresSeleccionados());
     fila.notaCocina = item.getNotaCocina();
+    fila.paraLlevar = item.isParaLlevar();
     fila.estado = item.getEstado().codigo();
     fila.destino = item.getDestino().codigo();
     fila.enviadoEn = item.getEnviadoEn();

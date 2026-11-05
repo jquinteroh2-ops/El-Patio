@@ -299,6 +299,8 @@ export interface ItemOrden {
   modificadoresSeleccionados: ModificadorSeleccionado[]
   /** "sin sal", "para compartir", "termino tres cuartos". */
   notaCocina?: string
+  /** Se empaca: el cliente lo pidio en la mesa pero se lo lleva. */
+  paraLlevar?: boolean
   estado: EstadoItem
   destino: Destino
   enviadoEn?: string

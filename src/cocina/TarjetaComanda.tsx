@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, ChefHat, Clock, Minus, Pencil, Plus, StickyNote, UserRound } from 'lucide-react'
+import { Check, ChefHat, Clock, Minus, Pencil, Plus, ShoppingBag, StickyNote, UserRound } from 'lucide-react'
 import type { TurnoEnCocina } from '@/compartido/mockApi'
 import { formatoHora, minutosDesde } from '@/compartido/formato'
 import { colorPorAvance } from '@/compartido/estados'
@@ -195,6 +195,13 @@ export function TarjetaComanda({
                     {item.notaCocina && (
                       <span className="mt-0.5 block text-sm italic text-estado-proceso">
                         {item.notaCocina}
+                      </span>
+                    )}
+                    {/* Bien visible: se empaca, no se emplata. */}
+                    {item.paraLlevar && (
+                      <span className="mt-1 inline-flex items-center gap-1 rounded-md bg-oro-500 px-2 py-0.5 text-sm font-bold uppercase tracking-wide text-noche-950">
+                        <ShoppingBag className="h-4 w-4" aria-hidden />
+                        Para llevar
                       </span>
                     )}
                   </span>

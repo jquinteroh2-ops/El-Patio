@@ -121,6 +121,7 @@ export function ComprobanteTermico({
             </div>
           ))}
           {item.notaCocina && <div className="ticket-detalle">* {item.notaCocina}</div>}
+          {item.paraLlevar && <div className="ticket-detalle">* Para llevar</div>}
         </div>
       ))}
 

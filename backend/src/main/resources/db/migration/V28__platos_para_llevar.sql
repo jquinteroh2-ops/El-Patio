@@ -1,0 +1,11 @@
+-- Un plato pedido en una mesa puede ser para llevar.
+--
+-- Pasa a diario: un cliente se sienta, come, y antes de irse pide algo para la
+-- casa; o una mesa entera dice «esto es para llevar». Hasta ahora la mesera lo
+-- escribía en la nota de cocina, y cocina lo leía —o no— entre «sin cebolla» y
+-- «término medio». Ahora es una marca propia del plato: cocina la ve resaltada,
+-- sale en la comanda impresa y se sabe que va empacado.
+--
+-- Es del plato y no de la comanda: en la misma mesa unos platos se comen ahí y
+-- otros se van en bolsa.
+ALTER TABLE items_orden ADD COLUMN para_llevar BOOLEAN NOT NULL DEFAULT false;

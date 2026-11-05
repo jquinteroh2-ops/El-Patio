@@ -158,6 +158,22 @@ public class Orden {
       String notaCocina,
       String nuevoId,
       LocalDate dia) {
+    return agregarItem(carta, cantidad, modificadores, notaCocina, false, nuevoId, dia);
+  }
+
+  /**
+   * Igual, pero el plato puede ir para llevar. Un mismo plato para comer aqui y
+   * otro para llevar son dos lineas: no se acumulan, porque cocina empaca uno y
+   * sirve el otro.
+   */
+  public ItemOrden agregarItem(
+      ItemCarta carta,
+      int cantidad,
+      List<ModificadorSeleccionado> modificadores,
+      String notaCocina,
+      boolean paraLlevar,
+      String nuevoId,
+      LocalDate dia) {
     exigirEditable();
     if (!carta.isDisponible()) throw new ReglaDeNegocioError(carta.getNombre() + " está agotado");
 
@@ -169,6 +185,7 @@ public class Orden {
               && existente.getTurnoEnvio() == 0
               && existente.estaVigente()
               && Objects.equals(textoNota(existente.getNotaCocina()), textoNota(notaCocina))
+              && existente.isParaLlevar() == paraLlevar
               && existente.getModificadoresSeleccionados().equals(seleccion);
       if (acumulable) {
         existente.setCantidad(existente.getCantidad() + cantidad);
@@ -192,6 +209,7 @@ public class Orden {
     item.setCantidad(cantidad);
     item.setModificadoresSeleccionados(new ArrayList<>(seleccion));
     item.setNotaCocina(notaCocina);
+    item.setParaLlevar(paraLlevar);
     item.setEstado(EstadoItem.PENDIENTE);
     item.setDestino(carta.getDestino());
     item.setTurnoEnvio(0);
@@ -223,6 +241,28 @@ public class Orden {
     if (cantidad <= 0) items.removeIf(i -> i.getId().equals(itemId));
     else item.setCantidad(cantidad);
     sincronizarEstado();
+  }
+
+  /**
+   * Marca o desmarca un plato como para llevar.
+   *
+   * Se puede tambien despues de enviado: el cliente muchas veces lo decide
+   * cuando el plato ya esta en la plancha, y lo que cocina necesita es saberlo
+   * antes de emplatar. Un plato anulado no cambia.
+   */
+  public void marcarParaLlevar(String itemId, boolean paraLlevar) {
+    exigirEditable();
+    ItemOrden item = buscarItem(itemId);
+    if (!item.estaVigente()) {
+      throw new ReglaDeNegocioError("Ese producto está anulado");
+    }
+    item.setParaLlevar(paraLlevar);
+  }
+
+  /** Toda la mesa para llevar (o ya no): cada plato vigente de la comanda. */
+  public void marcarTodoParaLlevar(boolean paraLlevar) {
+    exigirEditable();
+    items.stream().filter(ItemOrden::estaVigente).forEach(i -> i.setParaLlevar(paraLlevar));
   }
 
   /** Anula un producto ya enviado. Queda registrado, nunca desaparece de la comanda. */

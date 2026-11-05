@@ -84,6 +84,11 @@ export function ComandaTermica({
           {item.notaCocina && (
             <div className="ticket-detalle ticket-negrita">** {item.notaCocina} **</div>
           )}
+          {/* Un plato suelto para llevar en una mesa; si es todo el pedido, ya
+              lo dice el encabezado y no se repite en cada línea. */}
+          {item.paraLlevar && !paraLlevar && (
+            <div className="ticket-detalle ticket-negrita">[ EMPACAR PARA LLEVAR ]</div>
+          )}
         </div>
       ))}
 

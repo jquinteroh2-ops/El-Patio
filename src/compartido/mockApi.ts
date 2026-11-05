@@ -458,6 +458,8 @@ export interface NuevoItem {
   cantidad: number
   modificadoresSeleccionados?: ModificadorSeleccionado[]
   notaCocina?: string
+  /** El cliente se lo lleva aunque lo pidio en la mesa. */
+  paraLlevar?: boolean
 }
 
 export async function agregarItems(ordenId: string, nuevos: NuevoItem[]): Promise<Orden> {
@@ -474,6 +476,30 @@ export async function cambiarCantidad(ordenId: string, itemId: string, cantidad:
     pedir<void>(`/api/comandera/ordenes/${ordenId}/items/${itemId}/cantidad`, {
       metodo: 'PATCH',
       cuerpo: { cantidad },
+    }),
+  )
+}
+
+/** Un plato de la mesa para llevar, o ya no. Cocina lo ve al instante. */
+export async function marcarParaLlevar(
+  ordenId: string,
+  itemId: string,
+  paraLlevar: boolean,
+): Promise<void> {
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/items/${itemId}/para-llevar`, {
+      metodo: 'PATCH',
+      cuerpo: { paraLlevar },
+    }),
+  )
+}
+
+/** Toda la mesa para llevar, o ya no. */
+export async function marcarTodoParaLlevar(ordenId: string, paraLlevar: boolean): Promise<void> {
+  return contra(() =>
+    pedir<void>(`/api/comandera/ordenes/${ordenId}/para-llevar`, {
+      metodo: 'PATCH',
+      cuerpo: { paraLlevar },
     }),
   )
 }

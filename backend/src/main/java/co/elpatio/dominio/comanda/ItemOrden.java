@@ -23,6 +23,8 @@ public class ItemOrden {
   private List<ModificadorSeleccionado> modificadoresSeleccionados = new ArrayList<>();
   /** "sin sal", "para compartir", "termino tres cuartos". */
   private String notaCocina;
+  /** Se empaca: el cliente se lo lleva aunque lo haya pedido en la mesa. */
+  private boolean paraLlevar;
   private EstadoItem estado = EstadoItem.PENDIENTE;
   private Destino destino;
   private Instant enviadoEn;
@@ -77,6 +79,8 @@ public class ItemOrden {
   }
   public String getNotaCocina() { return notaCocina; }
   public void setNotaCocina(String notaCocina) { this.notaCocina = notaCocina; }
+  public boolean isParaLlevar() { return paraLlevar; }
+  public void setParaLlevar(boolean paraLlevar) { this.paraLlevar = paraLlevar; }
   public EstadoItem getEstado() { return estado; }
   public void setEstado(EstadoItem estado) { this.estado = estado; }
   public Destino getDestino() { return destino; }

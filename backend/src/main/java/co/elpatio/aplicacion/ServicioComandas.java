@@ -142,6 +142,7 @@ public class ServicioComandas {
           nuevo.cantidad(),
           nuevo.modificadoresSeleccionados(),
           nuevo.notaCocina(),
+          nuevo.esParaLlevar(),
           ids.nuevo("io"),
           reloj.hoy());
     }
@@ -157,6 +158,19 @@ public class ServicioComandas {
     orden.cambiarCantidad(itemId, cantidad);
     ordenes.guardar(orden);
     eventos.publicar(List.of("ordenes", "mesas"));
+  }
+
+  /**
+   * Un plato (o toda la mesa, con `itemId` nulo) para llevar, o ya no.
+   * Avisa a cocina: si el plato ya se envio, tiene que verlo antes de emplatar.
+   */
+  @Transactional
+  public void marcarParaLlevar(String ordenId, String itemId, boolean paraLlevar) {
+    Orden orden = exigirOrden(ordenId);
+    if (itemId == null) orden.marcarTodoParaLlevar(paraLlevar);
+    else orden.marcarParaLlevar(itemId, paraLlevar);
+    ordenes.guardar(orden);
+    eventos.publicar(List.of("ordenes", "mesas", "cocina"));
   }
 
   @Transactional

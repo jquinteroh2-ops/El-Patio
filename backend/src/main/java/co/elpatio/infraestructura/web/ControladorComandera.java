@@ -90,6 +90,24 @@ public class ControladorComandera {
     return ResponseEntity.noContent().build();
   }
 
+  /** Un plato para llevar, o ya no. Lo usa la mesera cuando el cliente lo pide en la mesa. */
+  @PatchMapping("/ordenes/{ordenId}/items/{itemId}/para-llevar")
+  public ResponseEntity<Void> marcarParaLlevar(
+      @PathVariable String ordenId,
+      @PathVariable String itemId,
+      @RequestBody Dtos.PeticionParaLlevar peticion) {
+    comandas.marcarParaLlevar(ordenId, itemId, peticion.paraLlevar());
+    return ResponseEntity.noContent().build();
+  }
+
+  /** Toda la mesa para llevar, o ya no. */
+  @PatchMapping("/ordenes/{ordenId}/para-llevar")
+  public ResponseEntity<Void> marcarTodoParaLlevar(
+      @PathVariable String ordenId, @RequestBody Dtos.PeticionParaLlevar peticion) {
+    comandas.marcarParaLlevar(ordenId, null, peticion.paraLlevar());
+    return ResponseEntity.noContent().build();
+  }
+
   /** Equivale a `quitarItem(ordenId, itemId)`, que en mockApi era cantidad 0. */
   @DeleteMapping("/ordenes/{ordenId}/items/{itemId}")
   public ResponseEntity<Void> quitarItem(@PathVariable String ordenId, @PathVariable String itemId) {

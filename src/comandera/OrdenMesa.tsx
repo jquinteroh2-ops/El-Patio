@@ -13,6 +13,7 @@ import {
   Plus,
   Receipt,
   Send,
+  ShoppingBag,
   StickyNote,
   Tag,
   UtensilsCrossed,
@@ -229,6 +230,23 @@ export default function OrdenMesa() {
       return 'Todo entregado. Ya no aparece en cocina.'
     })
 
+  // Para llevar: el cliente lo pide en la mesa pero se lo lleva. Cocina lo ve
+  // marcado al instante, aunque el plato ya esté en la plancha.
+  const cambiarParaLlevar = (item: ItemOrden, paraLlevar: boolean) =>
+    ejecutar(async () => {
+      await api.marcarParaLlevar(orden.id, item.id, paraLlevar)
+      return paraLlevar ? `${item.nombre} va para llevar` : `${item.nombre} ya no es para llevar`
+    })
+
+  const vigentes = orden.items.filter((i) => i.estado !== 'anulado')
+  const todoParaLlevar = vigentes.length > 0 && vigentes.every((i) => i.paraLlevar)
+
+  const cambiarTodoParaLlevar = () =>
+    ejecutar(async () => {
+      await api.marcarTodoParaLlevar(orden.id, !todoParaLlevar)
+      return todoParaLlevar ? 'La mesa ya no es para llevar' : 'Toda la mesa va para llevar'
+    })
+
   const liberar = () =>
     ejecutar(async () => {
       if (!motivo.trim()) throw new Error('Escribe por qué se desocupa la mesa')
@@ -341,7 +359,7 @@ export default function OrdenMesa() {
                       {formatoCOP(precioItem(item))}
                     </span>
                   </div>
-                  <div className="mt-2">
+                  <div className="mt-2 flex items-center justify-between gap-2">
                     <Contador
                       valor={item.cantidad}
                       compacto
@@ -352,6 +370,11 @@ export default function OrdenMesa() {
                           return v === 0 ? 'Producto retirado' : 'Cantidad actualizada'
                         })
                       }
+                    />
+                    <BotonParaLlevar
+                      activo={!!item.paraLlevar}
+                      deshabilitado={ocupado}
+                      onCambiar={(v) => cambiarParaLlevar(item, v)}
                     />
                   </div>
                 </li>
@@ -375,6 +398,7 @@ export default function OrdenMesa() {
                 <li key={item.id} className="flex justify-between gap-2 text-sm text-crema-100">
                   <span className="min-w-0 truncate">
                     {item.cantidad} × {item.nombre}
+                    {item.paraLlevar && <span className="text-oro-300"> · para llevar</span>}
                   </span>
                   <span className="shrink-0 tabular-nums text-noche-400">
                     {formatoCOP(precioItem(item))}
@@ -519,7 +543,22 @@ export default function OrdenMesa() {
                             Entregado
                           </button>
                         )}
+                      {item.estado === 'servido' && item.paraLlevar && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-oro-300">
+                          <ShoppingBag className="h-3.5 w-3.5" aria-hidden />
+                          Para llevar
+                        </span>
+                      )}
+                      {/* Para llevar se puede marcar aun enviado: cocina lo ve antes
+                          de emplatar. Va en la misma fila que anular para que el
+                          plato no crezca hacia abajo. */}
                       {item.estado !== 'anulado' && item.estado !== 'servido' && (
+                        <div className="flex items-center gap-1">
+                        <BotonParaLlevar
+                          activo={!!item.paraLlevar}
+                          deshabilitado={ocupado}
+                          onCambiar={(v) => cambiarParaLlevar(item, v)}
+                        />
                         <button
                           type="button"
                           onClick={() => {
@@ -532,6 +571,7 @@ export default function OrdenMesa() {
                         >
                           <Ban className="h-3.5 w-3.5" aria-hidden />
                         </button>
+                        </div>
                       )}
                     </div>
                   </li>
@@ -662,6 +702,18 @@ export default function OrdenMesa() {
           >
             {orden.estado === 'cuenta_pedida' ? 'Cuenta pedida' : 'Pedir la cuenta'}
           </Boton>
+          {/* «Esto es para llevar»: toda la mesa de un toque, sin ir plato por plato. */}
+          {vigentes.length > 0 && (
+            <Boton
+              className="col-span-2"
+              variante={todoParaLlevar ? 'principal' : 'secundario'}
+              icono={<ShoppingBag className="h-4 w-4" />}
+              disabled={ocupado}
+              onClick={cambiarTodoParaLlevar}
+            >
+              {todoParaLlevar ? 'Toda la mesa va para llevar · quitar' : 'Todo para llevar'}
+            </Boton>
+          )}
           {sinConsumo && (
             <Boton
               className="col-span-2"
@@ -900,5 +952,39 @@ export default function OrdenMesa() {
         </div>
       </HojaInferior>
     </div>
+  )
+}
+
+/**
+ * «Para llevar» de un plato: un toque lo marca y otro lo quita.
+ *
+ * Es un interruptor y no una casilla: con la bandeja en la mano se toca con el
+ * pulgar, y el dorado relleno se lee de lejos como «este va en bolsa».
+ */
+function BotonParaLlevar({
+  activo,
+  deshabilitado,
+  onCambiar,
+}: {
+  activo: boolean
+  deshabilitado?: boolean
+  onCambiar: (paraLlevar: boolean) => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={activo}
+      disabled={deshabilitado}
+      onClick={() => onCambiar(!activo)}
+      className={`flex min-h-[40px] items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition active:scale-95 disabled:opacity-50 ${
+        activo
+          ? 'bg-oro-500 text-noche-950'
+          : 'border border-noche-600 text-noche-300 hover:border-oro-400 hover:text-oro-300'
+      }`}
+    >
+      <ShoppingBag className="h-4 w-4" aria-hidden />
+      Para llevar
+      {activo && <Check className="h-4 w-4" aria-hidden />}
+    </button>
   )
 }
