@@ -43,6 +43,7 @@ CSS_EXTRA = """
   .ficha td:first-child { width: 32%; font-weight: 700; color: var(--cobre); font-size: 8.5pt; letter-spacing: .04em; text-transform: uppercase; background: var(--crema-suave); }
   .renglon { border-bottom: 1px solid var(--gris); height: 9mm; }
   td.vacia { height: 9mm; }
+  td a { color: var(--cobre); text-decoration: none; overflow-wrap: anywhere; }
   .portada img { height: 150px; }
   #flujo { display: none; }
 """
@@ -109,6 +110,11 @@ window.addEventListener('load', function () {
 
 def esc(t):
     return html.escape(t, quote=False)
+
+
+def celda(t):
+    """Texto de una celda, con las direcciones web como enlaces."""
+    return re.sub(r"https?://\S+", lambda m: f'<a href="{m.group(0)}">{m.group(0)}</a>', esc(t))
 
 
 def runs_html(p):
@@ -201,10 +207,12 @@ def documento(path):
                 continue
             cab = [esc(c.text.strip()) for c in filas[0].cells]
             anchos = {2: ["34%", None], 3: ["22%", "30%", None]}.get(len(cab), [None] * len(cab))
+            if cab[-1] == "Dónde se entra":  # la columna de enlaces necesita espacio
+                anchos = ["25%", "25%", None]
             th = "".join(f'<th style="width:{w}">{c}</th>' if w else f"<th>{c}</th>" for c, w in zip(cab, anchos))
             cuerpo = "".join(
                 "<tr>" + "".join(
-                    f'<td class="fuerte">{esc(c.text.strip())}</td>' if i == 0 else f"<td>{esc(c.text.strip())}</td>"
+                    f'<td class="fuerte">{esc(c.text.strip())}</td>' if i == 0 else f"<td>{celda(c.text.strip())}</td>"
                     for i, c in enumerate(r.cells)) + "</tr>"
                 for r in filas[1:])
             salida.append(f"<table><thead><tr>{th}</tr></thead><tbody>{cuerpo}</tbody></table>")
@@ -266,6 +274,14 @@ def acta():
                     f'<td class="fuerte">{esc(c)}</td>' if i == 0 else
                     (f'<td class="vacia"></td>' if (not c or "___" in c) else f"<td>{esc(c)}</td>")
                     for i, c in enumerate(celdas)) + "</tr>"
+            out.append(f"<table><thead><tr>{th}</tr></thead><tbody>{filas}</tbody></table>")
+        if t.startswith("Para entrar a cada servicio"):
+            tb = tablas[3]
+            th = "".join(f'<th style="width:{w}">{esc(c.text.strip())}</th>' if w else f"<th>{esc(c.text.strip())}</th>"
+                         for c, w in zip(tb.rows[0].cells, ["25%", "25%", None]))
+            filas = "".join("<tr>" + "".join(
+                f'<td class="fuerte">{esc(c.text.strip())}</td>' if i == 0 else f"<td>{celda(c.text.strip())}</td>"
+                for i, c in enumerate(r.cells)) + "</tr>" for r in tb.rows[1:])
             out.append(f"<table><thead><tr>{th}</tr></thead><tbody>{filas}</tbody></table>")
     cerrar()
     return cab, out, "Acta de entrega"

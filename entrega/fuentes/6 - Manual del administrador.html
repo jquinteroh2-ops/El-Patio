@@ -89,6 +89,7 @@
   .ficha td:first-child { width: 32%; font-weight: 700; color: var(--cobre); font-size: 8.5pt; letter-spacing: .04em; text-transform: uppercase; background: var(--crema-suave); }
   .renglon { border-bottom: 1px solid var(--gris); height: 9mm; }
   td.vacia { height: 9mm; }
+  td a { color: var(--cobre); text-decoration: none; overflow-wrap: anywhere; }
   .portada img { height: 150px; }
   #flujo { display: none; }
 </style>
@@ -113,6 +114,9 @@
 <p class="numero">03</p>
 <h2>Personal y accesos</h2>
 <ul class="acuerdos"><li>Una cuenta por persona, con su rol. No se comparten: el sistema anota quién abrió cada mesa, quién aceptó cada pedido y quién anuló qué.</li><li>Las cuentas se desactivan, no se borran. Un mesero que se fue deja sus ventas en el histórico.</li><li>Los seis roles son: mesero, cocina, recepción, repartidor, cajero y administrador.</li><li><b>Cambiar una clave.</b> En /admin/configuracion, sección Personal, toque el nombre de la persona, escriba la clave nueva —mínimo 4 caracteres— y guarde. La clave nunca se muestra: si alguien la olvida, se le pone una nueva.</li><li><b>La cuenta del dueño es la misma en los dos restaurantes.</b> Cambiar su clave en El Patio la cambia también en La Carreta. Con el selector de arriba del panel se pasa al panel del otro restaurante sin volver a escribirla.</li></ul>
+<h3>Dónde se entra</h3>
+<p>Los demás enlaces, como el dominio y Google, están en el documento técnico de entrega. Las claves van en el documento de contraseñas, que se entrega aparte.</p>
+<table><thead><tr><th style="width:25%">Qué</th><th style="width:25%">Con qué cuenta</th><th>Dónde se entra</th></tr></thead><tbody><tr><td class="fuerte">Panel y pantallas del personal</td><td>Usuario y clave de cada persona.</td><td><a href="https://www.restauranteelpatio.com/acceso">https://www.restauranteelpatio.com/acceso</a></td></tr><tr><td class="fuerte">Zoho Mail: leer el correo</td><td>Cada buzón con su correo y su clave.</td><td><a href="https://mail.zoho.com">https://mail.zoho.com</a></td></tr><tr><td class="fuerte">Zoho Mail: administrar buzones</td><td>La cuenta administradora de Zoho.</td><td><a href="https://mailadmin.zoho.com">https://mailadmin.zoho.com</a></td></tr><tr><td class="fuerte">Railway: entrar</td><td>La cuenta del restaurante.</td><td><a href="https://railway.com/login">https://railway.com/login</a></td></tr><tr><td class="fuerte">Railway: proyecto «La Carreta y El Patio»</td><td>La misma cuenta. Ahí están backend, frontend y Postgres.</td><td><a href="https://railway.com/project/21f7d56a-98e9-4157-91d7-745a4c2955f7">https://railway.com/project/21f7d56a-98e9-4157-91d7-745a4c2955f7</a></td></tr></tbody></table>
 <p class="numero">04</p>
 <h2>Las cifras</h2>
 <ul class="acuerdos"><li><b>Ventas.</b> El histórico completo, con el comprobante de cada una para reimprimir.</li><li><b>Cierre de caja.</b> Los cierres de cada turno, con las cifras fiscales.</li><li><b>Reportes.</b> Exportables a Excel y PDF por rango de fechas.</li></ul>
