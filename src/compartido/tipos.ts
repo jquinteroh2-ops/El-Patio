@@ -10,6 +10,8 @@
 export type Rol =
   | 'mesero'
   | 'cocina'
+  /** Prepara las bebidas: solo ve la pantalla de barra. */
+  | 'bar'
   | 'recepcion'
   /** Sale a la calle con el pedido y confirma la entrega desde su telefono. */
   | 'repartidor'

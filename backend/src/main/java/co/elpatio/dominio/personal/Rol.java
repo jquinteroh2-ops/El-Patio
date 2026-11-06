@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Rol {
   MESERO,
   COCINA,
+  /** Prepara las bebidas: solo ve y despacha la pantalla de barra. */
+  BAR,
   /** Recibe y gestiona lo que entra por domicilio y para llevar. */
   RECEPCION,
   /** Sale a la calle con el pedido y confirma la entrega desde su telefono. */

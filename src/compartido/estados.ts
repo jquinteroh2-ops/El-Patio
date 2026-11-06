@@ -62,6 +62,7 @@ export const TONO_ITEM: Record<EstadoItem, 'neutro' | 'listo' | 'proceso' | 'dem
 export const NOMBRE_ROL: Record<Rol, string> = {
   mesero: 'Mesero',
   cocina: 'Cocina',
+  bar: 'Bar',
   recepcion: 'Recepción',
   repartidor: 'Repartidor',
   cajero: 'Cajero',

@@ -163,7 +163,7 @@ public class ConfiguracionSeguridad {
                     // lo unico que el @PreAuthorize de la clase le deja abrir.
                     .requestMatchers("/api/comandera/**")
                         .hasAnyRole("MESERO", "RECEPCION", "CAJERO", "ADMINISTRADOR")
-                    .requestMatchers("/api/cocina/**").hasAnyRole("COCINA", "ADMINISTRADOR")
+                    .requestMatchers("/api/cocina/**").hasAnyRole("COCINA", "BAR", "ADMINISTRADOR")
                     .requestMatchers("/api/cobro/**").hasAnyRole("MESERO", "CAJERO", "ADMINISTRADOR")
                     .requestMatchers("/api/caja/**").hasAnyRole("CAJERO", "ADMINISTRADOR")
                     .requestMatchers("/api/reportes/**").hasRole("ADMINISTRADOR")

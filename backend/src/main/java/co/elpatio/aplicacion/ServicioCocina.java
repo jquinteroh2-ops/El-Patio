@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,8 +108,13 @@ public class ServicioCocina {
   }
 
   @Transactional
-  public void cambiarEstadoItem(String ordenId, String itemId, EstadoItem estado) {
+  public void cambiarEstadoItem(
+      String ordenId, String itemId, EstadoItem estado, Destino permitido) {
     Orden orden = exigirOrden(ordenId);
+    // Cocina no despacha bebidas y la barra no despacha platos.
+    if (permitido != null && orden.buscarItem(itemId).getDestino() != permitido) {
+      throw new AccessDeniedException("Ese producto se despacha desde otra pantalla");
+    }
     orden.cambiarEstadoItem(itemId, estado, reloj.ahora());
     ordenes.guardar(orden);
     eventos.publicar(List.of("ordenes", "cocina", "mesas"));

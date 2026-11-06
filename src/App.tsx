@@ -170,7 +170,7 @@ export default function App() {
               <Route
                 path="/cocina/bar"
                 element={
-                  <GuardaRuta roles={['cocina', 'administrador']}>
+                  <GuardaRuta roles={['bar', 'administrador']}>
                     <PantallaCocina destino="bar" />
                   </GuardaRuta>
                 }

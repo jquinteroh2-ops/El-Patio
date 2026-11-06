@@ -74,7 +74,7 @@ public class ControladorCarta {
 
   /** Equivale a `cambiarDisponibilidad(itemId, disponible)`. */
   @PatchMapping("/{itemId}/disponibilidad")
-  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'COCINA')")
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'COCINA', 'BAR')")
   public ResponseEntity<Void> cambiarDisponibilidad(
       @PathVariable String itemId, @RequestBody Dtos.CambioDisponibilidad cambio) {
     servicio.cambiarDisponibilidad(itemId, cambio.disponible());

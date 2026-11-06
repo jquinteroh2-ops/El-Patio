@@ -1,5 +1,6 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { MotionConfig } from 'motion/react'
 import {
   ArrowRight,
   Bike,
@@ -20,8 +21,16 @@ import * as api from '@/compartido/mockApi'
 import type { Publicacion } from '@/compartido/tipos'
 import { enlaceWhatsApp } from '@/compartido/whatsapp'
 import { enlaceMapaEmbebido, enlaceRutaHacia } from './ubicacion'
-import { Filete, Ornamento } from './Ornamento'
+import { Ornamento } from './Ornamento'
 import Institucional from './Institucional'
+import {
+  Cinta,
+  ElLugar,
+  FranjaParallax,
+  PlatosEnMovimiento,
+  PortadaViva,
+  TarjetaFidelidad,
+} from './InicioVivo'
 
 const SALUDO = `Hola, quisiera reservar una mesa en ${RESTAURANTE.nombreCompleto}.`
 
@@ -118,139 +127,85 @@ export default function Inicio() {
   const anuncios = publicaciones.filter((p) => p.tipo !== 'galeria')
   const galeria = publicaciones.filter((p) => p.tipo === 'galeria' && p.imagen)
 
-  return (
+  const acciones = (
     <>
+      <TarjetaDeAccion
+        a="/carta"
+        icono={Bike}
+        rotulo="Domicilio o para llevar"
+        titulo="Hacer un pedido"
+        texto="Escoja en la carta y se lo llevamos."
+      />
+      <TarjetaDeAccion
+        a="/reservar"
+        icono={CalendarDays}
+        rotulo="Su mesa lista"
+        titulo="Reservar mesa"
+        texto="Le confirmamos por WhatsApp."
+        demoraIcono
+      />
+      <a
+        href={whatsapp}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="boton-relleno group flex min-h-[52px] items-center justify-between rounded-2xl border border-crema-100/25 bg-onix-950/40 px-5 text-xs font-semibold uppercase tracking-[0.2em] text-crema-100 backdrop-blur-sm sm:px-7"
+      >
+        <span className="flex items-center gap-3">
+          <MessageCircle className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+          Escríbanos por WhatsApp
+        </span>
+        <ArrowRight className="flecha h-4 w-4" strokeWidth={1.5} aria-hidden />
+      </a>
+    </>
+  )
+
+  // Franja de datos prácticos, al pie de la portada.
+  const franja = (
+    <div className="border-y border-oro-500/15 bg-onix-950/80 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-5 text-sm text-crema-100/70 sm:flex-row sm:items-center sm:justify-center sm:gap-10 sm:px-6">
+        {ficha.horario[0] && (
+          <span className="flex items-center gap-2">
+            <Clock className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
+            {ficha.horario[0].dias}, {ficha.horario[0].horas}
+          </span>
+        )}
+        <span className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
+          {ficha.direccion}, {ficha.ciudad}
+        </span>
+        <a
+          href={whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="subrayado flex items-center gap-2 self-center transition hover:text-oro-300"
+        >
+          <MessageCircle className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
+          {ficha.telefono}
+        </a>
+      </div>
+    </div>
+  )
+
+  return (
+    // reducedMotion="user": si el teléfono pide menos movimiento, se respeta.
+    <MotionConfig reducedMotion="user">
       {/* ---------------- Portada ----------------
+          Fotos del local que se funden y se acercan despacio, el nombre que
+          sube letra por letra y, al lado, lo que la gente viene a hacer:
+          pedir y reservar. Las fotos están en public/img/inicio/. */}
+      <PortadaViva
+        ciudad={ficha.ciudad}
+        lema="Donde la fusión gourmet cobra vida"
+        texto="Un restaurante de mantel para las noches que importan: cumpleaños, aniversarios, cierres de negocio y esas cenas familiares que terminan tarde porque nadie quiere levantarse de la mesa."
+        acciones={acciones}
+        franja={franja}
+      />
 
-          El nombre a la izquierda y, al lado, lo que la gente viene a hacer:
-          PEDIR y RESERVAR. Van dentro de la portada y no más abajo porque son
-          el motivo de casi todas las visitas; nadie debería tener que bajar
-          para encontrarlos. En el celular quedan justo debajo del nombre, en
-          la primera pantalla.
+      <Cinta />
 
-          Todo entra en cadena: el ornamento se dibuja, el nombre aparece letra
-          por letra, luego el lema, el filete y las tarjetas. Detrás, dos luces
-          cálidas muy tenues se desplazan despacio, como las de un salón de
-          noche. */}
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="luz-dorada pointer-events-none absolute -left-40 -top-48 h-[38rem] w-[38rem]"
-        />
-        <div
-          aria-hidden
-          className="luz-dorada a-destiempo pointer-events-none absolute -bottom-56 -right-40 h-[32rem] w-[32rem] opacity-70"
-        />
+      <PlatosEnMovimiento />
 
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-5 pb-16 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16 lg:pb-24 lg:pt-20">
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
-            {/* El arco del dibujo empieza a un cuarto de su ancho: alineado a la
-                izquierda se vería sangrado respecto al texto, y el margen
-                negativo lo pone a ras. */}
-            <Ornamento className="ornamento-vivo mb-7 h-16 w-28 text-oro-400/70 lg:-ml-7" />
-
-            <p className="subir text-[0.7rem] uppercase tracking-[0.4em] text-oro-400">
-              {ficha.ciudad}
-            </p>
-
-            {/* El nombre se escribe letra por letra. Las letras sueltas van
-                ocultas a los lectores de pantalla, que leen el aria-label
-                entero en vez de «E, L, P…». El espacio se queda en su sitio
-                con un ancho propio: un inline-block vacío se encogería a cero. */}
-            <h1
-              aria-label="El Patio"
-              className="mt-5 font-marca text-5xl font-normal tracking-[0.12em] text-crema-100 sm:text-7xl"
-            >
-              {[...'EL PATIO'].map((letra, i) => (
-                <span
-                  key={i}
-                  aria-hidden
-                  className={letra === ' ' ? 'inline-block w-[0.35em]' : 'letra'}
-                  style={{ '--i': i } as CSSProperties}
-                >
-                  {letra === ' ' ? ' ' : letra}
-                </span>
-              ))}
-            </h1>
-
-            <p className="subir demora-4 mt-6 font-titulo text-2xl font-light italic leading-snug text-crema-200 sm:text-3xl">
-              Donde la fusión gourmet cobra vida
-            </p>
-
-            <Filete className="subir demora-4 mt-8 w-40 text-oro-400" />
-
-            <p className="subir demora-5 mt-8 max-w-md text-base leading-relaxed text-crema-100/70">
-              Un restaurante de mantel para las noches que importan: cumpleaños, aniversarios,
-              cierres de negocio y esas cenas familiares que terminan tarde porque nadie quiere
-              levantarse de la mesa.
-            </p>
-          </div>
-
-          {/* ---- Lo que se viene a hacer ---- */}
-          <div className="grid gap-3">
-            <TarjetaDeAccion
-              a="/carta"
-              icono={Bike}
-              rotulo="Domicilio o para llevar"
-              titulo="Hacer un pedido"
-              texto="Escoja en la carta y se lo llevamos."
-              className="subir demora-3"
-            />
-            <TarjetaDeAccion
-              a="/reservar"
-              icono={CalendarDays}
-              rotulo="Su mesa lista"
-              titulo="Reservar mesa"
-              texto="Le confirmamos por WhatsApp."
-              className="subir demora-4"
-              demoraIcono
-            />
-
-            <a
-              href={whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="subir demora-5 boton-relleno group flex min-h-[52px] items-center justify-between rounded-2xl border border-crema-100/20 px-5 text-xs font-semibold uppercase tracking-[0.2em] text-crema-100 sm:px-7"
-            >
-              <span className="flex items-center gap-3">
-                <MessageCircle className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-                Escríbanos por WhatsApp
-              </span>
-              <ArrowRight className="flecha h-4 w-4" strokeWidth={1.5} aria-hidden />
-            </a>
-          </div>
-        </div>
-
-        {/* Franja de datos prácticos */}
-        <div className="subir demora-6 relative border-y border-oro-500/15 bg-onix-900/60">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-5 text-sm text-crema-100/70 sm:flex-row sm:items-center sm:justify-center sm:gap-10 sm:px-6">
-            {/*
-              La primera franja del horario, no una frase escrita a mano: si
-              alguien corrige el horario en el panel y esta linea se quedara
-              fija, la portada anunciaria unas horas y la seccion de abajo otras.
-            */}
-            {ficha.horario[0] && (
-              <span className="flex items-center gap-2">
-                <Clock className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-                {ficha.horario[0].dias}, {ficha.horario[0].horas}
-              </span>
-            )}
-            <span className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              {ficha.direccion}, {ficha.ciudad}
-            </span>
-            <a
-              href={whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="subrayado flex items-center gap-2 self-center transition hover:text-oro-300"
-            >
-              <MessageCircle className="h-4 w-4 shrink-0 text-oro-400" aria-hidden />
-              {ficha.telefono}
-            </a>
-          </div>
-        </div>
-      </section>
+      <TarjetaFidelidad whatsapp={ficha.whatsapp} />
 
       {/* ---------------- Lo que esta pasando ----------------
           Promociones y eventos. Solo aparece si hay algo que anunciar: una
@@ -357,20 +312,9 @@ export default function Inicio() {
       )}
 
       {/* ---------------- El lugar ---------------- */}
-      <section className="revelar mx-auto max-w-3xl px-5 py-20 text-center">
-        <Filete className="mx-auto mb-8 w-32 text-oro-400" />
-        <p className="text-[0.7rem] uppercase tracking-[0.35em] text-oro-400">El lugar</p>
-        <h2 className="mt-4 font-titulo text-4xl font-light leading-tight text-crema-100 sm:text-5xl">
-          Mantel largo, aire fresco
-          <br />
-          <span className="italic text-oro-300">y tiempo para conversar</span>
-        </h2>
-        <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-crema-100/70">
-          El Patio nació para las celebraciones. Salón climatizado, terraza para las noches
-          templadas de Turbaco y comedores privados cuando la ocasión pide intimidad. Porciones
-          generosas, servicio atento y una carta pensada para compartir.
-        </p>
-      </section>
+      <ElLugar />
+
+      <FranjaParallax />
 
       {/* ---------------- Quiénes somos ----------------
           Va después de «el lugar» y antes de los distintivos: quien llega al
@@ -519,6 +463,6 @@ export default function Inicio() {
           </div>
         </div>
       </section>
-    </>
+    </MotionConfig>
   )
 }
