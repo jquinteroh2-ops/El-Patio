@@ -1,0 +1,51 @@
+# Publica el sitio en GitHub Pages (https://jquinteroh2-ops.github.io/El-Patio/).
+#
+# El servidor no vive aqui: corre en el computador del restaurante detras de un
+# tunel. Su direccion actual esta en la rama `pages-servidor` (servidor.json),
+# que actualiza iniciar-publico.bat cada vez que se enciende.
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main, pages-servidor]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Direccion del servidor
+        run: git show origin/pages-servidor:servidor.json > public/servidor.json || echo '{}' > public/servidor.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_BASE: /El-Patio/
+          VITE_FACTURACION_INTERNA_HABILITADA: 'false'
+      # Las rutas internas (/El-Patio/carta, /El-Patio/acceso...) no existen como
+      # archivos: Pages responde con 404.html y la app resuelve la ruta.
+      - run: cp dist/index.html dist/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: despliegue
+        uses: actions/deploy-pages@v4

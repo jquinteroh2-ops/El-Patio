@@ -18,7 +18,7 @@ import { enlaceWhatsApp } from '@/compartido/whatsapp'
  * foto con el MISMO nombre de archivo en esa carpeta: no hay que tocar código.
  */
 
-const F = '/img/inicio/'
+const F = `${import.meta.env.BASE_URL}img/inicio/`
 const SUAVE = [0.16, 1, 0.3, 1] as const
 
 // ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ const SUAVE = [0.16, 1, 0.3, 1] as const
  * graban con el celular: en el teléfono se ve uno a pantalla completa y en el
  * computador los tres lado a lado, como un tríptico.
  */
-const V = '/video/'
+const V = `${import.meta.env.BASE_URL}video/`
 const VIDEOS = [
   { nombre: 'portada-patio', pie: 'El patio' },
   { nombre: 'portada-salon', pie: 'El salón' },
@@ -492,7 +492,7 @@ function Tarjeta({ nombre }: { nombre: string }) {
           animate={{ left: '140%' }}
           transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
         />
-        <img src="/emblema.png" alt="" aria-hidden className="pointer-events-none absolute -right-10 -top-10 w-48 opacity-[0.07]" />
+        <img src={`${import.meta.env.BASE_URL}emblema.png`} alt="" aria-hidden className="pointer-events-none absolute -right-10 -top-10 w-48 opacity-[0.07]" />
 
         <div className="relative flex h-full flex-col justify-between">
           <div className="flex items-start justify-between">

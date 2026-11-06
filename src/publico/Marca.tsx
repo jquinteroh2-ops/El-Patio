@@ -41,7 +41,7 @@ export function Emblema({ tamano = 34, className = '' }: Props) {
         style={{ width: tamano * 1.5, height: tamano * 1.5 }}
       />
       <img
-        src="/emblema.png"
+        src={`${import.meta.env.BASE_URL}emblema.png`}
         alt=""
         /*
          * `alt` vacío y `aria-hidden`: el nombre «EL PATIO» va como texto justo

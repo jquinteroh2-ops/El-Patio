@@ -313,7 +313,12 @@ const sinBarraFinal = (url: string): string => url.replace(/\/+$/, '')
  * local; en Railway la define la variable de entorno del servicio del frontend,
  * porque el dominio cambia entre entornos y el codigo no puede saberlo.
  */
-export const URL_API = sinBarraFinal(import.meta.env.VITE_URL_API ?? 'http://localhost:8080')
+export const URL_API = sinBarraFinal(
+  // En GitHub Pages el servidor cambia de dirección: main.tsx la lee de servidor.json.
+  (globalThis as { __ELPATIO_API__?: string }).__ELPATIO_API__ ??
+    import.meta.env.VITE_URL_API ??
+    'http://localhost:8080',
+)
 
 /**
  * URL del WebSocket.

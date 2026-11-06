@@ -100,7 +100,7 @@ export default function App() {
   return (
     // `v7_startTransition` hace que, al navegar a una pantalla del personal que
     // todavia no se pinto, se quede la anterior en vez de parpadear el cargador.
-    <BrowserRouter future={{ v7_startTransition: true }}>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')} future={{ v7_startTransition: true }}>
       {/* Ajusta titulo, descripcion y canonica segun la ruta. No pinta nada. */}
       <MetaDeRuta />
       {/* Hace subir flotando lo que lleve la clase `revelar`. Tampoco pinta

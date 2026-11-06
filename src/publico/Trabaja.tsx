@@ -287,7 +287,7 @@ export default function Trabaja() {
             Autorizo a {RESTAURANTE.nombreCompleto} el tratamiento de mis datos personales
             con fines de selección de personal, conforme a la Ley 1581 de 2012 y a su{' '}
             <a
-              href="/politica-de-datos"
+              href={`${import.meta.env.BASE_URL}politica-de-datos`}
               className="text-oro-300 underline underline-offset-2 hover:text-oro-200"
             >
               política de tratamiento de datos

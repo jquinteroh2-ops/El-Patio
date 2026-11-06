@@ -14,6 +14,8 @@ import { fileURLToPath, URL } from 'node:url'
 const sello = Date.now().toString(36)
 
 export default defineConfig({
+  // En GitHub Pages el sitio vive en /El-Patio/; en Railway y en local, en la raiz.
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react()],
   define: {
     __VERSION_APP__: JSON.stringify(sello),
