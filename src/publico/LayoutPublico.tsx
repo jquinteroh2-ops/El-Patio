@@ -124,7 +124,7 @@ export default function LayoutPublico() {
         />
 
         <div className="mx-auto max-w-6xl px-5 pb-12 pt-14 sm:px-6">
-          <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.2fr_2fr]">
             {/* ---------- Marca ---------- */}
             <div>
               <Link
@@ -175,7 +175,7 @@ export default function LayoutPublico() {
               </div>
             </div>
 
-            <div className="grid gap-10 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-10 sm:grid-cols-3">
               {/* ---------- Visítanos ---------- */}
               <div>
                 <TituloPie>Visítanos</TituloPie>

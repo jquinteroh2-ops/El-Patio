@@ -163,7 +163,7 @@ export default function Caja() {
 
   if (cargando) {
     return (
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,20rem)_1fr]">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,20rem)_1fr]">
         <Esqueleto className="h-64 rounded-2xl" />
         <Esqueleto className="h-96 rounded-2xl" />
       </div>
@@ -212,7 +212,7 @@ export default function Caja() {
   }
 
   return (
-    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,20rem)_1fr]">
+    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,20rem)_1fr]">
       <aside className="space-y-4">
         <section>
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-estado-proceso">

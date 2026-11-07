@@ -164,7 +164,7 @@ export default function Configuracion() {
   }))
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {/* ---------- Impuesto ---------- */}
       <section className="revelar-corto rounded-2xl border border-noche-800 bg-noche-900 p-4">
         <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-crema-100">

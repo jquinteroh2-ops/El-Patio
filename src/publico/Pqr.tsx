@@ -200,7 +200,7 @@ function Radicar() {
         </select>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label className={ETIQUETA} htmlFor="pqr-nombre">
             Nombre completo
@@ -229,7 +229,7 @@ function Radicar() {
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label className={ETIQUETA} htmlFor="pqr-telefono">
             Teléfono <span className="normal-case tracking-normal">(opcional)</span>

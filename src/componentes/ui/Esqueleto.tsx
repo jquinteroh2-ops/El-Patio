@@ -131,7 +131,7 @@ export function EsqueletoTarjetas({
 }) {
   return (
     <ZonaCargando etiqueta={etiqueta}>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: cantidad }, (_, i) => (
           <div key={i} className="animate-entrada" style={{ animationDelay: `${Math.min(i, 6) * 45}ms` }}>
             <EsqueletoTarjeta claro={claro} />

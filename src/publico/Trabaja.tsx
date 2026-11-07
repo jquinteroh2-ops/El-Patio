@@ -144,7 +144,7 @@ export default function Trabaja() {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label className={ETIQUETA} htmlFor="tipoDocumento">
               Tipo de documento
@@ -171,7 +171,7 @@ export default function Trabaja() {
           </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label className={ETIQUETA} htmlFor="email">
               Correo electrónico

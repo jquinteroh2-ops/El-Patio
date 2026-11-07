@@ -116,7 +116,7 @@ export default function Cierre() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* ---------- Resumen del turno ---------- */}
         <section className="revelar-corto rounded-2xl border border-oro-500/30 bg-noche-900 p-4 lg:col-span-2">
           <div className="mb-3 flex items-start justify-between gap-3">

@@ -135,7 +135,7 @@ export function FichaDelSitio() {
           <MapPin className="h-3.5 w-3.5" aria-hidden />
           Cómo nos encuentran
         </h3>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Campo
             etiqueta="Dirección"
             value={ficha.direccion}

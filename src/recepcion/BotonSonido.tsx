@@ -31,7 +31,7 @@ export function BotonSonido() {
         )
       }
     >
-      {activo ? '' : 'Activar sonido'}
+      {activo ? '' : <span className="hidden sm:inline">Activar sonido</span>}
     </Boton>
   )
 }

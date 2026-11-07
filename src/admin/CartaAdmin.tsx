@@ -137,7 +137,7 @@ export default function CartaAdmin() {
       {visibles.length === 0 ? (
         <Vacio icono={BookOpen} titulo="Sin productos" descripcion="Prueba con otra búsqueda o categoría." />
       ) : (
-        <ul className="grid gap-2 lg:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
           {visibles.map((item) => (
             <li
               key={item.id}
