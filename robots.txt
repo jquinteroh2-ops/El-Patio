@@ -1,0 +1,23 @@
+# Restaurante El Patio · Turbaco, Bolívar
+#
+# El sitio publico se indexa entero: es lo que tiene que encontrar quien busca
+# donde comer. Lo que hay detras del acceso del personal, no: son pantallas de
+# trabajo que no le sirven a nadie desde un buscador, y que ademas ensenarian
+# nombres de clientes y movimientos de caja en el resultado.
+
+User-agent: *
+Allow: /$
+Allow: /carta
+Allow: /reservar
+Allow: /pedir
+
+Disallow: /acceso
+Disallow: /comandera
+Disallow: /cocina
+Disallow: /recepcion
+Disallow: /admin
+Disallow: /api/
+
+# El mapa del sitio: las paginas publicas que Google debe conocer. Si se agrega
+# una pagina publica nueva, se agrega tambien en public/sitemap.xml.
+Sitemap: https://www.restauranteelpatio.com/sitemap.xml

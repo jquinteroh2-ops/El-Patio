@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      `interactive-widget=resizes-content` es lo que hace que al abrirse el
+      teclado del celular la ventana de diseño ENCOJA, y no solo la visual.
+      Sin esto, el pie de una hoja —anclada con `fixed inset-0`— se queda en el
+      borde de una ventana que el teclado ya está tapando: el cajero escribe
+      con cuánto le pagan y el botón de confirmar el cobro deja de verse.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <!-- El color de la barra del navegador en el celular. Tiene que ser el mismo
+         fondo del sitio (onix-950); con otro verde, el telefono pinta una franja
+         que no corresponde a nada de la pagina y parece que el diseno cambiara. -->
+    <meta name="theme-color" content="#0A0908" />
+
+    <!--
+      Lo que se lee en el resultado de Google.
+
+      El titulo lleva la ciudad a proposito: nadie busca "El Patio" a secas, se
+      busca "restaurante en Turbaco". La descripcion cabe en los ~155 caracteres
+      que Google alcanza a mostrar antes de cortarla.
+    -->
+    <title>Restaurante El Patio · Cocina de fusión en Turbaco, Bolívar</title>
+    <meta
+      name="description"
+      content="Cocina de fusión y coctelería de autor en Turbaco, Bolívar. Reserve su mesa, vea la carta o pida a domicilio. Abierto de martes a domingo."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="author" content="Restaurante El Patio" />
+
+    <!-- Lo que se ve al pegar el enlace en WhatsApp, que es por donde de verdad
+         circula un restaurante en la Costa. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Restaurante El Patio" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content="Restaurante El Patio · Turbaco, Bolívar" />
+    <meta
+      property="og:description"
+      content="Cocina de fusión y coctelería de autor. Reserve su mesa, vea la carta o pida a domicilio."
+    />
+    <!--
+      Lo que se ve al pegar el enlace en WhatsApp.
+
+      Va el logo COMPLETO —con su texto— porque aquí aparece solo, sin nada al
+      lado que diga de quién es.
+
+      La tarjeta es `summary` y no `summary_large_image`: el logo es cuadrado, y
+      la tarjeta grande lo recortaría por arriba y por abajo hasta dejar una
+      franja del centro. El día que haya una imagen apaisada de 1200x630 —una
+      foto del local, por ejemplo— se cambia a `summary_large_image`.
+    -->
+    <!--
+      La URL va ABSOLUTA y con el dominio escrito. Las rutas relativas no
+      sirven aquí: quien lee esta etiqueta es el robot de WhatsApp o de
+      Facebook, que no tiene página de referencia contra la cual resolver un
+      «/logo.png», y simplemente no muestra imagen. Es el error que hace que un
+      enlace se comparta sin nada.
+    -->
+    <meta property="og:image" content="https://www.restauranteelpatio.com/logo-og.png" />
+    <meta property="og:image:width" content="320" />
+    <meta property="og:image:height" content="320" />
+    <meta property="og:image:alt" content="Logo del Restaurante El Patio" />
+    <meta name="twitter:image" content="https://www.restauranteelpatio.com/logo-og.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Restaurante El Patio · Turbaco, Bolívar" />
+    <meta
+      name="twitter:description"
+      content="Cocina de fusión y coctelería de autor. Reserve su mesa, vea la carta o pida a domicilio."
+    />
+
+    <!-- Señales de local: viejas, pero varios buscadores y directorios todavía
+         las leen, y no estorban. -->
+    <meta name="geo.region" content="CO-BOL" />
+    <meta name="geo.placename" content="Turbaco, Bolívar" />
+    <meta name="geo.position" content="10.3390034;-75.4225372" />
+    <meta name="ICBM" content="10.3390034, -75.4225372" />
+
+    <!--
+      El icono de la pestaña es el emblema del restaurante: el arco con la
+      monstera y la orquídea, sin el texto. A 32 píxeles las letras «EL PATIO»
+      son una mancha que solo ensucia el dibujo; un icono a ese tamaño tiene que
+      ser una silueta reconocible.
+
+      Se declaran los dos tamaños en vez de uno solo: el navegador elige el que
+      le sirve y no reescala uno grande, que es donde se pierde el detalle de
+      las líneas finas.
+    -->
+    <link rel="icon" href="/El-Patio/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/El-Patio/emblema.png" type="image/png" sizes="256x256" />
+    <!-- iOS usa este para la pantalla de inicio, y ahí sí cabe el logo completo. -->
+    <link rel="apple-touch-icon" href="/El-Patio/logo-180.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      Ficha del negocio en el lenguaje que Google entiende sin adivinar.
+
+      Es lo que alimenta el recuadro lateral y el resultado con horario y
+      dirección. Va escrita aquí y no generada por la aplicación porque un robot
+      que no ejecuta JavaScript tiene que poder leerla igual.
+
+      Nota: esto no reemplaza el perfil de Google Business. Para aparecer en el
+      mapa hay que reclamar la ficha del local; esto la respalda.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Restaurant",
+        "name": "Restaurante El Patio",
+        "description": "Cocina de fusión y coctelería de autor en Turbaco, Bolívar.",
+        "servesCuisine": ["Cocina de fusión", "Cocina caribeña", "Coctelería de autor"],
+        "priceRange": "$$$",
+        "currenciesAccepted": "COP",
+        "paymentAccepted": "Efectivo, Tarjeta, Transferencia",
+        "telephone": "+573044032936",
+        "acceptsReservations": true,
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Calle 26 #31-2",
+          "addressLocality": "Turbaco",
+          "addressRegion": "Bolívar",
+          "postalCode": "131001",
+          "addressCountry": "CO"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 10.3390034,
+          "longitude": -75.4225372
+        },
+        "hasMap": "https://maps.app.goo.gl/k1YkwefhygcJTupKA",
+        "sameAs": ["https://www.instagram.com/elpatiorestaurante_turbaco"],
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Tuesday", "Wednesday", "Thursday"],
+            "opens": "12:00",
+            "closes": "22:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Friday", "Saturday"],
+            "opens": "12:00",
+            "closes": "23:59"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Sunday",
+            "opens": "12:00",
+            "closes": "21:00"
+          }
+        ]
+      }
+    </script>
+    <script type="module" crossorigin src="/El-Patio/assets/index-SyY9jrR_.js"></script>
+    <link rel="stylesheet" crossorigin href="/El-Patio/assets/index-BK1GNaVY.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
